@@ -1,6 +1,8 @@
 name: CI
 on:
   push:
+    branches:
+      - main
 jobs:
   ci:
     runs-on: ubuntu-22.04
