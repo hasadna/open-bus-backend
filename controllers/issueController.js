@@ -31,9 +31,9 @@ const createIssue = async (req, res) => {
 
     // GitHub API configuration
     const token =
-      'TOKEN'; // Replace with the actual GitHub token
-    const repoOwner = 'OWNER'; // Replace with the actual owner of the repository
-    const repoName = 'REPO-NAME'; // Replace with the actual repository name
+      process.env.GITHUB_TOKEN; // Replace with the actual GitHub token
+    const repoOwner = process.env.GITHUB_OWNER; // Replace with the actual owner of the repository
+    const repoName = process.env.GITHUB_REPO; // Replace with the actual repository name
 
     // Create the GitHub issue
     const response = await axios.post(
