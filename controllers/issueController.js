@@ -17,14 +17,14 @@ const createIssue = async (req, res) => {
 
     // Create the body for the GitHub issue
     const body = `\n
-    **Contact Name:** ${contactName}\n
-    **Contact Email:** ${contactEmail}\n
-    **Description:** \n${description}\n
-    **Environment:** ${environment}\n
-    **Expected Behavior:** \n${expectedBehavior}\n
-    **Actual Behavior:** \n${actualBehavior}\n
-    **Reproducibility:** ${reproducibility}\n
-    `;
+**Contact Name:** ${contactName}\n
+**Contact Email:** ${contactEmail}\n
+**Description:** \n${description}\n
+**Environment:** ${environment}\n
+**Expected Behavior:** \n${expectedBehavior}\n
+**Actual Behavior:** \n${actualBehavior}\n
+**Reproducibility:** ${reproducibility}\n
+`;
 
     // GitHub issue label
     const labels = ['REPORTED-BY-USER'];
