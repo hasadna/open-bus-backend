@@ -1,8 +1,8 @@
-const { chromium } = require('playwright')
+import { chromium } from 'playwright'
 
 let isBusy = false
 
-async function complaintController(req, res) {
+export async function complaintController(req, res) {
     if (isBusy) {
         res.status(429).send('busy')
         return
@@ -113,5 +113,3 @@ async function complaintController(req, res) {
         isBusy = false
     }
 }
-
-exports.complaintController = complaintController
