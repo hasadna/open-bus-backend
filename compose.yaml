@@ -1,0 +1,21 @@
+services:
+  mongo:
+    image: mongo:8.0.3
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+    environment:
+      MONGODB_URI: "mongodb://mongo:27017/open-bus"
+    volumes:
+      - .:/usr/src/app
+    command: npm run dev
+
+volumes:
+  mongo-data:

@@ -1,6 +1,6 @@
-const axios = require('axios');
+import axios from 'axios';
 
-const createIssue = async (req, res) => {
+export const createIssue = async (req, res) => {
   try {
     // Extract data from the request body
     const {
@@ -53,5 +53,3 @@ const createIssue = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
-
-module.exports = { createIssue };

@@ -32,3 +32,8 @@ curl -X POST http://localhost:3001/create-issue -H "Content-Type: application/js
 docker build -t backend .
 docker run -it -p 3001:3001 -e GITHUB_TOKEN -e GITHUB_OWNER -e GITHUB_REPO backend
 ```
+
+alternatively - run with docker-compose:
+```
+docker compose up --build --remove-orphans
+```
