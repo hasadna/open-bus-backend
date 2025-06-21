@@ -137,7 +137,28 @@ function fillTemplate(template, data = {}) {
 }
 
 export function buildXmlFrom(body) {
-	const dataModelSaver = JSON.stringify(fillTemplate(dataModelTemplate, body.dataModelSaver || {}), null, 2);
+	// Only support new input structure: { userData, databusData }
+	if (!(body.userData && body.databusData)) {
+		throw new Error('Input must have userData and databusData');
+	}
+	// Map userData and databusData to the expected structure
+	const input = {
+		dataModelSaver: {
+			personalDetails: {
+				firstName: body.userData.firstName,
+				lastName: body.userData.lastName,
+				iDNum: body.userData.id,
+				email: body.userData.email,
+				phone: body.userData.phone,
+			},
+			requestDetails: {
+				busAndOther: {
+					operator: { dataText: String(body.databusData.operator) },
+				},
+			},
+		},
+	};
+	const dataModelSaver = JSON.stringify(fillTemplate(dataModelTemplate, input.dataModelSaver), null, 2);
 
 	const fields = {
 		UserUImode: body.UserUImode || 'AGFrom2Html',
@@ -150,14 +171,14 @@ export function buildXmlFrom(body) {
 		DeviceType: body.DeviceType || null,
 		FirstLoadingDate: body.FirstLoadingDate || null,
 		Date: body.Date || '',
-		contactType: body.dataModelSaver?.contactType || dataModelTemplate.contactType,
-		personalDetails: body.dataModelSaver?.personalDetails || dataModelTemplate.personalDetails,
-		requestSubject: body.dataModelSaver?.requestSubject || dataModelTemplate.requestSubject,
-		requestDetails: body.dataModelSaver?.requestDetails || dataModelTemplate.requestDetails,
-		documentAttachment: body.dataModelSaver?.documentAttachment || dataModelTemplate.documentAttachment,
-		followStatus: body.dataModelSaver?.followStatus || dataModelTemplate.followStatus,
-		containersViewModel: body.dataModelSaver?.containersViewModel || dataModelTemplate.containersViewModel,
-		formInformation: body.dataModelSaver?.formInformation || dataModelTemplate.formInformation,
+		contactType: input.dataModelSaver.contactType || dataModelTemplate.contactType,
+		personalDetails: input.dataModelSaver.personalDetails || dataModelTemplate.personalDetails,
+		requestSubject: input.dataModelSaver.requestSubject || dataModelTemplate.requestSubject,
+		requestDetails: input.dataModelSaver.requestDetails || dataModelTemplate.requestDetails,
+		documentAttachment: input.dataModelSaver.documentAttachment || dataModelTemplate.documentAttachment,
+		followStatus: input.dataModelSaver.followStatus || dataModelTemplate.followStatus,
+		containersViewModel: input.dataModelSaver.containersViewModel || dataModelTemplate.containersViewModel,
+		formInformation: input.dataModelSaver.formInformation || dataModelTemplate.formInformation,
 		FirstName: body.FirstName || '',
 		LastName: body.LastName || '',
 		IDNum: body.IDNum || '',
