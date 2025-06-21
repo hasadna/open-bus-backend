@@ -2,45 +2,32 @@ import { expect } from 'chai';
 import { buildXmlFrom } from '../gov_api/template_builder.js';
 
 describe('buildXmlFrom', () => {
-  it('should generate XML with default values when given empty object', () => {
-    const xml = buildXmlFrom({});
-    expect(xml).to.be.a('string');
-    expect(xml).to.include('<?xml version="1.0" encoding="utf-8"?>');
-    expect(xml).to.include('<UserUImode>AGFrom2Html</UserUImode>');
-    expect(xml).to.include('<FirstName></FirstName>');
-    expect(xml).to.include('<Mobile></Mobile>');
-    expect(xml).to.include('<FinanceRavKav>true</FinanceRavKav>');
+  it('should throw if input does not have userData and databusData', () => {
+    expect(() => buildXmlFrom({})).to.throw('Input must have userData and databusData');
+    expect(() => buildXmlFrom({ userData: {} })).to.throw('Input must have userData and databusData');
+    expect(() => buildXmlFrom({ databusData: {} })).to.throw('Input must have userData and databusData');
   });
 
-  it('should fill personal details when provided', () => {
+  it('should support input structured as { userData, databusData }', () => {
     const xml = buildXmlFrom({
-      dataModelSaver: {
-        personalDetails: {
-          firstName: 'John',
-          lastName: 'Doe',
-          iDNum: '123456789',
-          mobile: '0501234567',
-          email: 'john@example.com',
-          city: { dataText: 'Tel Aviv' },
-        },
+      userData: {
+        firstName: 'נעם',
+        lastName: 'געש',
+        id: '123456789',
+        email: 'noam.gaash@gmail.com',
+        phone: '0536218158',
+        complaintType: 'no_stop',
+        description: "the bus didn't stop, despite I was in the station and waved really hard :("
       },
+      databusData: {
+        operator: 5
+      }
     });
-    expect(xml).to.include('<FirstName>John</FirstName>');
-    expect(xml).to.include('<LastName>Doe</LastName>');
+    expect(xml).to.include('<FirstName>נעם</FirstName>');
+    expect(xml).to.include('<LastName>געש</LastName>');
     expect(xml).to.include('<IDNum>123456789</IDNum>');
-    expect(xml).to.include('<Mobile>0501234567</Mobile>');
-    expect(xml).to.include('<Email>john@example.com</Email>');
-    expect(xml).to.include('<Settlement text="Tel Aviv"></Settlement>');
-  });
-
-  it('should handle document attachment', () => {
-    const xml = buildXmlFrom({
-      dataModelSaver: {
-        documentAttachment: {
-          documentsList: [{ attacmentName: 'file.pdf' }],
-        },
-      },
-    });
-    expect(xml).to.include('<AttachDocument fileName="file.pdf" />');
+    expect(xml).to.include('<Email>noam.gaash@gmail.com</Email>');
+    expect(xml).to.include('<Phone>0536218158</Phone>');
+    expect(xml).to.include('<Operator text="5"></Operator>');
   });
 });
