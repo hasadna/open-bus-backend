@@ -1,4 +1,5 @@
 import { it } from 'mocha'
+import { complaintController } from './complaintController.js'
 
 it('should test the complaint controller', async () => {
   // Mock the request and response objects
@@ -33,9 +34,6 @@ it('should test the complaint controller', async () => {
       return { data: { success: true } } // Mock response
     },
   }
-
-  // Import the controller function
-  const { complaintController } = require('./complaintController')
 
   // Call the controller function
   await complaintController(req, res, myAxios)
