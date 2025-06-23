@@ -4,9 +4,9 @@
 
 The following environment variables are required:
 
-* GITHUB_TOKEN
-* GITHUB_OWNER
-* GITHUB_REPO
+- GITHUB_TOKEN
+- GITHUB_OWNER
+- GITHUB_REPO
 
 ## Local Development
 
