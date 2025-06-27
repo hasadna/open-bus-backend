@@ -1,55 +1,40 @@
-import { it } from 'mocha'
-import { complaintController } from './complaintController.js'
+import { expect } from 'chai'
 
-it('should test the complaint controller', async () => {
-  // Mock the request and response objects
-  const req = {
-    body: {
-      // Add necessary fields for the test
-      name: 'Test User',
-      complaint: 'This is a test complaint',
-    },
-  }
+import { buildXmlFrom } from '../gov_api/template_builder.js'
+import { getReferenceNumber } from '../gov_api/get_reference_number.js'
+import { sendComplaint } from './complaintController.js'
 
-  const res = {
-    status(statusCode) {
-      this.statusCode = statusCode
-      return this
-    },
-    json(data) {
-      this.data = data
-    },
-  }
+import jsonData from '../contextForCopilot/exampleInput.json' with { type: 'json' }
 
-  // Mock axios
-  const myAxios = {
-    history: [],
-    async post(url, xml, options) {
-      history.push({
-        url,
-        method: 'post',
-        data: xml,
-        headers: options.headers,
-      })
-      return { data: { success: true } } // Mock response
-    },
-  }
+describe('sendComplaint', () => {
+  let req, res
 
-  // Call the controller function
-  await complaintController(req, res, myAxios)
+  beforeEach(() => {
+    req = {
+      body: jsonData,
+    }
+    res = {
+      jsonCalledWith: null,
+      statusCalledWith: null,
+      json(data) {
+        this.jsonCalledWith = data
+        return this
+      },
+      status(code) {
+        this.statusCalledWith = code
+        return this
+      },
+    }
+    // myAxios = {
+    //   post: async () => ({ data: { success: true, debug: true, xml } }),
+    // }
+  })
 
-  // Assertions
-  if (res.statusCode !== 200 || !res.data.success) {
-    throw new Error('Test failed')
-  }
-
-  if (myAxios.history.length === 0) {
-    throw new Error('No request was made to axios')
-  }
-  if (myAxios.history[0].url !== 'https://forms.gov.il/globaldata/getsequence/getHtmlForm.aspx?formType=PniotMot%40mot.gov.il') {
-    throw new Error('Request URL does not match')
-  }
-  if (myAxios.history[0].method !== 'post') {
-    throw new Error('Request method is not POST')
-  }
+  it('should test the complaint controller', async () => {
+    req.body.ReferenceNumber = await getReferenceNumber(req.body.debug)
+    const xml = buildXmlFrom(req.body)
+    await sendComplaint(req, res)
+    expect(res.jsonCalledWith).to.deep.equal({ data: { success: true, debug: true, xml } })
+    expect(res.statusCalledWith).to.be.null
+  })
 })
