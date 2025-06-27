@@ -32,9 +32,9 @@ export async function createIssue(req, res, myAxios = axios) {
       { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } },
     )
 
-    res.json(response.data)
+    res.status(200).json(response.data)
   } catch (error) {
-    console.error('Error creating GitHub issue:', error)
+    // console.error('Error creating GitHub issue:', error)
     res.status(500).json({ error: 'Internal Server Error' })
   }
 }
