@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  actions: write
+  checks: write
+
 jobs:
   lint-test:
     name: Lint Test
