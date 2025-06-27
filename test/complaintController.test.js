@@ -2,7 +2,7 @@ import { expect } from 'chai'
 
 import { buildXmlFrom } from '../gov_api/template_builder.js'
 import { getReferenceNumber } from '../gov_api/get_reference_number.js'
-import { sendComplaint } from './complaintController.js'
+import { sendComplaint } from '../controllers/complaintController.js'
 
 import jsonData from '../contextForCopilot/exampleInput.json' with { type: 'json' }
 
