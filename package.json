@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon index.js",
-    "test": "mocha \"**/*.test.js\" --ignore node_modules/**",
+    "test": "mocha 'test/**/*.test.js' --reporter mochawesome",
     "lint": "prettier . -c -u",
     "lint:fix": "prettier . -w -u"
   },
