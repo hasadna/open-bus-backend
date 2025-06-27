@@ -5,6 +5,10 @@ import { getReferenceNumber } from '../gov_api/get_reference_number.js'
 
 const URL = 'https://forms.gov.il/globaldata/getsequence/getHtmlForm.aspx?formType=PniotMot%40mot.gov.il'
 
+/**
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
 export async function sendComplaint(req, res) {
   try {
     req.body.ReferenceNumber = getReferenceNumber(req.body.debug)
