@@ -12,11 +12,11 @@ it('should test the complaint controller', async () => {
   }
 
   const res = {
-    status: function (statusCode) {
+    status(statusCode) {
       this.statusCode = statusCode
       return this
     },
-    json: function (data) {
+    json(data) {
       this.data = data
     },
   }
@@ -24,7 +24,7 @@ it('should test the complaint controller', async () => {
   // Mock axios
   const myAxios = {
     history: [],
-    post: async (url, xml, options) => {
+    async post(url, xml, options) {
       history.push({
         url,
         method: 'post',
@@ -46,10 +46,7 @@ it('should test the complaint controller', async () => {
   if (myAxios.history.length === 0) {
     throw new Error('No request was made to axios')
   }
-  if (
-    myAxios.history[0].url !==
-    'https://forms.gov.il/globaldata/getsequence/getHtmlForm.aspx?formType=PniotMot%40mot.gov.il'
-  ) {
+  if (myAxios.history[0].url !== 'https://forms.gov.il/globaldata/getsequence/getHtmlForm.aspx?formType=PniotMot%40mot.gov.il') {
     throw new Error('Request URL does not match')
   }
   if (myAxios.history[0].method !== 'post') {

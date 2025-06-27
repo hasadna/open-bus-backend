@@ -3,17 +3,8 @@ import axios from 'axios'
 export async function createIssue(req, res) {
   try {
     // Extract data from the request body
-    const {
-      title,
-      contactName,
-      contactEmail,
-      description,
-      environment,
-      expectedBehavior,
-      actualBehavior,
-      reproducibility,
-      attachments,
-    } = req.body
+    const { title, contactName, contactEmail, description, environment, expectedBehavior, actualBehavior, reproducibility, attachments } =
+      req.body
 
     // Create the body for the GitHub issue
     const body = `\n
