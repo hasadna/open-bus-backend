@@ -13,6 +13,7 @@ permissions:
 
 jobs:
   lint-test:
+    name: Lint Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,6 +28,7 @@ jobs:
         run: npm run test:lint
 
   mocha-test:
+    name: Mocha Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,6 +54,7 @@ jobs:
           reporter: mocha-json
 
   coverage-test:
+    name: Test Whit Coverage
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
