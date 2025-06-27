@@ -1,5 +1,9 @@
 import axios from 'axios'
 
+/**
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
 export async function createIssue(req, res, myAxios = axios) {
   try {
     // Extract data from the request body
