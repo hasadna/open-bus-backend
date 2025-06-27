@@ -42,7 +42,7 @@ describe('createIssue', () => {
   it('should create a GitHub issue and return the response data', async () => {
     await createIssue(req, res, myAxios)
     expect(res.jsonCalledWith).to.deep.equal({ id: 123, title: 'Test Issue' })
-    expect(res.statusCalledWith).to.be.null
+    expect(res.statusCalledWith).to.equal(200)
   })
 
   it('should handle errors and return 500', async () => {
