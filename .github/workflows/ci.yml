@@ -17,7 +17,7 @@ jobs:
           for var in DOCKER_APP_IMAGE_NAME GITHUB_TOKEN HASADNA_K8S_DEPLOY_KEY; do
             if [ -z "${!var}" ]; then
             echo "Missing required environment variable: $var"
-            exit 1
+            exit # exit 1
           fi
           done
           echo "${GITHUB_TOKEN}" | docker login ghcr.io -u hasadna --password-stdin &&\
