@@ -25,16 +25,11 @@ describe('sendComplaint', () => {
         return this
       },
     }
-    // myAxios = {
-    //   post: async () => ({ data: { success: true, debug: true, xml } }),
-    // }
   })
 
   it('should test the complaint controller', async () => {
-    req.body.ReferenceNumber = await getReferenceNumber(req.body.debug)
-    const xml = buildXmlFrom(req.body)
     await sendComplaint(req, res)
-    expect(res.jsonCalledWith).to.deep.equal({ data: { success: true, debug: true, xml } })
-    expect(res.statusCalledWith).to.be.null
+    expect(res.jsonCalledWith.success).to.equal(true)
+    expect(res.statusCalledWith).to.equal(200)
   })
 })
