@@ -20,6 +20,8 @@
     "express": "^5.1.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
     "chai": "^5.2.0",
     "mocha": "^11.7.1",
     "nodemon": "^3.1.10",
