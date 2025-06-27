@@ -297,7 +297,7 @@ export function buildXmlFrom(body) {
     <ContactDetails>${fields.personalDetails.contactOptions}</ContactDetails>
     <Email>${fields.personalDetails.email}</Email>
     <fax>${fields.personalDetails.fax}</fax>
-    <Settlement text="${fields.personalDetails.city.dataText}"></Settlement>
+    <Settlement text="${fields.personalDetails?.city?.dataText}"></Settlement>
     <street>${fields.personalDetails.street}</street>
     <HouseNumber>${fields.personalDetails.houseNumber}</HouseNumber>
     <Appartment>${fields.personalDetails.appartment}</Appartment>
@@ -305,25 +305,25 @@ export function buildXmlFrom(body) {
     <ZipCode>${fields.personalDetails.zipCode}</ZipCode>
     <ApplySubject text="${fields.requestSubject.applySubject.dataText}"></ApplySubject>
     <TypeReq text="${fields.requestSubject.applyType.dataText}"></TypeReq>
-    <TrainType>${fields.requestDetails.train.trainType}</TrainType>
-    <EventDate2>${fields.requestDetails.train.eventDate}</EventDate2>
-    <EventHour2>${fields.requestDetails.train.eventHour}</EventHour2>
-    <StartStation text="${fields.requestDetails.train.startStation.dataText}"></StartStation>
-    <DestStation text="${fields.requestDetails.train.destinationStation.dataText}"></DestStation>
-    <TrainNumber>${fields.requestDetails.train.number}</TrainNumber>
-    <ApplyContent3>${fields.requestDetails.train.applyContent}</ApplyContent3>
+    <TrainType>${fields.requestDetails.train?.trainType}</TrainType>
+    <EventDate2>${fields.requestDetails.train?.eventDate}</EventDate2>
+    <EventHour2>${fields.requestDetails.train?.eventHour}</EventHour2>
+    <StartStation text="${fields.requestDetails.train?.startStation?.dataText}"></StartStation>
+    <DestStation text="${fields.requestDetails.train?.destinationStation?.dataText}"></DestStation>
+    <TrainNumber>${fields.requestDetails.train?.number}</TrainNumber>
+    <ApplyContent3>${fields.requestDetails.train?.applyContent}</ApplyContent3>
     <FirstDeclaration>false</FirstDeclaration>
     <SecondDeclaration>false</SecondDeclaration>
     <EventDetails></EventDetails>
     <Invoice></Invoice>
     <Evidence></Evidence>
     <OtherFactors></OtherFactors>
-    <ETaxiType>${fields.requestDetails.taxi.taxiType}</ETaxiType>
-    <DrivingLicense2>${fields.requestDetails.busAndOther.licenseNum}</DrivingLicense2>
+    <ETaxiType>${fields.requestDetails.taxi?.taxiType}</ETaxiType>
+    <DrivingLicense2>${fields.requestDetails.busAndOther?.licenseNum}</DrivingLicense2>
     <TaxiCap></TaxiCap>
-    <TaxiDriverName>${fields.requestDetails.busAndOther.driverName}</TaxiDriverName>
-    <TaxiEventDate>${fields.requestDetails.busAndOther.eventDate}</TaxiEventDate>
-    <TaxiEventHour>${fields.requestDetails.busAndOther.eventHour}</TaxiEventHour>
+    <TaxiDriverName>${fields.requestDetails.busAndOther?.driverName}</TaxiDriverName>
+    <TaxiEventDate>${fields.requestDetails.busAndOther?.eventDate}</TaxiEventDate>
+    <TaxiEventHour>${fields.requestDetails.busAndOther?.eventHour}</TaxiEventHour>
     <TaxiEventLocation></TaxiEventLocation>
     <ApplyContent>${fields.requestDetails.busAndOther.applyContent}</ApplyContent>
     <FinanceRavKav>${fields.requestDetails.busAndOther.ravKav}</FinanceRavKav>
@@ -345,32 +345,48 @@ export function buildXmlFrom(body) {
     <Stationupdate>${fields.requestDetails.busAndOther.addOrRemoveStation}</Stationupdate>
     <NumStation>${fields.requestDetails.busAndOther.addOrRemoveStation}</NumStation>
     <LineNumberBoarding>${fields.requestDetails.busAndOther.lineNumberText}</LineNumberBoarding>
-    <Direction text="${fields.requestDetails.busAndOther.direction.dataText}"></Direction>
-    <BusStationBoard text="${fields.requestDetails.busAndOther.raisingStation.dataText}"></BusStationBoard>
-    <BoardingSettlement text="${fields.requestDetails.busAndOther.raisingStationCity.dataText}"></BoardingSettlement>
-    <DropStaionAppeal text="${fields.requestDetails.busAndOther.destinationStationCity.dataText}"></DropStaionAppeal>
-    <Risestationaddress>${fields.requestDetails.busAndOther.raisingStationAddress}</Risestationaddress>
+    <Direction text="${fields.requestDetails.busAndOther?.direction?.dataText}"></Direction>
+    <BusStationBoard text="${
+      fields.requestDetails.busAndOther?.raisingStation?.dataText
+    }"></BusStationBoard>
+    <BoardingSettlement text="${
+      fields.requestDetails.busAndOther?.raisingStationCity?.dataText
+    }"></BoardingSettlement>
+    <DropStaionAppeal text="${
+      fields.requestDetails.busAndOther?.destinationStationCity?.dataText
+    }"></DropStaionAppeal>
+    <Risestationaddress>${
+      fields.requestDetails.busAndOther?.raisingStationAddress
+    }</Risestationaddress>
     <MakatStation>${fields.requestDetails.busAndOther.makatStation}</MakatStation>
-    <LineNumber text="${fields.requestDetails.busAndOther.lineNumberFromList.dataText}"></LineNumber>
-    <BusDirectionFrom>${fields.requestDetails.busAndOther.busDirectionFrom}</BusDirectionFrom>
-    <BusDirectionTo>${fields.requestDetails.busAndOther.busDirectionTo}</BusDirectionTo>
+    <LineNumber text="${
+      fields.requestDetails.busAndOther?.lineNumberFromList?.dataText
+    }"></LineNumber>
+    <BusDirectionFrom>${fields.requestDetails.busAndOther?.busDirectionFrom}</BusDirectionFrom>
+    <BusDirectionTo>${fields.requestDetails.busAndOther?.busDirectionTo}</BusDirectionTo>
     <Testimony>false</Testimony>
     <Courttestimony>false</Courttestimony>
     <CaseEssence></CaseEssence>
-    <OriginCityCode>${fields.requestDetails.busAndOther.originCityCode}</OriginCityCode>
-    <OriginCityName>${fields.requestDetails.busAndOther.originCityName}</OriginCityName>
-    <LineCode>${fields.requestDetails.busAndOther.lineCode}</LineCode>
-    <CityId>${fields.requestDetails.busAndOther.cityId}</CityId>
-    <CityName>${fields.requestDetails.busAndOther.cityName}</CityName>
-    <StationName>${fields.requestDetails.busAndOther.stationName}</StationName>
-    <DirectionCode>${fields.requestDetails.busAndOther.directionCode}</DirectionCode>
-    <DestinationCityCode>${fields.requestDetails.busAndOther.destinationCityCode}</DestinationCityCode>
-    <DestinationCityText>${fields.requestDetails.busAndOther.destinationCityText}</DestinationCityText>
+    <OriginCityCode>${fields.requestDetails.busAndOther?.originCityCode}</OriginCityCode>
+    <OriginCityName>${fields.requestDetails.busAndOther?.originCityName}</OriginCityName>
+    <LineCode>${fields.requestDetails.busAndOther?.lineCode}</LineCode>
+    <CityId>${fields.requestDetails.busAndOther?.cityId}</CityId>
+    <CityName>${fields.requestDetails.busAndOther?.cityName}</CityName>
+    <StationName>${fields.requestDetails.busAndOther?.stationName}</StationName>
+    <DirectionCode>${fields.requestDetails.busAndOther?.directionCode}</DirectionCode>
+    <DestinationCityCode>${
+      fields.requestDetails.busAndOther?.destinationCityCode
+    }</DestinationCityCode>
+    <DestinationCityText>${
+      fields.requestDetails.busAndOther?.destinationCityText
+    }</DestinationCityText>
     <Title>${fields.requestDetails.title}</Title>
-    <RequestSubjectCode>${fields.requestDetails.requestSubjectCode}</RequestSubjectCode>
-    <RequestTypeCode>${fields.requestDetails.requestTypeCode}</RequestTypeCode>
+    <RequestSubjectCode>${fields.requestDetails?.requestSubjectCode}</RequestSubjectCode>
+    <RequestTypeCode>${fields.requestDetails?.requestTypeCode}</RequestTypeCode>
     <Attacment_Doc>
-      <AttachDocument fileName="${fields.documentAttachment.documentsList[0]?.attacmentName || ''}" />
+      <AttachDocument fileName="${
+        fields.documentAttachment.documentsList[0]?.attacmentName || ''
+      }" />
     </Attacment_Doc>
     <ContactID>
       <ticketNumber>${fields.followStatus.contactIdList[0]?.ticketNumber || ''}</ticketNumber>
@@ -379,7 +395,9 @@ export function buildXmlFrom(body) {
       <ticketNumber>${fields.followStatus.contactIdResultList[0]?.ticketNumber || ''}</ticketNumber>
       <dateReceived>${fields.followStatus.contactIdResultList[0]?.dateReceived || ''}</dateReceived>
       <contactName>${fields.followStatus.contactIdResultList[0]?.contactName || ''}</contactName>
-      <incidentStatus>${fields.followStatus.contactIdResultList[0]?.incidentStatus || ''}</incidentStatus>
+      <incidentStatus>${
+        fields.followStatus.contactIdResultList[0]?.incidentStatus || ''
+      }</incidentStatus>
     </contactIdResult>
   </form>
 </root>`
