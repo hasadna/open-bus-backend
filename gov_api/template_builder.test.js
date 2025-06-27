@@ -4,12 +4,8 @@ import { buildXmlFrom } from '../gov_api/template_builder.js'
 describe('buildXmlFrom', () => {
   it('should throw if input does not have userData and databusData', () => {
     expect(() => buildXmlFrom({})).to.throw('Input must have userData and databusData')
-    expect(() => buildXmlFrom({ userData: {} })).to.throw(
-      'Input must have userData and databusData',
-    )
-    expect(() => buildXmlFrom({ databusData: {} })).to.throw(
-      'Input must have userData and databusData',
-    )
+    expect(() => buildXmlFrom({ userData: {} })).to.throw('Input must have userData and databusData')
+    expect(() => buildXmlFrom({ databusData: {} })).to.throw('Input must have userData and databusData')
   })
 
   it('should support input structured as { userData, databusData }', () => {

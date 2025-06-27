@@ -1,12 +1,12 @@
 import axios from 'axios'
-
 import { buildXmlFrom } from '../gov_api/template_builder.js'
+import { getReferenceNumber } from '../gov_api/get_reference_number.js'
 
-const URL =
-  'https://forms.gov.il/globaldata/getsequence/getHtmlForm.aspx?formType=PniotMot%40mot.gov.il'
+const URL = 'https://forms.gov.il/globaldata/getsequence/getHtmlForm.aspx?formType=PniotMot%40mot.gov.il'
 
 export async function complaintController(req, res, myAxios = axios) {
   try {
+    req.body.ReferenceNumber = getReferenceNumber()
     const xml = buildXmlFrom(req.body)
     if (req.body.debug) {
       console.log('XML to be sent:', xml)

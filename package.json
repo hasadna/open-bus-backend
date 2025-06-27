@@ -6,19 +6,23 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon index.js",
-    "test": "mocha \"**/*.test.js\" --ignore node_modules/**"
+    "test": "mocha \"**/*.test.js\" --ignore node_modules/**",
+    "lint": "prettier . -c -u",
+    "lint:fix": "prettier . -w -u"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.9.0",
+    "axios": "^1.10.0",
+    "cheerio": "^1.1.0",
     "cors": "^2.8.5",
     "express": "^5.1.0"
   },
   "devDependencies": {
     "chai": "^5.2.0",
-    "mocha": "^11.7.0",
-    "nodemon": "^3.1.10"
+    "mocha": "^11.7.1",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2"
   }
 }

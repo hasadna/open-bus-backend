@@ -158,11 +158,7 @@ export function buildXmlFrom(body) {
       },
     },
   }
-  const dataModelSaver = JSON.stringify(
-    fillTemplate(dataModelTemplate, input.dataModelSaver),
-    null,
-    2,
-  )
+  const dataModelSaver = JSON.stringify(fillTemplate(dataModelTemplate, input.dataModelSaver), null, 2)
 
   const fields = {
     UserUImode: body.UserUImode || 'AGFrom2Html',
@@ -179,11 +175,9 @@ export function buildXmlFrom(body) {
     personalDetails: input.dataModelSaver.personalDetails || dataModelTemplate.personalDetails,
     requestSubject: input.dataModelSaver.requestSubject || dataModelTemplate.requestSubject,
     requestDetails: input.dataModelSaver.requestDetails || dataModelTemplate.requestDetails,
-    documentAttachment:
-      input.dataModelSaver.documentAttachment || dataModelTemplate.documentAttachment,
+    documentAttachment: input.dataModelSaver.documentAttachment || dataModelTemplate.documentAttachment,
     followStatus: input.dataModelSaver.followStatus || dataModelTemplate.followStatus,
-    containersViewModel:
-      input.dataModelSaver.containersViewModel || dataModelTemplate.containersViewModel,
+    containersViewModel: input.dataModelSaver.containersViewModel || dataModelTemplate.containersViewModel,
     formInformation: input.dataModelSaver.formInformation || dataModelTemplate.formInformation,
     FirstName: body.FirstName || '',
     LastName: body.LastName || '',
@@ -346,22 +340,12 @@ export function buildXmlFrom(body) {
     <NumStation>${fields.requestDetails.busAndOther.addOrRemoveStation}</NumStation>
     <LineNumberBoarding>${fields.requestDetails.busAndOther.lineNumberText}</LineNumberBoarding>
     <Direction text="${fields.requestDetails.busAndOther?.direction?.dataText}"></Direction>
-    <BusStationBoard text="${
-      fields.requestDetails.busAndOther?.raisingStation?.dataText
-    }"></BusStationBoard>
-    <BoardingSettlement text="${
-      fields.requestDetails.busAndOther?.raisingStationCity?.dataText
-    }"></BoardingSettlement>
-    <DropStaionAppeal text="${
-      fields.requestDetails.busAndOther?.destinationStationCity?.dataText
-    }"></DropStaionAppeal>
-    <Risestationaddress>${
-      fields.requestDetails.busAndOther?.raisingStationAddress
-    }</Risestationaddress>
+    <BusStationBoard text="${fields.requestDetails.busAndOther?.raisingStation?.dataText}"></BusStationBoard>
+    <BoardingSettlement text="${fields.requestDetails.busAndOther?.raisingStationCity?.dataText}"></BoardingSettlement>
+    <DropStaionAppeal text="${fields.requestDetails.busAndOther?.destinationStationCity?.dataText}"></DropStaionAppeal>
+    <Risestationaddress>${fields.requestDetails.busAndOther?.raisingStationAddress}</Risestationaddress>
     <MakatStation>${fields.requestDetails.busAndOther.makatStation}</MakatStation>
-    <LineNumber text="${
-      fields.requestDetails.busAndOther?.lineNumberFromList?.dataText
-    }"></LineNumber>
+    <LineNumber text="${fields.requestDetails.busAndOther?.lineNumberFromList?.dataText}"></LineNumber>
     <BusDirectionFrom>${fields.requestDetails.busAndOther?.busDirectionFrom}</BusDirectionFrom>
     <BusDirectionTo>${fields.requestDetails.busAndOther?.busDirectionTo}</BusDirectionTo>
     <Testimony>false</Testimony>
@@ -374,19 +358,13 @@ export function buildXmlFrom(body) {
     <CityName>${fields.requestDetails.busAndOther?.cityName}</CityName>
     <StationName>${fields.requestDetails.busAndOther?.stationName}</StationName>
     <DirectionCode>${fields.requestDetails.busAndOther?.directionCode}</DirectionCode>
-    <DestinationCityCode>${
-      fields.requestDetails.busAndOther?.destinationCityCode
-    }</DestinationCityCode>
-    <DestinationCityText>${
-      fields.requestDetails.busAndOther?.destinationCityText
-    }</DestinationCityText>
+    <DestinationCityCode>${fields.requestDetails.busAndOther?.destinationCityCode}</DestinationCityCode>
+    <DestinationCityText>${fields.requestDetails.busAndOther?.destinationCityText}</DestinationCityText>
     <Title>${fields.requestDetails.title}</Title>
     <RequestSubjectCode>${fields.requestDetails?.requestSubjectCode}</RequestSubjectCode>
     <RequestTypeCode>${fields.requestDetails?.requestTypeCode}</RequestTypeCode>
     <Attacment_Doc>
-      <AttachDocument fileName="${
-        fields.documentAttachment.documentsList[0]?.attacmentName || ''
-      }" />
+      <AttachDocument fileName="${fields.documentAttachment.documentsList[0]?.attacmentName || ''}" />
     </Attacment_Doc>
     <ContactID>
       <ticketNumber>${fields.followStatus.contactIdList[0]?.ticketNumber || ''}</ticketNumber>
@@ -395,9 +373,7 @@ export function buildXmlFrom(body) {
       <ticketNumber>${fields.followStatus.contactIdResultList[0]?.ticketNumber || ''}</ticketNumber>
       <dateReceived>${fields.followStatus.contactIdResultList[0]?.dateReceived || ''}</dateReceived>
       <contactName>${fields.followStatus.contactIdResultList[0]?.contactName || ''}</contactName>
-      <incidentStatus>${
-        fields.followStatus.contactIdResultList[0]?.incidentStatus || ''
-      }</incidentStatus>
+      <incidentStatus>${fields.followStatus.contactIdResultList[0]?.incidentStatus || ''}</incidentStatus>
     </contactIdResult>
   </form>
 </root>`
