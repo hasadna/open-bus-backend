@@ -10,7 +10,7 @@
     "test": "npm run test:lint && npm run test:mocha && npm run test:coverage",
     "test:mocha": "mocha \"test/**/*.test.js\" --reporter json --reporter-option output=test-results.json",
     "test:lint": "prettier . -c -u",
-    "test:coverage": "c8 --reporter=lcov --reporter=text mocha \"test/**/*.test.js\"",
+    "test:coverage": "c8 --reporter=lcov --reporter=text --reporter=text mocha \"test/**/*.test.js\"",
     "lint:fix": "prettier . -w -u"
   },
   "keywords": [],
