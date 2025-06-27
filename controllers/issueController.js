@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export async function createIssue(req, res) {
+export async function createIssue(req, res, myAxios = axios) {
   try {
     // Extract data from the request body
     const { title, contactName, contactEmail, description, environment, expectedBehavior, actualBehavior, reproducibility, attachments } =
@@ -26,7 +26,7 @@ export async function createIssue(req, res) {
     const repoName = process.env.GITHUB_REPO // Replace with the actual repository name
 
     // Create the GitHub issue
-    const response = await axios.post(
+    const response = await myAxios.post(
       `https://api.github.com/repos/${repoOwner}/${repoName}/issues`,
       { title, body, labels },
       { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } },
