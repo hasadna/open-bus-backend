@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read # for checkout and git clone
+  actions: write # for uploading artifacts if any (optional here)
+  workflows: write # if triggering other workflows (not used here, optional)
+  pull-requests: write # only if modifying PRs (not used here)
+
 jobs:
   ci:
     runs-on: ubuntu-latest
