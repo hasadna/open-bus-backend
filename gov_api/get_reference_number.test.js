@@ -1,5 +1,5 @@
-import { describe, it } from 'mocha'
 import { strict as assert } from 'assert'
+
 import { getReferenceNumber } from './get_reference_number.js'
 
 describe('getReferenceNumber', () => {
