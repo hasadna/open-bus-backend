@@ -1,7 +1,5 @@
 import { expect } from 'chai'
 
-import { buildXmlFrom } from '../gov_api/template_builder.js'
-import { getReferenceNumber } from '../gov_api/get_reference_number.js'
 import { sendComplaint } from '../controllers/complaintController.js'
 
 import jsonData from '../contextForCopilot/exampleInput.json' with { type: 'json' }
@@ -30,7 +28,7 @@ describe('sendComplaint', () => {
   it('should test the complaint controller', async () => {
     await sendComplaint(req, res)
     expect(res.jsonCalledWith.success).to.equal(true)
-    expect(res.jsonCalledWith.xml).to.not.undefined()
+    expect(res.jsonCalledWith.xml).to.not.be.undefined
     expect(res.statusCalledWith).to.equal(200)
   })
 })
