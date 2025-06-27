@@ -30,6 +30,7 @@ describe('sendComplaint', () => {
   it('should test the complaint controller', async () => {
     await sendComplaint(req, res)
     expect(res.jsonCalledWith.success).to.equal(true)
+    expect(res.jsonCalledWith.xml).to.not.undefined()
     expect(res.statusCalledWith).to.equal(200)
   })
 })
