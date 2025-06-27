@@ -35,5 +35,11 @@ jobs:
       - name: Upload test report
         uses: actions/upload-artifact@v4
         with:
-          name: mochawesome-report
-          path: mochawesome-report/
+          name: test-results
+          path: '*.json'
+      - uses: dorny/test-reporter@v2
+        with:
+          artifact: test-results
+          name: Mocha Tests
+          path: '*.json'
+          reporter: mocha-json
