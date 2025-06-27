@@ -16,7 +16,6 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-        run: npm install tap
       - name: Run lint tests
         run: npm run lint
 
@@ -31,6 +30,7 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+        run: npm install tap
       - name: Run tests
         run: npm test
       - name: Upload test report
