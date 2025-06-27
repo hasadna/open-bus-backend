@@ -36,10 +36,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: '*.json'
+          path: 'test-results.json'
       - uses: dorny/test-reporter@v2
         with:
           artifact: test-results
           name: Mocha Tests
-          path: '*.json'
+          path: 'test-results.json'
           reporter: mocha-json
