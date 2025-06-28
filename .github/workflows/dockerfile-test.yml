@@ -1,4 +1,4 @@
-name: Dockerfile Build Test
+name: Docker Test
 
 on:
   push:
@@ -33,5 +33,25 @@ jobs:
           push: false
           tags: app:test
 
+      - name: Run tests in Docker container
+        run: docker run --rm app:test npm test
+
+      - name: Check if app is alive
+        run: |
+          docker run -d -p 3001:3001 --name app_test_alive app:test
+          for i in {1..10}; do
+            if curl -fs http://localhost:3001/; then
+              echo "App is alive!"
+              docker stop app_test_alive
+              exit 0
+            fi
+            echo "Waiting for app to be alive... ($i)"
+            sleep 2
+          done
+          echo "App did not respond on / after 20 seconds!" >&2
+          docker logs app_test_alive
+          docker stop app_test_alive
+          exit 1
+
       - name: Dockerfile build succeeded
-        run: echo "Dockerfile built successfully! 🎉"
+        run: echo "Dockerfile built, tests passed, and app is alive! 🎉"
