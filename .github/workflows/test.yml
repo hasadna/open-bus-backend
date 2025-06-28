@@ -40,7 +40,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run tests
-        run: npm run test:mocha:json
+        run: npx mocha --reporter json --reporter-option output=reports/test-results.json
       - name: Upload test report
         uses: actions/upload-artifact@v4
         with:
