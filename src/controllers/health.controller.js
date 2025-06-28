@@ -7,7 +7,7 @@ export function healthCheck(request, reply) {
   try {
     const healthData = {
       status: 'alive',
-      timestamp: new Date().toISOString(),
+
       uptime: process.uptime(),
       version: process.env.npm_package_version || '1.0.0',
     };

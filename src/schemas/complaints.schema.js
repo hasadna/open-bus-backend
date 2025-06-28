@@ -119,7 +119,6 @@ export const sendComplaintSchema = {
         xml: { type: 'string', description: 'Generated XML (only in debug mode)' },
         data: { type: 'object', description: 'Response data from the government forms system' },
         referenceNumber: { type: 'string', description: 'Generated reference number' },
-        timestamp: { type: 'string', format: 'date-time' },
       },
     },
     400: {

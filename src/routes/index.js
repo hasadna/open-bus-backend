@@ -1,55 +1,15 @@
-// Route registration module
-import {
-  healthCheck,
-  createIssue,
-  sendComplaint,
-  getLinesByStation,
-  getStationByLine,
-  getSubjects,
-  getTrainStations,
-  getPniya,
-  getNotRealNumbers,
-  getLinesByLine,
-  getCities,
-  getTime,
-} from '../controllers/index.js';
-import {
-  healthCheckSchema,
-  createIssueSchema,
-  sendComplaintSchema,
-  getLinesByStationSchema,
-  getStationByLineSchema,
-  getSubjectsSchema,
-  getTrainStationsSchema,
-  getPniyaSchema,
-  getNotRealNumbersSchema,
-  getLinesByLineSchema,
-  getCitiesSchema,
-  getTimeSchema,
-} from '../schemas/index.js';
+import { complaintsRoutes } from './complaints.routes.js';
+import { govRoutes } from './gov.routes.js';
+import { healthRoutes } from './health.routes.js';
+import { issuesRoutes } from './issues.routes.js';
 
 /**
  * Register all application routes
  * @param {import('fastify').FastifyInstance} fastify - Fastify instance
  */
 export function registerRoutes(fastify) {
-  // Health check route
-  fastify.get('/', { healthCheckSchema }, healthCheck);
-
-  // Issue management routes
-  fastify.post('/create-issue', { createIssueSchema }, createIssue);
-
-  // Complaint routes
-  fastify.post('/complaint', { sendComplaintSchema }, sendComplaint);
-
-  // Government API routes
-  fastify.post('/gov/lines-by-station', { getLinesByStationSchema }, getLinesByStation);
-  fastify.post('/gov/stations-by-line', { getStationByLineSchema }, getStationByLine);
-  fastify.post('/gov/subjects', { getSubjectsSchema }, getSubjects);
-  fastify.post('/gov/train-stations', { getTrainStationsSchema }, getTrainStations);
-  fastify.post('/gov/pniya', { getPniyaSchema }, getPniya);
-  fastify.post('/gov/not-real-numbers', { getNotRealNumbersSchema }, getNotRealNumbers);
-  fastify.post('/gov/lines-by-line', { getLinesByLineSchema }, getLinesByLine);
-  fastify.post('/gov/cities', { getCitiesSchema }, getCities);
-  fastify.get('/gov/time', { getTimeSchema }, getTime);
+  fastify.register(healthRoutes);
+  fastify.register(issuesRoutes, { prefix: 'issues' });
+  fastify.register(complaintsRoutes, { prefix: 'complaints' });
+  fastify.register(govRoutes, { prefix: 'gov' });
 }

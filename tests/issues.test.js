@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'mocha';
-import { createIssue } from '../src/controllers/issueController.js';
+import { createIssue } from '../src/controllers/issues.controller.js';
 import {
   cleanup,
   createMockGitHubError,
@@ -9,7 +9,7 @@ import {
   createMockReply,
   createMockRequest,
   setupGitHubEnv,
-} from './test-utils.js';
+} from './test.utils.js';
 
 describe('createIssue', () => {
   let mockHttpClient;
@@ -47,7 +47,6 @@ describe('createIssue', () => {
 
     expect(reply.sendCalledWith.success).to.equal(true);
     expect(reply.sendCalledWith.data).to.deep.equal(mockResponse.data);
-    expect(reply.sendCalledWith.timestamp).to.be.a('string');
     expect(reply.statusCalledWith).to.equal(200);
     expect(mockHttpClient.post.calledOnce).to.be.true;
   });

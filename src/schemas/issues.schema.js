@@ -105,7 +105,6 @@ export const createIssueSchema = {
             },
           },
         },
-        timestamp: { type: 'string', format: 'date-time' },
       },
     },
     400: {

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { buildXmlFrom, getReferenceNumber } from '../utils/index.js';
+import { templateBuilder, getReferenceNumber } from '../utils/index.js';
 
 const URL = 'https://forms.gov.il/globaldata/getsequence/getHtmlForm.aspx?formType=PniotMot%40mot.gov.il';
 
@@ -28,7 +28,7 @@ export async function sendComplaint(request, reply) {
     };
 
     // Generate XML
-    const xml = buildXmlFrom(payload);
+    const xml = templateBuilder(payload);
 
     if (debug) {
       request.log.info('Complaint submitted in debug mode', { referenceNumber });
@@ -38,7 +38,6 @@ export async function sendComplaint(request, reply) {
         debug: true,
         xml,
         referenceNumber,
-        timestamp: new Date().toISOString(),
       });
     }
 
@@ -58,7 +57,6 @@ export async function sendComplaint(request, reply) {
       debug: false,
       data: response.data,
       referenceNumber,
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     request.log.error('Complaint submission failed', {
