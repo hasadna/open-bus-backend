@@ -76,7 +76,6 @@ export async function createIssue(request, reply, httpClient = axios) {
     return reply.status(200).send({
       success: true,
       data: response.data,
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     logger.error('GitHub issue creation failed', {

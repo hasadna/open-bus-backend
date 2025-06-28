@@ -1,16 +1,16 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { buildXmlFrom } from '../src/utils/template_builder.js';
+import { templateBuilder } from '../src/utils/templateBuilder.js';
 
-describe('buildXmlFrom', () => {
+describe('templateBuilder', () => {
   it('should throw if input does not have userData and databusData', () => {
-    expect(() => buildXmlFrom({})).to.throw('Input must have userData and databusData');
-    expect(() => buildXmlFrom({ userData: {} })).to.throw('Input must have userData and databusData');
-    expect(() => buildXmlFrom({ databusData: {} })).to.throw('Input must have userData and databusData');
+    expect(() => templateBuilder({})).to.throw('Input must have userData and databusData');
+    expect(() => templateBuilder({ userData: {} })).to.throw('Input must have userData and databusData');
+    expect(() => templateBuilder({ databusData: {} })).to.throw('Input must have userData and databusData');
   });
 
   it('should support input structured as { userData, databusData }', () => {
-    const xml = buildXmlFrom({
+    const xml = templateBuilder({
       userData: {
         firstName: 'נעם',
         lastName: 'געש',

@@ -139,7 +139,7 @@ function fillTemplate(template, data = {}) {
   return data !== undefined ? data : template;
 }
 
-export function buildXmlFrom(body) {
+export function templateBuilder(body) {
   // Only support new input structure: { userData, databusData }
   if (!(body.userData && body.databusData)) {
     throw new Error('Input must have userData and databusData');

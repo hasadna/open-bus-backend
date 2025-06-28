@@ -29,8 +29,8 @@ export async function createServer() {
             url: request.url,
             parameters: request.params,
             query: request.query,
-            // body: request.body, // Uncomment if you want to log bodies (be careful with sensitive data)
-            headers: request.headers,
+            // body: request.body,
+            // headers: request.headers,
           };
         },
         res(reply) {

@@ -11,7 +11,7 @@ export const swaggerConfig = {
       { name: 'Health', description: 'Health check endpoints' },
       { name: 'Issues', description: 'GitHub issue management' },
       { name: 'Complaints', description: 'Complaint submission to government' },
-      { name: 'Government API', description: 'Government transportation data endpoints' },
+      { name: 'Government Transportation API', description: 'Government transportation data endpoints' },
     ],
     definitions: {
       Error: {
@@ -19,7 +19,6 @@ export const swaggerConfig = {
         properties: {
           error: { type: 'string' },
           message: { type: 'string' },
-          timestamp: { type: 'string', format: 'date-time' },
         },
       },
       HealthResponse: {
@@ -36,7 +35,6 @@ export const swaggerConfig = {
         properties: {
           success: { type: 'boolean' },
           data: { type: 'object' },
-          timestamp: { type: 'string', format: 'date-time' },
         },
       },
     },
