@@ -1,5 +1,6 @@
 /**
  * Create issue endpoint schema
+ * @type {import('fastify').FastifySchema}
  */
 export const createIssueSchema = {
   tags: ['Issues'],
