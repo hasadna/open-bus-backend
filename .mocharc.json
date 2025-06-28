@@ -1,11 +1,5 @@
 {
   "extension": ["js"],
   "spec": "tests/**/*.test.js",
-  "node-option": ["experimental-specifier-resolution=node"],
-  "reporter": "spec",
-  "reporter-option": "output=reports/test-results.json",
-  "timeout": 5000,
-  "slow": 1000,
-  "colors": true,
-  "bail": false
+  "node-option": ["experimental-specifier-resolution=node"]
 }
