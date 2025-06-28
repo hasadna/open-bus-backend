@@ -145,18 +145,6 @@ export const getSubjectsSchema = {
   tags: ['Government Transportation API'],
   summary: 'Get subject types for vehicles',
   description: 'Retrieve subject types for vehicles from the government list',
-  body: {
-    type: 'object',
-    required: ['listName'],
-    properties: {
-      listName: {
-        type: 'string',
-        example: 'subject_type_vehicles',
-        enum: ['subject_type_vehicles'],
-        description: 'List name for subject types',
-      },
-    },
-  },
   response: {
     200: {
       ...commonSuccessResponse,
@@ -167,9 +155,12 @@ export const getSubjectsSchema = {
           items: {
             type: 'object',
             properties: {
-              id: { type: 'number' },
-              name: { type: 'string' },
-              description: { type: 'string' },
+              RowNumber: { type: 'string' },
+              code: { type: 'string' },
+              vehicles_type_: { type: 'string' },
+              vehicles_type_code: { type: 'string' },
+              request_subject: { type: 'string' },
+              subject_code: { type: 'string' },
             },
           },
         },
@@ -187,18 +178,13 @@ export const getSubjectsSchema = {
 export const getTrainStationsSchema = {
   tags: ['Government Transportation API'],
   summary: 'Get train stations',
-  description: 'Retrieve train stations by station type',
+  description: 'Retrieve train stations by station type\n7 - Israel Train\n4 - Kfir Light Train\n13 - Tevel Ligh Train',
   body: {
     type: 'object',
-    required: ['StationTypeId'],
     properties: {
-      StationTypeId: {
-        type: 'number',
-        example: 7,
-        minimum: 1,
-        description: 'Station type ID',
-      },
+      StationTypeId: { type: 'number' },
     },
+    required: ['StationTypeId'],
   },
   response: {
     200: {
@@ -212,14 +198,9 @@ export const getTrainStationsSchema = {
             properties: {
               stationId: { type: 'number' },
               stationName: { type: 'string' },
-              stationType: { type: 'number' },
-              coordinates: {
-                type: 'object',
-                properties: {
-                  lat: { type: 'number' },
-                  lon: { type: 'number' },
-                },
-              },
+              cityId: { type: 'number' },
+              cityName: { type: 'string' },
+              stationFullName: { type: 'null' },
             },
           },
         },
@@ -236,20 +217,8 @@ export const getTrainStationsSchema = {
  */
 export const getPniyaSchema = {
   tags: ['Government Transportation API'],
-  summary: 'Get pniya (vehicles type)',
+  summary: 'Get Pniya (Vehicles type)',
   description: 'Retrieve pniya list for vehicles',
-  body: {
-    type: 'object',
-    required: ['listName'],
-    properties: {
-      listName: {
-        type: 'string',
-        example: 'pniya',
-        enum: ['pniya'],
-        description: 'List name for pniya',
-      },
-    },
-  },
   response: {
     200: {
       ...commonSuccessResponse,
@@ -260,9 +229,9 @@ export const getPniyaSchema = {
           items: {
             type: 'object',
             properties: {
-              id: { type: 'number' },
-              name: { type: 'string' },
-              category: { type: 'string' },
+              RowNumber: { type: 'string' },
+              code: { type: 'string' },
+              pniya: { type: 'string' },
             },
           },
         },
@@ -279,20 +248,9 @@ export const getPniyaSchema = {
  */
 export const getNotRealNumbersSchema = {
   tags: ['Government Transportation API'],
-  summary: 'Get not real numbers',
-  description: 'Retrieve not real numbers list',
-  body: {
-    type: 'object',
-    required: ['listName'],
-    properties: {
-      listName: {
-        type: 'string',
-        example: 'notrealnumbers',
-        enum: ['notrealnumbers'],
-        description: 'List name for not real numbers',
-      },
-    },
-  },
+  summary: 'Get not real numbers (Testing)',
+  description: 'Retrieve not real numbers list for testing',
+
   response: {
     200: {
       ...commonSuccessResponse,
@@ -303,9 +261,9 @@ export const getNotRealNumbersSchema = {
           items: {
             type: 'object',
             properties: {
-              id: { type: 'number' },
-              number: { type: 'string' },
-              description: { type: 'string' },
+              RowNumber: { type: 'string' },
+              Code: { type: 'string' },
+              IdNum: { type: 'string' },
             },
           },
         },
@@ -381,6 +339,35 @@ export const getCitiesSchema = {
   tags: ['Government Transportation API'],
   summary: 'Get cities',
   description: 'Retrieve list of cities',
+  response: {
+    200: {
+      ...commonSuccessResponse,
+      properties: {
+        ...commonSuccessResponse.properties,
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              DataCode: { type: 'number' },
+              DataText: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    500: commonErrorResponse,
+  },
+};
+
+/**
+ * GetOperators endpoint schema
+ * @type {import('fastify').FastifySchema}
+ */
+export const getOperatorsSchema = {
+  tags: ['Government Transportation API'],
+  summary: 'Get operators',
+  description: 'Retrieve list of operators',
   response: {
     200: {
       ...commonSuccessResponse,
