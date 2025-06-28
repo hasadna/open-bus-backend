@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Check for skip CI
         id: skip_check
         run: |
@@ -34,6 +35,7 @@ jobs:
           else
             echo "skip_ci=false" >> $GITHUB_OUTPUT
           fi
+
       - name: Check environment variables and Docker login
         if: steps.skip_check.outputs.skip_ci != 'true'
         run: |
@@ -44,6 +46,7 @@ jobs:
             fi
           done
           echo "${GITHUB_TOKEN}" | docker login ghcr.io -u hasadna --password-stdin
+
       - name: Build, tag, push Docker image and deploy
         if: steps.skip_check.outputs.skip_ci != 'true'
         run: |
