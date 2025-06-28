@@ -23,12 +23,12 @@ jobs:
         run: |
           if [[ "${SKIP_CI}" == "true" ]]; then
             echo "SKIP_CI is set. Skipping CI."
-            exit 0
+            exit
           fi
           COMMIT_MSG=$(git log -1 --pretty=%B)
           if echo "$COMMIT_MSG" | grep -iqE '\[skip ci\]|\[ci skip\]'; then
             echo "Commit message requests to skip CI. Skipping."
-            exit 0
+            exit
           fi
       - name: Check environment variables and Docker login
         run: |
