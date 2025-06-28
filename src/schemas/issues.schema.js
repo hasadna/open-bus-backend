@@ -8,16 +8,7 @@ export const createIssueSchema = {
   description: 'Creates a new GitHub issue with the provided information',
   body: {
     type: 'object',
-    required: [
-      'title',
-      'contactName',
-      'contactEmail',
-      'description',
-      'environment',
-      'expectedBehavior',
-      'actualBehavior',
-      'reproducibility',
-    ],
+    required: ['title', 'contactName', 'contactEmail', 'description', 'environment', 'expectedBehavior', 'actualBehavior', 'reproducibility'],
     properties: {
       title: {
         type: 'string',
