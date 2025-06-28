@@ -1,13 +1,13 @@
 import {
   getCities,
-  // getLinesByLine,
-  // getLinesByStation,
-  // getNotRealNumbers,
-  // getPniya,
-  // getStationByLine,
-  // getSubjects,
+  getLinesByLine,
+  getLinesByStation,
+  getNotRealNumbers,
+  getPniya,
+  getStationByLine,
+  getSubjects,
   getTime,
-  // getTrainStations,
+  getTrainStations,
 } from '../controllers/gov.controller.js';
 import {
   getCitiesSchema,
@@ -26,12 +26,12 @@ import {
  */
 export function govRoutes(fastify) {
   fastify.post('/cities', { schema: getCitiesSchema }, getCities);
-  // fastify.post('/lines-by-station', { schema: getLinesByStationSchema }, getLinesByStation);
-  // fastify.post('/stations-by-line', { schema: getStationByLineSchema }, getStationByLine);
-  // fastify.post('/subjects', { schema: getSubjectsSchema }, getSubjects);
-  // fastify.post('/train-stations', { schema: getTrainStationsSchema }, getTrainStations);
-  // fastify.post('/pniya', { schema: getPniyaSchema }, getPniya);
-  // fastify.post('/not-real-numbers', { schema: getNotRealNumbersSchema }, getNotRealNumbers);
-  // fastify.post('/lines-by-line', { schema: getLinesByLineSchema }, getLinesByLine);
+  fastify.post('/lines-by-station', {}, getLinesByStation);
+  fastify.post('/stations-by-line', {}, getStationByLine);
+  fastify.post('/subjects', {}, getSubjects);
+  fastify.post('/train-stations', {}, getTrainStations);
+  fastify.post('/pniya', {}, getPniya);
+  fastify.post('/not-real-numbers', {}, getNotRealNumbers);
+  fastify.post('/lines-by-line', {}, getLinesByLine);
   fastify.get('/time', { schema: getTimeSchema }, getTime);
 }
