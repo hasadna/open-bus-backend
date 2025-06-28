@@ -60,14 +60,7 @@ export default defineConfig([
       'prefer-destructuring': ['error', { array: true, object: true }, { enforceForRenamedProperties: false }],
 
       // Error prevention
-      'no-unused-vars': [
-        'error',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
-        },
-      ],
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
       'no-undef': 'error',
       'no-unreachable': 'error',
       'no-constant-condition': 'error',
