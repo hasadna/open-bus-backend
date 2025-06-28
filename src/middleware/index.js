@@ -1,2 +1,2 @@
 // Middleware barrel exports
-export { globalErrorHandler, notFoundHandler } from './errorHandler.js'
+export { globalErrorHandler, notFoundHandler } from './errorHandler.js';

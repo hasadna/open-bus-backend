@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from 'axios';
 
 /**
  * Helper to send error responses and log them
@@ -8,11 +8,11 @@ import axios from 'axios'
  * @param {object} payload
  * @param {string} logMsg
  * @param {object} [logObj]
- * @returns {Promise}
  */
 function sendError(reply, request, status, payload, logMsg, logObj = {}) {
-  request?.log?.error?.(logMsg, logObj)
-  return reply.status(status).send(payload)
+  request?.log?.error?.(logMsg, logObj);
+
+  return reply.status(status).send(payload);
 }
 
 /**
@@ -20,24 +20,25 @@ function sendError(reply, request, status, payload, logMsg, logObj = {}) {
  * @param {import('fastify').FastifyRequest} request
  * @param {import('fastify').FastifyReply} reply
  * @param {object} [httpClient=axios] - HTTP client for GitHub API
- * @returns {Promise}
  */
 export async function createIssue(request, reply, httpClient = axios) {
-  const logger = request?.log || { info: () => {}, error: () => {} }
+  const logger = request?.log || { info: () => {}, error: () => {} };
+
   try {
     const { title, contactName, contactEmail, description, environment, expectedBehavior, actualBehavior, reproducibility, attachments } =
-      request.body
+      request.body;
 
     logger.info('GitHub issue creation started', {
       title,
       contactEmail,
       reproducibility,
-    })
+    });
 
     // Validate required environment variables
-    const token = process.env.GITHUB_TOKEN
-    const repoOwner = process.env.GITHUB_OWNER
-    const repoName = process.env.GITHUB_REPO
+    const token = process.env.GITHUB_TOKEN;
+    const repoOwner = process.env.GITHUB_OWNER;
+    const repoName = process.env.GITHUB_REPO;
+
     if (!token || !repoOwner || !repoName) {
       return sendError(
         reply,
@@ -45,13 +46,13 @@ export async function createIssue(request, reply, httpClient = axios) {
         500,
         { error: 'Configuration error', message: 'GitHub configuration is incomplete' },
         'Missing GitHub configuration',
-        { hasToken: !!token, hasOwner: !!repoOwner, hasRepo: !!repoName },
-      )
+        { hasToken: Boolean(token), hasOwner: Boolean(repoOwner), hasRepo: Boolean(repoName) },
+      );
     }
 
     // Create the body for the GitHub issue
-    const body = `## Contact Information\n**Contact Name:** ${contactName}\n**Contact Email:** ${contactEmail}\n\n## Issue Details\n**Description:** \n${description}\n\n**Environment:** ${environment}\n\n**Expected Behavior:** \n${expectedBehavior}\n\n**Actual Behavior:** \n${actualBehavior}\n\n**Reproducibility:** ${reproducibility}\n\n${attachments && attachments.length > 0 ? `## Attachments\n${attachments.map((url) => `- ${url}`).join('\n')}` : ''}\n\n---\n*Issue created via API on ${new Date().toISOString()}*`
-    const labels = ['REPORTED-BY-USER']
+    const body = `## Contact Information\n**Contact Name:** ${contactName}\n**Contact Email:** ${contactEmail}\n\n## Issue Details\n**Description:** \n${description}\n\n**Environment:** ${environment}\n\n**Expected Behavior:** \n${expectedBehavior}\n\n**Actual Behavior:** \n${actualBehavior}\n\n**Reproducibility:** ${reproducibility}\n\n${attachments && attachments.length > 0 ? `## Attachments\n${attachments.map((url) => `- ${url}`).join('\n')}` : ''}\n\n---\n*Issue created via API on ${new Date().toISOString()}*`;
+    const labels = ['REPORTED-BY-USER'];
 
     // Create the GitHub issue
     const response = await httpClient.post(
@@ -65,24 +66,24 @@ export async function createIssue(request, reply, httpClient = axios) {
         },
         timeout: 30000,
       },
-    )
+    );
 
     logger.info('GitHub issue created successfully', {
       issueNumber: response.data.number,
       issueId: response.data.id,
-    })
+    });
 
     return reply.status(200).send({
       success: true,
       data: response.data,
       timestamp: new Date().toISOString(),
-    })
+    });
   } catch (error) {
     logger.error('GitHub issue creation failed', {
       error: error.message,
       stack: error.stack,
       body: request.body,
-    })
+    });
 
     // Handle validation errors
     if (error.validation) {
@@ -96,12 +97,13 @@ export async function createIssue(request, reply, httpClient = axios) {
         },
         'Validation failed',
         { validation: error.validation },
-      )
+      );
     }
 
     // Handle GitHub API errors
     if (error.response) {
-      const status = error.response.status
+      const { status } = error.response;
+
       if (status === 401) {
         return sendError(
           reply,
@@ -112,7 +114,7 @@ export async function createIssue(request, reply, httpClient = axios) {
             message: 'Invalid GitHub token or insufficient permissions',
           },
           'GitHub authentication failed',
-        )
+        );
       }
       if (status === 404) {
         return sendError(
@@ -124,7 +126,7 @@ export async function createIssue(request, reply, httpClient = axios) {
             message: 'The specified GitHub repository does not exist or is not accessible',
           },
           'GitHub repository not found',
-        )
+        );
       }
       if (status === 422) {
         return sendError(
@@ -136,8 +138,9 @@ export async function createIssue(request, reply, httpClient = axios) {
             message: 'The issue data provided is invalid or contains errors',
           },
           'GitHub issue validation failed',
-        )
+        );
       }
+
       return sendError(
         reply,
         request,
@@ -148,7 +151,7 @@ export async function createIssue(request, reply, httpClient = axios) {
         },
         'GitHub API error',
         { status, statusText: error.response.statusText },
-      )
+      );
     }
 
     // Handle timeout errors
@@ -162,7 +165,7 @@ export async function createIssue(request, reply, httpClient = axios) {
           message: 'The GitHub API request timed out',
         },
         'GitHub API request timeout',
-      )
+      );
     }
 
     // Handle network errors
@@ -177,7 +180,7 @@ export async function createIssue(request, reply, httpClient = axios) {
         },
         'GitHub API network error',
         { code: error.code },
-      )
+      );
     }
 
     return sendError(
@@ -189,6 +192,6 @@ export async function createIssue(request, reply, httpClient = axios) {
         message: 'An unexpected error occurred while creating the issue',
       },
       'Unexpected error in createIssue',
-    )
+    );
   }
 }
