@@ -4,29 +4,28 @@ import axios from 'axios';
 const GOV_BASE_URL = 'https://esb.gov.il/govServiceList';
 
 /**
- * Helper function to make government API requests
- * @param {string} endpoint - API endpoint
- * @param {object} data - Request data
- * @param {object} options - Request options
+ * Helper object to make government API requests
  */
-function makeGovApiRequest(endpoint, data = null, options = {}) {
-  const config = {
-    timeout: 30000, // 30 second timeout
-    headers: {
-      'Content-Type': 'application/json',
-      'User-Agent': 'OpenBus-Backend/1.0',
-    },
-    ...options,
-  };
-
-  const url = `${GOV_BASE_URL}${endpoint}`;
-
-  if (data) {
+export const govRequest = {
+  post(endpoint, data, options = {}) {
+    const config = {
+      timeout: 30000, // 30 second timeout
+      headers: { 'Content-Type': 'application/json' },
+      ...options,
+    };
+    const url = `${GOV_BASE_URL}${endpoint}`;
     return axios.post(url, data, config);
-  }
-
-  return axios.get(url, config);
-}
+  },
+  get(endpoint, options = {}) {
+    const config = {
+      timeout: 30000, // 30 second timeout
+      headers: { 'Content-Type': 'application/json' },
+      ...options,
+    };
+    const url = `${GOV_BASE_URL}${endpoint}`;
+    return axios.get(url, config);
+  },
+};
 
 /**
  * Get bus lines by station handler
@@ -43,7 +42,7 @@ export async function getLinesByStation(request, reply) {
       StationId,
     });
 
-    const response = await makeGovApiRequest('/trafficLicensing/GetLines', request.body);
+    const response = await govRequest.post('/trafficLicensing/GetLines', request.body);
 
     request.log.info('Lines by station retrieved successfully', {
       count: response.data?.length || 0,
@@ -52,7 +51,6 @@ export async function getLinesByStation(request, reply) {
     return reply.status(200).send({
       success: true,
       data: response.data,
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     request.log.error('Error getting lines by station', {
@@ -64,14 +62,12 @@ export async function getLinesByStation(request, reply) {
       return reply.status(500).send({
         error: 'Government API error',
         message: `Status: ${error.response.status} - ${error.response.statusText}`,
-        timestamp: new Date().toISOString(),
       });
     }
 
     return reply.status(500).send({
       error: 'Internal server error',
       message: 'Failed to retrieve lines by station',
-      timestamp: new Date().toISOString(),
     });
   }
 }
@@ -92,7 +88,7 @@ export async function getStationByLine(request, reply) {
       directionsCount: Directions?.length,
     });
 
-    const response = await makeGovApiRequest('/trafficLicensing/GetStationToLine', request.body);
+    const response = await govRequest.post('/trafficLicensing/GetStationToLine', request.body);
 
     request.log.info('Stations by line retrieved successfully', {
       count: response.data?.length || 0,
@@ -101,7 +97,6 @@ export async function getStationByLine(request, reply) {
     return reply.status(200).send({
       success: true,
       data: response.data,
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     request.log.error('Error getting stations by line', {
@@ -113,14 +108,12 @@ export async function getStationByLine(request, reply) {
       return reply.status(500).send({
         error: 'Government API error',
         message: `Status: ${error.response.status} - ${error.response.statusText}`,
-        timestamp: new Date().toISOString(),
       });
     }
 
     return reply.status(500).send({
       error: 'Internal server error',
       message: 'Failed to retrieve stations by line',
-      timestamp: new Date().toISOString(),
     });
   }
 }
@@ -136,7 +129,7 @@ export async function getSubjects(request, reply) {
 
     request.log.info('Getting subjects', { listName });
 
-    const response = await makeGovApiRequest('/ListProvider/GetList', request.body);
+    const response = await govRequest.post('/ListProvider/GetList', request.body);
 
     request.log.info('Subjects retrieved successfully', {
       count: response.data?.length || 0,
@@ -145,7 +138,6 @@ export async function getSubjects(request, reply) {
     return reply.status(200).send({
       success: true,
       data: response.data,
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     request.log.error('Error getting subjects', {
@@ -157,14 +149,12 @@ export async function getSubjects(request, reply) {
       return reply.status(500).send({
         error: 'Government API error',
         message: `Status: ${error.response.status} - ${error.response.statusText}`,
-        timestamp: new Date().toISOString(),
       });
     }
 
     return reply.status(500).send({
       error: 'Internal server error',
       message: 'Failed to retrieve subjects',
-      timestamp: new Date().toISOString(),
     });
   }
 }
@@ -180,7 +170,7 @@ export async function getTrainStations(request, reply) {
 
     request.log.info('Getting train stations', { StationTypeId });
 
-    const response = await makeGovApiRequest('/trafficLicensing/GetTrainStations', request.body);
+    const response = await govRequest.post('/trafficLicensing/GetTrainStations', request.body);
 
     request.log.info('Train stations retrieved successfully', {
       count: response.data?.length || 0,
@@ -189,7 +179,6 @@ export async function getTrainStations(request, reply) {
     return reply.status(200).send({
       success: true,
       data: response.data,
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     request.log.error('Error getting train stations', {
@@ -201,14 +190,12 @@ export async function getTrainStations(request, reply) {
       return reply.status(500).send({
         error: 'Government API error',
         message: `Status: ${error.response.status} - ${error.response.statusText}`,
-        timestamp: new Date().toISOString(),
       });
     }
 
     return reply.status(500).send({
       error: 'Internal server error',
       message: 'Failed to retrieve train stations',
-      timestamp: new Date().toISOString(),
     });
   }
 }
@@ -224,7 +211,7 @@ export async function getPniya(request, reply) {
 
     request.log.info('Getting pniya', { listName });
 
-    const response = await makeGovApiRequest('/ListProvider/GetList', request.body);
+    const response = await govRequest.post('/ListProvider/GetList', request.body);
 
     request.log.info('Pniya retrieved successfully', {
       count: response.data?.length || 0,
@@ -233,7 +220,6 @@ export async function getPniya(request, reply) {
     return reply.status(200).send({
       success: true,
       data: response.data,
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     request.log.error('Error getting pniya', {
@@ -245,14 +231,12 @@ export async function getPniya(request, reply) {
       return reply.status(500).send({
         error: 'Government API error',
         message: `Status: ${error.response.status} - ${error.response.statusText}`,
-        timestamp: new Date().toISOString(),
       });
     }
 
     return reply.status(500).send({
       error: 'Internal server error',
       message: 'Failed to retrieve pniya',
-      timestamp: new Date().toISOString(),
     });
   }
 }
@@ -268,7 +252,7 @@ export async function getNotRealNumbers(request, reply) {
 
     request.log.info('Getting not real numbers', { listName });
 
-    const response = await makeGovApiRequest('/ListProvider/GetList', request.body);
+    const response = await govRequest.post('/ListProvider/GetList', request.body);
 
     request.log.info('Not real numbers retrieved successfully', {
       count: response.data?.length || 0,
@@ -277,7 +261,6 @@ export async function getNotRealNumbers(request, reply) {
     return reply.status(200).send({
       success: true,
       data: response.data,
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     request.log.error('Error getting not real numbers', {
@@ -289,14 +272,12 @@ export async function getNotRealNumbers(request, reply) {
       return reply.status(500).send({
         error: 'Government API error',
         message: `Status: ${error.response.status} - ${error.response.statusText}`,
-        timestamp: new Date().toISOString(),
       });
     }
 
     return reply.status(500).send({
       error: 'Internal server error',
       message: 'Failed to retrieve not real numbers',
-      timestamp: new Date().toISOString(),
     });
   }
 }
@@ -316,7 +297,7 @@ export async function getLinesByLine(request, reply) {
       OperatorLineId,
     });
 
-    const response = await makeGovApiRequest('/trafficLicensing/GetLines', request.body);
+    const response = await govRequest.post('/trafficLicensing/GetLines');
 
     request.log.info('Lines by line ID retrieved successfully', {
       count: response.data?.length || 0,
@@ -325,7 +306,6 @@ export async function getLinesByLine(request, reply) {
     return reply.status(200).send({
       success: true,
       data: response.data,
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     request.log.error('Error getting lines by line ID', {
@@ -337,14 +317,12 @@ export async function getLinesByLine(request, reply) {
       return reply.status(500).send({
         error: 'Government API error',
         message: `Status: ${error.response.status} - ${error.response.statusText}`,
-        timestamp: new Date().toISOString(),
       });
     }
 
     return reply.status(500).send({
       error: 'Internal server error',
       message: 'Failed to retrieve lines by line ID',
-      timestamp: new Date().toISOString(),
     });
   }
 }
@@ -358,7 +336,7 @@ export async function getCities(request, reply) {
   try {
     request.log.info('Getting cities');
 
-    const response = await makeGovApiRequest('/trafficLicensing/GetCities');
+    const response = await govRequest.post('/trafficLicensing/GetCities');
 
     request.log.info('Cities retrieved successfully', {
       count: response.data?.length || 0,
@@ -366,8 +344,7 @@ export async function getCities(request, reply) {
 
     return reply.status(200).send({
       success: true,
-      data: response.data,
-      timestamp: new Date().toISOString(),
+      data: response.data.Data,
     });
   } catch (error) {
     request.log.error('Error getting cities', {
@@ -378,14 +355,12 @@ export async function getCities(request, reply) {
       return reply.status(500).send({
         error: 'Government API error',
         message: `Status: ${error.response.status} - ${error.response.statusText}`,
-        timestamp: new Date().toISOString(),
       });
     }
 
     return reply.status(500).send({
       error: 'Internal server error',
       message: 'Failed to retrieve cities',
-      timestamp: new Date().toISOString(),
     });
   }
 }
@@ -400,17 +375,15 @@ export async function getTime(request, reply) {
     request.log.info('Getting current time');
 
     const timestamp = Date.now();
-    const response = await makeGovApiRequest(`/TSA/GetTime?_=${timestamp}`);
+    const response = await govRequest.get(`/TSA/GetTime?_=${timestamp}`);
 
     request.log.info('Current time retrieved successfully');
 
     return reply.status(200).send({
       success: true,
       data: {
-        timestamp: new Date().toISOString(),
         serverTime: response.data,
       },
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     request.log.error('Error getting current time', {
@@ -421,14 +394,12 @@ export async function getTime(request, reply) {
       return reply.status(500).send({
         error: 'Government API error',
         message: `Status: ${error.response.status} - ${error.response.statusText}`,
-        timestamp: new Date().toISOString(),
       });
     }
 
     return reply.status(500).send({
       error: 'Internal server error',
       message: 'Failed to retrieve current time',
-      timestamp: new Date().toISOString(),
     });
   }
 }

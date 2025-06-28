@@ -13,7 +13,6 @@ export function globalErrorHandler(error, request, reply) {
       error: 'Validation failed',
       message: 'Request validation failed',
       details: error.validation,
-      timestamp: new Date().toISOString(),
     });
   }
 
@@ -22,7 +21,6 @@ export function globalErrorHandler(error, request, reply) {
     return reply.status(404).send({
       error: 'Not found',
       message: 'The requested resource was not found',
-      timestamp: new Date().toISOString(),
     });
   }
 
@@ -31,7 +29,6 @@ export function globalErrorHandler(error, request, reply) {
     return reply.status(405).send({
       error: 'Method not allowed',
       message: 'The HTTP method is not allowed for this endpoint',
-      timestamp: new Date().toISOString(),
     });
   }
 
@@ -43,7 +40,6 @@ export function globalErrorHandler(error, request, reply) {
   return {
     error: 'Internal server error',
     message: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred' : error.message,
-    timestamp: new Date().toISOString(),
   };
 }
 
@@ -56,6 +52,5 @@ export function notFoundHandler(request, reply) {
   reply.status(404).send({
     error: 'Not found',
     message: `Route ${request.method}:${request.url} not found`,
-    timestamp: new Date().toISOString(),
   });
 }
