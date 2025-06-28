@@ -24,19 +24,8 @@ async function start() {
     setupGracefulShutdown(fastify)
 
     // Start listening
-    await fastify.listen({ port: PORT, host: HOST })
-
-    fastify.log.info(`🚀 Server is running on http://${HOST}:${PORT}`)
-    fastify.log.info(`📚 Swagger documentation available at: http://${HOST}:${PORT}/docs`)
-    fastify.log.info(`🔍 Health check available at: http://${HOST}:${PORT}/`)
-
-    // Log environment information
-    fastify.log.info('Environment:', {
-      NODE_ENV: process.env.NODE_ENV || 'development',
-      PORT,
-      HOST,
-      LOG_LEVEL: process.env.LOG_LEVEL || 'info',
-    })
+    fastify.listen({ port: PORT, host: HOST })
+    fastify.log.info(`Swagger documentation available at: http://${HOST}:${PORT}/docs`)
   } catch (err) {
     console.error('Failed to start server:', err)
     process.exit(1)

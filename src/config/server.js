@@ -3,7 +3,7 @@ import { swaggerConfig, swaggerUIConfig } from './swagger.js'
 
 /**
  * Create and configure Fastify instance
- * @returns {import('fastify').FastifyInstance} Configured Fastify instance
+ * @returns {Promise<import('fastify').FastifyInstance>} Configured Fastify instance
  */
 export async function createServer() {
   // Create Fastify instance with enhanced configuration
@@ -16,15 +16,13 @@ export async function createServer() {
               target: 'pino-pretty',
               options: {
                 colorize: true,
-                translateTime: 'SYS:standard',
+
                 ignore: 'pid,hostname',
               },
             }
           : undefined,
     },
     trustProxy: true,
-    ignoreTrailingSlash: true,
-    caseSensitive: false,
   })
 
   // Register Swagger for API documentation
