@@ -23,8 +23,6 @@ import {
   getPniyaSchema,
   getNotRealNumbersSchema,
   getLinesByLineSchema,
-  getCitiesSchema,
-  getTimeSchema,
 } from '../src/schemas/govApi.js'
 
 describe('Government API Controller', () => {
