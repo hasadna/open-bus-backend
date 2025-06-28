@@ -1,74 +1,44 @@
-import Fastify from 'fastify'
-
-import { createIssue, createIssueSchema } from './src/controllers/issueController.js'
-import { sendComplaint, sendComplaintSchema } from './src/controllers/complaintController.js'
-import { healthCheck, healthCheckSchema } from './src/controllers/healthController.js'
-
-const fastify = Fastify({
-  logger: true,
-})
+// External dependencies
+import { createServer } from './src/config/index.js'
+import { registerRoutes } from './src/routes/index.js'
+import { globalErrorHandler, notFoundHandler } from './src/middleware/index.js'
+import { setupGracefulShutdown } from './src/utils/index.js'
 
 const PORT = process.env.PORT || 3001
-
-// Swagger configuration
-await fastify.register(import('@fastify/swagger'), {
-  swagger: {
-    info: {
-      title: 'Open Bus Backend API',
-      description: 'API for creating GitHub issues and sending complaints',
-      version: '1.0.0',
-      contact: {
-        name: 'API Support',
-        email: 'support@example.com',
-      },
-    },
-    host: `localhost:${PORT}`,
-    schemes: ['http'],
-    consumes: ['application/json'],
-    produces: ['application/json'],
-    tags: [
-      { name: 'Health', description: 'Health check endpoints' },
-      { name: 'Issues', description: 'GitHub issue management' },
-      { name: 'Complaints', description: 'Complaint submission' },
-    ],
-  },
-})
-
-await fastify.register(import('@fastify/swagger-ui'), {
-  routePrefix: '/docs',
-  uiConfig: {
-    docExpansion: 'full',
-    deepLinking: false,
-  },
-  uiHooks: {
-    onRequest: function (request, reply, next) {
-      next()
-    },
-    preHandler: function (request, reply, next) {
-      next()
-    },
-  },
-  staticCSP: true,
-  transformStaticCSP: (header) => header,
-})
-
-// Health check route
-fastify.get('/', healthCheckSchema, healthCheck)
-
-// Create issue route
-fastify.post('/create-issue', createIssueSchema, createIssue)
-
-// Complaint route
-fastify.post('/complaint', sendComplaintSchema, sendComplaint)
+const HOST = process.env.HOST || '0.0.0.0'
 
 // Start the server
-function start() {
+async function start() {
   try {
-    fastify.listen({ port: PORT })
-    console.log(`Server is running on port ${PORT}`)
-    console.log(`Swagger documentation available at: http://localhost:${PORT}/docs`)
+    // Create and configure Fastify instance
+    const fastify = await createServer()
+
+    // Register global error handlers
+    fastify.setErrorHandler(globalErrorHandler)
+    fastify.setNotFoundHandler(notFoundHandler)
+
+    // Register all routes
+    await registerRoutes(fastify)
+
+    // Setup graceful shutdown handlers
+    setupGracefulShutdown(fastify)
+
+    // Start listening
+    await fastify.listen({ port: PORT, host: HOST })
+
+    fastify.log.info(`🚀 Server is running on http://${HOST}:${PORT}`)
+    fastify.log.info(`📚 Swagger documentation available at: http://${HOST}:${PORT}/docs`)
+    fastify.log.info(`🔍 Health check available at: http://${HOST}:${PORT}/`)
+
+    // Log environment information
+    fastify.log.info('Environment:', {
+      NODE_ENV: process.env.NODE_ENV || 'development',
+      PORT,
+      HOST,
+      LOG_LEVEL: process.env.LOG_LEVEL || 'info',
+    })
   } catch (err) {
-    fastify.log.error(err)
+    console.error('Failed to start server:', err)
     process.exit(1)
   }
 }
