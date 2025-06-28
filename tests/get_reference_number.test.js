@@ -1,6 +1,6 @@
 import { strict as assert } from 'assert'
 
-import { getReferenceNumber } from '../src/util/get_reference_number.js'
+import { getReferenceNumber } from '../src/utils/get_reference_number.js'
 
 describe('getReferenceNumber', () => {
   it('should fetch and extract a reference number from the GOV API', async () => {

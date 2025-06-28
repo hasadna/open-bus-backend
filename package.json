@@ -8,9 +8,9 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "npm run test:lint && npm run test:mocha && npm run test:coverage",
-    "test:mocha": "mocha \"test/**/*.test.js\" --reporter json --reporter-option output=report/test-results.json",
+    "test:mocha": "mocha \"tests/**/*.test.js\" --reporter json --reporter-option output=reports/test-results.json",
     "test:lint": "prettier . -c -u",
-    "test:coverage": "c8 --reporter=lcov --reporter=text mocha \"test/**/*.test.js\"",
+    "test:coverage": "c8 --reporter=lcov --reporter=text mocha \"tests/**/*.test.js\"",
     "lint:fix": "prettier . -w -u"
   },
   "keywords": [],
