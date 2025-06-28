@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 
-import { buildXmlFrom } from '../gov_api/template_builder.js'
+import { buildXmlFrom } from '../src/util/template_builder.js'
 
 describe('buildXmlFrom', () => {
   it('should throw if input does not have userData and databusData', () => {
