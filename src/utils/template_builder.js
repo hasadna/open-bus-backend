@@ -116,30 +116,33 @@ const dataModelTemplate = {
     isMobile: false,
     language: '',
   },
-}
+};
 
 function fillTemplate(template, data = {}) {
   if (Array.isArray(template)) {
-    return template.map((item, idx) => fillTemplate(item, (data && data[idx]) || {}))
+    return template.map((item, idx) => fillTemplate(item, (data && data[idx]) || {}));
   }
   if (typeof template === 'object' && template !== null) {
-    const result = {}
+    const result = {};
+
     for (const key of Object.keys(template)) {
       if (typeof template[key] === 'object' && template[key] !== null) {
-        result[key] = fillTemplate(template[key], data[key])
+        result[key] = fillTemplate(template[key], data && Object.prototype.hasOwnProperty.call(data, key) ? data[key] : undefined);
       } else {
-        result[key] = data.hasOwnProperty(key) ? data[key] : template[key]
+        result[key] = data && Object.prototype.hasOwnProperty.call(data, key) ? data[key] : template[key];
       }
     }
-    return result
+
+    return result;
   }
-  return data !== undefined ? data : template
+
+  return data !== undefined ? data : template;
 }
 
 export function buildXmlFrom(body) {
   // Only support new input structure: { userData, databusData }
   if (!(body.userData && body.databusData)) {
-    throw new Error('Input must have userData and databusData')
+    throw new Error('Input must have userData and databusData');
   }
   // Map userData and databusData to the expected structure
   const input = {
@@ -157,8 +160,8 @@ export function buildXmlFrom(body) {
         },
       },
     },
-  }
-  const dataModelSaver = JSON.stringify(fillTemplate(dataModelTemplate, input.dataModelSaver), null, 2)
+  };
+  const dataModelSaver = JSON.stringify(fillTemplate(dataModelTemplate, input.dataModelSaver), null, 2);
 
   const fields = {
     UserUImode: body.UserUImode || 'AGFrom2Html',
@@ -262,9 +265,9 @@ export function buildXmlFrom(body) {
     Attacment_Doc: body.Attacment_Doc || '',
     ContactID: body.ContactID || '',
     contactIdResult: body.contactIdResult || '',
-  }
+  };
 
-  const nil = (name) => `<${name} xsi:nil="true"></${name}>`
+  const nil = (name) => `<${name} xsi:nil="true"></${name}>`;
 
   return `<?xml version="1.0" encoding="utf-8"?>
 <root
@@ -376,5 +379,5 @@ export function buildXmlFrom(body) {
       <incidentStatus>${fields.followStatus.contactIdResultList[0]?.incidentStatus || ''}</incidentStatus>
     </contactIdResult>
   </form>
-</root>`
+</root>`;
 }

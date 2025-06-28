@@ -1,28 +1,29 @@
-import sinon from 'sinon'
+import sinon from 'sinon';
 
 /**
  * Create a mock Fastify reply object
- * @returns {Object} Mock reply object with chainable methods
  */
 export function createMockReply() {
   const reply = {
     sendCalledWith: null,
     statusCalledWith: null,
     send(data) {
-      this.sendCalledWith = data
-      return this
+      this.sendCalledWith = data;
+
+      return this;
     },
     status(code) {
-      this.statusCalledWith = code
-      return this
+      this.statusCalledWith = code;
+
+      return this;
     },
-  }
+  };
 
   // Bind methods to ensure proper context
-  reply.send = reply.send.bind(reply)
-  reply.status = reply.status.bind(reply)
+  reply.send = reply.send.bind(reply);
+  reply.status = reply.status.bind(reply);
 
-  return reply
+  return reply;
 }
 
 /**
@@ -30,7 +31,6 @@ export function createMockReply() {
  * @param {Object} body - Request body
  * @param {Object} params - Request parameters
  * @param {Object} query - Query parameters
- * @returns {Object} Mock request object
  */
 export function createMockRequest(body = {}, params = {}, query = {}) {
   return {
@@ -43,30 +43,29 @@ export function createMockRequest(body = {}, params = {}, query = {}) {
       warn: sinon.stub(),
       debug: sinon.stub(),
     },
-  }
+  };
 }
 
 /**
  * Create a mock HTTP client (axios-like)
  * @param {Object} responses - Map of URL patterns to responses
- * @returns {Object} Mock HTTP client
  */
 export function createMockHttpClient(responses = {}) {
   const mockClient = {
     post: sinon.stub(),
     get: sinon.stub(),
-  }
+  };
 
   // Set up default responses
   Object.entries(responses).forEach(([pattern, response]) => {
     if (pattern.includes('github')) {
-      mockClient.post.withArgs(sinon.match(pattern)).resolves(response)
+      mockClient.post.withArgs(sinon.match(pattern)).resolves(response);
     } else {
-      mockClient.get.withArgs(sinon.match(pattern)).resolves(response)
+      mockClient.get.withArgs(sinon.match(pattern)).resolves(response);
     }
-  })
+  });
 
-  return mockClient
+  return mockClient;
 }
 
 /**
@@ -74,7 +73,6 @@ export function createMockHttpClient(responses = {}) {
  * @param {number} id - Issue ID
  * @param {string} title - Issue title
  * @param {string} state - Issue state
- * @returns {Object} Mock GitHub API response
  */
 export function createMockGitHubResponse(id = 123, title = 'Test Issue', state = 'open') {
   return {
@@ -87,7 +85,7 @@ export function createMockGitHubResponse(id = 123, title = 'Test Issue', state =
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     },
-  }
+  };
 }
 
 /**
@@ -97,13 +95,15 @@ export function createMockGitHubResponse(id = 123, title = 'Test Issue', state =
  * @returns {Error} Mock GitHub API error
  */
 export function createMockGitHubError(status = 500, message = 'Internal Server Error') {
-  const error = new Error(message)
+  const error = new Error(message);
+
   error.response = {
     status,
     statusText: message,
     data: { message },
-  }
-  return error
+  };
+
+  return error;
 }
 
 /**
@@ -115,30 +115,29 @@ export function setupGitHubEnv(env = {}) {
     GITHUB_TOKEN: 'fake-token',
     GITHUB_OWNER: 'fake-owner',
     GITHUB_REPO: 'fake-repo',
-  }
+  };
 
-  const testEnv = { ...defaults, ...env }
+  const testEnv = { ...defaults, ...env };
 
   Object.entries(testEnv).forEach(([key, value]) => {
     if (value === undefined) {
-      delete process.env[key]
+      delete process.env[key];
     } else {
-      process.env[key] = value
+      process.env[key] = value;
     }
-  })
+  });
 }
 
 /**
  * Restore all Sinon stubs and restore original environment
  */
 export function cleanup() {
-  sinon.restore()
+  sinon.restore();
 }
 
 /**
  * Create a sandbox for isolated test stubs
- * @returns {Object} Sinon sandbox
  */
 export function createSandbox() {
-  return sinon.createSandbox()
+  return sinon.createSandbox();
 }

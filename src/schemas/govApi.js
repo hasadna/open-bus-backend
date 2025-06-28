@@ -6,7 +6,7 @@ export const commonErrorResponse = {
     message: { type: 'string' },
     timestamp: { type: 'string', format: 'date-time' },
   },
-}
+};
 
 export const commonSuccessResponse = {
   type: 'object',
@@ -15,7 +15,7 @@ export const commonSuccessResponse = {
     data: { type: 'object' },
     timestamp: { type: 'string', format: 'date-time' },
   },
-}
+};
 
 /**
  * GetLinesByStation endpoint schema
@@ -71,7 +71,7 @@ export const getLinesByStationSchema = {
     400: commonErrorResponse,
     500: commonErrorResponse,
   },
-}
+};
 
 /**
  * GetStationByLine endpoint schema
@@ -137,7 +137,7 @@ export const getStationByLineSchema = {
     400: commonErrorResponse,
     500: commonErrorResponse,
   },
-}
+};
 
 /**
  * GetSubjects endpoint schema
@@ -180,7 +180,7 @@ export const getSubjectsSchema = {
     400: commonErrorResponse,
     500: commonErrorResponse,
   },
-}
+};
 
 /**
  * GetTrainStations endpoint schema
@@ -230,7 +230,7 @@ export const getTrainStationsSchema = {
     400: commonErrorResponse,
     500: commonErrorResponse,
   },
-}
+};
 
 /**
  * GetPniya endpoint schema
@@ -273,7 +273,7 @@ export const getPniyaSchema = {
     400: commonErrorResponse,
     500: commonErrorResponse,
   },
-}
+};
 
 /**
  * GetNotRealNumbers endpoint schema
@@ -316,7 +316,7 @@ export const getNotRealNumbersSchema = {
     400: commonErrorResponse,
     500: commonErrorResponse,
   },
-}
+};
 
 /**
  * GetLinesByLine endpoint schema
@@ -373,7 +373,7 @@ export const getLinesByLineSchema = {
     400: commonErrorResponse,
     500: commonErrorResponse,
   },
-}
+};
 
 /**
  * GetCities endpoint schema
@@ -403,7 +403,7 @@ export const getCitiesSchema = {
     },
     500: commonErrorResponse,
   },
-}
+};
 
 /**
  * GetTime endpoint schema
@@ -429,4 +429,4 @@ export const getTimeSchema = {
     },
     500: commonErrorResponse,
   },
-}
+};
