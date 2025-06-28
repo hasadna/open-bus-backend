@@ -3,10 +3,10 @@ import { expect } from 'chai'
 import { createIssue } from '../src/controllers/issueController.js'
 
 describe('createIssue', () => {
-  let req, res, myAxios
+  let request, reply, myAxios
 
   beforeEach(() => {
-    req = {
+    request = {
       body: {
         title: 'Test Issue',
         contactName: 'John Doe',
@@ -19,11 +19,11 @@ describe('createIssue', () => {
         attachments: [],
       },
     }
-    res = {
-      jsonCalledWith: null,
+    reply = {
+      sendCalledWith: null,
       statusCalledWith: null,
-      json(data) {
-        this.jsonCalledWith = data
+      send(data) {
+        this.sendCalledWith = data
         return this
       },
       status(code) {
@@ -40,18 +40,18 @@ describe('createIssue', () => {
   })
 
   it('should create a GitHub issue and return the response data', async () => {
-    await createIssue(req, res, myAxios)
-    expect(res.jsonCalledWith).to.deep.equal({ id: 123, title: 'Test Issue' })
-    expect(res.statusCalledWith).to.equal(200)
+    await createIssue(request, reply, myAxios)
+    expect(reply.sendCalledWith).to.deep.equal({ id: 123, title: 'Test Issue' })
+    expect(reply.statusCalledWith).to.equal(200)
   })
 
   it('should handle errors and return 500', async () => {
     myAxios.post = async () => {
       throw new Error('GitHub error')
     }
-    await createIssue(req, res, myAxios)
-    expect(res.statusCalledWith).to.equal(500)
-    expect(res.jsonCalledWith).to.deep.equal({ error: 'Internal Server Error' })
+    await createIssue(request, reply, myAxios)
+    expect(reply.statusCalledWith).to.equal(500)
+    expect(reply.sendCalledWith).to.deep.equal({ error: 'Internal Server Error' })
   })
 
   it('should send correct payload to GitHub API', async () => {
@@ -64,7 +64,7 @@ describe('createIssue', () => {
       calledConfig = config
       return { data: { id: 1 } }
     }
-    await createIssue(req, res, myAxios)
+    await createIssue(request, reply, myAxios)
     expect(calledUrl).to.equal('https://api.github.com/repos/fake-owner/fake-repo/issues')
     expect(calledPayload.title).to.equal('Test Issue')
     expect(calledPayload.labels).to.deep.equal(['REPORTED-BY-USER'])
@@ -74,13 +74,13 @@ describe('createIssue', () => {
   })
 
   it('should work with missing optional fields', async () => {
-    req.body.attachments = undefined
-    req.body.environment = undefined
-    req.body.expectedBehavior = undefined
-    req.body.actualBehavior = undefined
-    req.body.reproducibility = undefined
-    await createIssue(req, res, myAxios)
-    expect(res.jsonCalledWith).to.have.property('id', 123)
+    request.body.attachments = undefined
+    request.body.environment = undefined
+    request.body.expectedBehavior = undefined
+    request.body.actualBehavior = undefined
+    request.body.reproducibility = undefined
+    await createIssue(request, reply, myAxios)
+    expect(reply.sendCalledWith).to.have.property('id', 123)
   })
 
   it('should handle missing GitHub env variables gracefully', async () => {
@@ -88,7 +88,7 @@ describe('createIssue', () => {
     process.env.GITHUB_OWNER = undefined
     process.env.GITHUB_REPO = undefined
     myAxios.post = async () => ({ data: { id: 999 } })
-    await createIssue(req, res, myAxios)
-    expect(res.jsonCalledWith).to.deep.equal({ id: 999 })
+    await createIssue(request, reply, myAxios)
+    expect(reply.sendCalledWith).to.deep.equal({ id: 999 })
   })
 })
