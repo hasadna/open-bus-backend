@@ -17,9 +17,6 @@ on:
 permissions:
   contents: read
 
-env:
-  GITHUB_ACTIONS: 'true'
-
 jobs:
   dockerfile-build:
     name: Build Dockerfile
@@ -37,7 +34,7 @@ jobs:
           tags: app:test
 
       - name: Run tests in Docker container
-        run: docker run --rm app:test npm test
+        run: docker run --rm -e GITHUB_ACTIONS=true app:test npm test
 
       - name: Check if app is alive
         run: |
