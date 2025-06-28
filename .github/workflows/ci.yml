@@ -11,7 +11,7 @@ env:
   DOCKER_APP_IMAGE_NAME: 'ghcr.io/hasadna/open-bus-backend/open-bus-backend'
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   HASADNA_K8S_DEPLOY_KEY: ${{ secrets.HASADNA_K8S_DEPLOY_KEY }}
-  SKIP_CI: ${{ secrets.SKIP_CI || '' }}
+  SKIP_CI: ${{ secrets.SKIP_CI || vars.SKIP_CI || '' }}
 
 jobs:
   ci:
