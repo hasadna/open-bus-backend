@@ -17,6 +17,9 @@ on:
 permissions:
   contents: read
 
+env:
+  GITHUB_ACTIONS: 'true'
+
 jobs:
   dockerfile-build:
     name: Build Dockerfile
