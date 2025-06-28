@@ -50,6 +50,7 @@ jobs:
           tags: app:test
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          outputs: type=docker
 
       - name: Run tests in Docker container
         run: docker run --rm -e GITHUB_ACTIONS=true app:test npm test
