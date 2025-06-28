@@ -44,11 +44,30 @@ jobs:
           done
           echo "${GITHUB_TOKEN}" | docker login ghcr.io -u hasadna --password-stdin
 
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       - name: Build, tag, push Docker image and deploy
         if: steps.skip_check.outputs.skip_ci != 'true'
         run: |
           if docker pull "${DOCKER_APP_IMAGE_NAME}:latest"; then
-            CACHE_FROM_ARG="--cache-from ${DOCKER_APP_IMAGE_NAME}:latest"
+            CACHE_FROM_ARG="--cache-from=type=local,src=/tmp/.buildx-cache"
           else
             CACHE_FROM_ARG=""
           fi
