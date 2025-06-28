@@ -19,6 +19,7 @@ export const commonSuccessResponse = {
 
 /**
  * GetLinesByStation endpoint schema
+ * @type {import('fastify').FastifySchema}
  */
 export const getLinesByStationSchema = {
   tags: ['Government API'],
@@ -74,6 +75,7 @@ export const getLinesByStationSchema = {
 
 /**
  * GetStationByLine endpoint schema
+ * @type {import('fastify').FastifySchema}
  */
 export const getStationByLineSchema = {
   tags: ['Government API'],
@@ -139,6 +141,7 @@ export const getStationByLineSchema = {
 
 /**
  * GetSubjects endpoint schema
+ * @type {import('fastify').FastifySchema}
  */
 export const getSubjectsSchema = {
   tags: ['Government API'],
@@ -181,6 +184,7 @@ export const getSubjectsSchema = {
 
 /**
  * GetTrainStations endpoint schema
+ * @type {import('fastify').FastifySchema}
  */
 export const getTrainStationsSchema = {
   tags: ['Government API'],
@@ -230,6 +234,7 @@ export const getTrainStationsSchema = {
 
 /**
  * GetPniya endpoint schema
+ * @type {import('fastify').FastifySchema}
  */
 export const getPniyaSchema = {
   tags: ['Government API'],
@@ -272,6 +277,7 @@ export const getPniyaSchema = {
 
 /**
  * GetNotRealNumbers endpoint schema
+ * @type {import('fastify').FastifySchema}
  */
 export const getNotRealNumbersSchema = {
   tags: ['Government API'],
@@ -314,6 +320,7 @@ export const getNotRealNumbersSchema = {
 
 /**
  * GetLinesByLine endpoint schema
+ * @type {import('fastify').FastifySchema}
  */
 export const getLinesByLineSchema = {
   tags: ['Government API'],
@@ -370,6 +377,7 @@ export const getLinesByLineSchema = {
 
 /**
  * GetCities endpoint schema
+ * @type {import('fastify').FastifySchema}
  */
 export const getCitiesSchema = {
   tags: ['Government API'],
@@ -399,6 +407,7 @@ export const getCitiesSchema = {
 
 /**
  * GetTime endpoint schema
+ * @type {import('fastify').FastifySchema}
  */
 export const getTimeSchema = {
   tags: ['Government API'],
