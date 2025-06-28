@@ -25,7 +25,6 @@ async function start() {
 
     // Start listening
     fastify.listen({ port: PORT, host: HOST })
-    fastify.log.info(`Swagger documentation available at: http://${HOST}:${PORT}/docs`)
   } catch (err) {
     console.error('Failed to start server:', err)
     process.exit(1)
