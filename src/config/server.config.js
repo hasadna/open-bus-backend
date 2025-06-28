@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import { swaggerConfig, swaggerUIConfig } from './swagger.js';
+import { swaggerConfig, swaggerUIConfig } from './swagger.config.js';
 
 /**
  * Create and configure Fastify instance
