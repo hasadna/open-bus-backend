@@ -5,17 +5,17 @@ import { sendComplaint } from '../src/controllers/complaintController.js'
 import jsonData from '../gov_api/exampleInput.json' with { type: 'json' }
 
 describe('sendComplaint', () => {
-  let req, res
+  let request, reply
 
   beforeEach(() => {
-    req = {
+    request = {
       body: jsonData,
     }
-    res = {
-      jsonCalledWith: null,
+    reply = {
+      sendCalledWith: null,
       statusCalledWith: null,
-      json(data) {
-        this.jsonCalledWith = data
+      send(data) {
+        this.sendCalledWith = data
         return this
       },
       status(code) {
@@ -26,9 +26,9 @@ describe('sendComplaint', () => {
   })
 
   it('should test the complaint controller', async () => {
-    await sendComplaint(req, res)
-    expect(res.jsonCalledWith.success).to.equal(true)
-    expect(res.jsonCalledWith.xml).to.not.be.undefined
-    expect(res.statusCalledWith).to.equal(200)
+    await sendComplaint(request, reply)
+    expect(reply.sendCalledWith.success).to.equal(true)
+    expect(reply.sendCalledWith.xml).to.not.be.undefined
+    expect(reply.statusCalledWith).to.equal(200)
   })
 })

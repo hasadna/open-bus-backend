@@ -1,14 +1,14 @@
 import axios from 'axios'
 
 /**
- * @param {import('express').Request} req
- * @param {import('express').Response} res
+ * @param {import('fastify').FastifyRequest} request
+ * @param {import('fastify').FastifyReply} reply
  */
-export async function createIssue(req, res, myAxios = axios) {
+export async function createIssue(request, reply, myAxios = axios) {
   try {
     // Extract data from the request body
     const { title, contactName, contactEmail, description, environment, expectedBehavior, actualBehavior, reproducibility, attachments } =
-      req.body
+      request.body
 
     // Create the body for the GitHub issue
     const body = `\n
@@ -36,9 +36,9 @@ export async function createIssue(req, res, myAxios = axios) {
       { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } },
     )
 
-    res.status(200).json(response.data)
+    return reply.status(200).send(response.data)
   } catch (error) {
     // console.error('Error creating GitHub issue:', error)
-    res.status(500).json({ error: 'Internal Server Error' })
+    return reply.status(500).send({ error: 'Internal Server Error' })
   }
 }
