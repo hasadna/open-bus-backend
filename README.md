@@ -1,82 +1,74 @@
 # Open Bus Backend
 
-## Configuration
+### Swagger UI
 
-Set the following environment variables:
+The API documentation is automatically generated and available at:
 
-- `GITHUB_TOKEN`
-- `GITHUB_OWNER`
-- `GITHUB_REPO`
+```
+http://localhost:3001/docs
+```
 
-## Local Development
+### API Endpoints
 
-Install dependencies:
+#### Health Check
+
+- **GET** `/` - Health check endpoint
+- Returns service status
+
+#### GitHub Issues
+
+- **POST** `/create-issue` - Create a new GitHub issue
+- Requires: title, contactName, contactEmail, description, environment, expectedBehavior, actualBehavior, reproducibility
+- Optional: attachments
+
+#### Complaints
+
+- **POST** `/complaint` - Submit a complaint to government forms
+- Requires: userData (firstName, lastName, id, email, phone), databusData (operator)
+- Optional: debug mode for testing
+
+## Installation
 
 ```bash
 npm install
 ```
 
-To start the server in development mode (with hot reload):
+## Environment Variables
+
+Create a `.env` file with the following variables:
+
+```env
+PORT=3001
+GITHUB_TOKEN=your_github_token
+GITHUB_OWNER=your_github_username
+GITHUB_REPO=your_repository_name
+```
+
+## Running the Application
+
+### Development
 
 ```bash
 npm run dev
 ```
 
-To start the server in production mode:
+### Production
 
 ```bash
 npm start
 ```
 
-## Example: Creating an Issue
-
-You can create a new issue by sending a POST request to the `/create-issue` endpoint. Here’s an example using `fetch`
-
-```js
-fetch('http://localhost:3001/create-issue', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    title: 'Sample Title',
-    contactName: 'John Doe',
-    contactEmail: 'john.doe@example.com',
-    description: 'Detailed description of the issue.',
-    environment: 'Operating system, software version, hardware specifics.',
-    expectedBehavior: 'What you expect to happen.',
-    actualBehavior: 'What actually happens.',
-    reproducibility: 'Steps to reproduce the issue.',
-  }),
-})
-```
-
-Replace the example values with your own details as needed.
-
 ## Testing
 
-To run all tests:
-
 ```bash
+# Run all tests
 npm test
-```
 
-To run lint checks:
-
-```bash
-npm run test:lint
-```
-
-To run Mocha tests:
-
-```bash
-npm run test:mocha
-```
-
-To generate a coverage report:
-
-```bash
+# Run tests with coverage
 npm run test:coverage
+
+# Run linting
+npm run test:lint
 ```
 
 ## Running with Docker
@@ -101,4 +93,4 @@ docker run -it -p 3001:3001 \
 
 Replace the environment variable values with your actual configuration.
 
-The server will be accessible at [http://localhost:3001](http://localhost:3001).
+The server will be accessible at `http://localhost:3001`.
