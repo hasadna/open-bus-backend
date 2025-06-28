@@ -43,7 +43,7 @@ export const swaggerConfig = {
   },
   staticCSP: true,
   transform: ({ schema, url }) => ({ schema, url }),
-}
+};
 
 /**
  * Swagger UI configuration
@@ -62,13 +62,13 @@ export const swaggerUIConfig = {
     operationsSorter: 'alpha',
   },
   uiHooks: {
-    onRequest: function (request, reply, next) {
-      next()
+    onRequest(request, reply, next) {
+      next();
     },
-    preHandler: function (request, reply, next) {
-      next()
+    preHandler(request, reply, next) {
+      next();
     },
   },
   staticCSP: true,
   transformStaticCSP: (header) => header,
-}
+};
