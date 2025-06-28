@@ -45,7 +45,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: 'report/test-results.json'
+          path: 'reports/test-results.json'
       - uses: dorny/test-reporter@v2
         with:
           artifact: test-results
