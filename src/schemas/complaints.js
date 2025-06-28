@@ -1,5 +1,6 @@
 /**
  * Send complaint endpoint schema
+ * @type {import('fastify').FastifySchema}
  */
 export const sendComplaintSchema = {
   tags: ['Complaints'],

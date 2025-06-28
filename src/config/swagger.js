@@ -58,6 +58,8 @@ export const swaggerUIConfig = {
     showExtensions: true,
     showCommonExtensions: true,
     tryItOutEnabled: true,
+    tagsSorter: 'alpha',
+    operationsSorter: 'alpha',
   },
   uiHooks: {
     onRequest: function (request, reply, next) {

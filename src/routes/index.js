@@ -35,22 +35,22 @@ import {
  */
 export async function registerRoutes(fastify) {
   // Health check route
-  fastify.get('/', healthCheckSchema, healthCheck)
+  fastify.get('/', { healthCheckSchema }, healthCheck)
 
   // Issue management routes
-  fastify.post('/create-issue', createIssueSchema, createIssue)
+  fastify.post('/create-issue', { createIssueSchema }, createIssue)
 
   // Complaint routes
-  fastify.post('/complaint', sendComplaintSchema, sendComplaint)
+  fastify.post('/complaint', { sendComplaintSchema }, sendComplaint)
 
   // Government API routes
-  fastify.post('/gov/lines-by-station', getLinesByStationSchema, getLinesByStation)
-  fastify.post('/gov/stations-by-line', getStationByLineSchema, getStationByLine)
-  fastify.post('/gov/subjects', getSubjectsSchema, getSubjects)
-  fastify.post('/gov/train-stations', getTrainStationsSchema, getTrainStations)
-  fastify.post('/gov/pniya', getPniyaSchema, getPniya)
-  fastify.post('/gov/not-real-numbers', getNotRealNumbersSchema, getNotRealNumbers)
-  fastify.post('/gov/lines-by-line', getLinesByLineSchema, getLinesByLine)
-  fastify.post('/gov/cities', getCitiesSchema, getCities)
-  fastify.get('/gov/time', getTimeSchema, getTime)
+  fastify.post('/gov/lines-by-station', { getLinesByStationSchema }, getLinesByStation)
+  fastify.post('/gov/stations-by-line', { getStationByLineSchema }, getStationByLine)
+  fastify.post('/gov/subjects', { getSubjectsSchema }, getSubjects)
+  fastify.post('/gov/train-stations', { getTrainStationsSchema }, getTrainStations)
+  fastify.post('/gov/pniya', { getPniyaSchema }, getPniya)
+  fastify.post('/gov/not-real-numbers', { getNotRealNumbersSchema }, getNotRealNumbers)
+  fastify.post('/gov/lines-by-line', { getLinesByLineSchema }, getLinesByLine)
+  fastify.post('/gov/cities', { getCitiesSchema }, getCities)
+  fastify.get('/gov/time', { getTimeSchema }, getTime)
 }
