@@ -20,17 +20,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check for skip CI
+        id: skip_check
         run: |
           if [[ "${SKIP_CI}" == "true" ]]; then
+            echo "skip_ci=true" >> $GITHUB_OUTPUT
             echo "SKIP_CI is set. Skipping CI."
-            exit
-          fi
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          if echo "$COMMIT_MSG" | grep -iqE '\[skip ci\]|\[ci skip\]'; then
+          elif git log -1 --pretty=%B | grep -iqE '\[skip ci\]|\[ci skip\]'; then
+            echo "skip_ci=true" >> $GITHUB_OUTPUT
             echo "Commit message requests to skip CI. Skipping."
-            exit
+          else
+            echo "skip_ci=false" >> $GITHUB_OUTPUT
           fi
       - name: Check environment variables and Docker login
+        if: steps.skip_check.outputs.skip_ci != 'true'
         run: |
           for var in DOCKER_APP_IMAGE_NAME GITHUB_TOKEN HASADNA_K8S_DEPLOY_KEY; do
             if [ -z "${!var}" ]; then
@@ -40,6 +42,7 @@ jobs:
           done
           echo "${GITHUB_TOKEN}" | docker login ghcr.io -u hasadna --password-stdin
       - name: Build, tag, push Docker image and deploy
+        if: steps.skip_check.outputs.skip_ci != 'true'
         run: |
           if docker pull "${DOCKER_APP_IMAGE_NAME}:latest"; then
             CACHE_FROM_ARG="--cache-from ${DOCKER_APP_IMAGE_NAME}:latest"
