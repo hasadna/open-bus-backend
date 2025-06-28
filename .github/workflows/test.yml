@@ -24,6 +24,13 @@ jobs:
           node-version: latest
           cache: npm
 
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
       - name: Install dependencies
         run: npm ci
 
@@ -42,6 +49,13 @@ jobs:
           node-version: latest
           cache: npm
 
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
       - name: Install dependencies
         run: npm ci
 
@@ -72,6 +86,13 @@ jobs:
           node-version: latest
           cache: npm
 
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
       - name: Install dependencies
         run: npm ci
 
