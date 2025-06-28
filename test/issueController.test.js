@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 
-import { createIssue } from '../controllers/issueController.js'
+import { createIssue } from '../src/controllers/issueController.js'
 
 describe('createIssue', () => {
   let req, res, myAxios
