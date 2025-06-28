@@ -1,4 +1,4 @@
 // Re-export all utilities from individual files
-export { getReferenceNumber } from './get_reference_number.js';
+export { getReferenceNumber } from './getReferenceNumber.js';
 export { setupGracefulShutdown } from './gracefulShutdown.js';
-export { buildXmlFrom } from './template_builder.js';
+export { templateBuilder } from './templateBuilder.js';
