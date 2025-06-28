@@ -1,8 +1,8 @@
 import cors from 'cors'
 import express from 'express'
 
-import { createIssue } from './controllers/issueController.js'
-import { sendComplaint } from './controllers/complaintController.js'
+import { createIssue } from './src/controllers/issueController.js'
+import { sendComplaint } from './src/controllers/complaintController.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001

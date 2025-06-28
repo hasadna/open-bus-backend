@@ -1,8 +1,8 @@
 import { expect } from 'chai'
 
-import { sendComplaint } from '../controllers/complaintController.js'
+import { sendComplaint } from '../src/controllers/complaintController.js'
 
-import jsonData from '../contextForCopilot/exampleInput.json' with { type: 'json' }
+import jsonData from '../gov_api/exampleInput.json' with { type: 'json' }
 
 describe('sendComplaint', () => {
   let req, res
