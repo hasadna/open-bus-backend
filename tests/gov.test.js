@@ -10,7 +10,7 @@ import {
   getSubjects,
   getTime,
   getTrainStations,
-} from '../src/controllers/govApiController.js';
+} from '../src/controllers/gov.controller.js';
 import {
   getLinesByLineSchema,
   getLinesByStationSchema,
@@ -19,7 +19,7 @@ import {
   getStationByLineSchema,
   getSubjectsSchema,
   getTrainStationsSchema,
-} from '../src/schemas/govApi.js';
+} from '../src/schemas/gov.schema.js';
 
 describe('Government API Controller', () => {
   let mockRequest;

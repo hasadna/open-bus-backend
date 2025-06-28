@@ -1,6 +1,6 @@
 import { strict as assert } from 'assert';
 import { describe, it } from 'mocha';
-import { getReferenceNumber } from '../src/utils/get_reference_number.js';
+import { getReferenceNumber } from '../src/utils/getReferenceNumber.js';
 
 describe('getReferenceNumber', () => {
   it('should fetch and extract a reference number', async () => {
