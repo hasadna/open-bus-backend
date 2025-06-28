@@ -14,6 +14,7 @@ env:
   DOCKER_APP_IMAGE_NAME: 'ghcr.io/hasadna/open-bus-backend/open-bus-backend'
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   HASADNA_K8S_DEPLOY_KEY: ${{ secrets.HASADNA_K8S_DEPLOY_KEY }}
+  SKIP_CI: ${{ secrets.SKIP_CI || '' }}
 
 jobs:
   ci:
@@ -21,6 +22,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check for skip CI
+        run: |
+          if [[ "${SKIP_CI}" == "true" ]]; then
+            echo "SKIP_CI is set. Skipping CI."
+            exit 0
+          fi
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          if echo "$COMMIT_MSG" | grep -iqE '\[skip ci\]|\[ci skip\]'; then
+            echo "Commit message requests to skip CI. Skipping."
+            exit 0
+          fi
       - name: Check environment variables and Docker login
         run: |
           for var in DOCKER_APP_IMAGE_NAME GITHUB_TOKEN HASADNA_K8S_DEPLOY_KEY; do
