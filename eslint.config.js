@@ -144,14 +144,12 @@ export default defineConfig([
 
   // Test files override
   {
-    files: ['tests/**/*.{js,mjs,cjs}'],
+    files: ['tests/**/*.test.{js,mjs,cjs}', 'tests/**/*.spec.{js,mjs,cjs}'],
     languageOptions: {
       globals: { ...globals.node, ...globals.mocha },
     },
     rules: {
       'no-unused-expressions': 'off',
-      'max-lines': 'off',
-      'max-lines-per-function': 'off',
     },
   },
 
