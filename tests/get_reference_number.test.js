@@ -9,4 +9,4 @@ describe('getReferenceNumber', () => {
     assert.ok(ref, 'Reference number should be returned');
     assert.match(ref, /^[0-9]+$/u);
   });
-}).timeout(5000);
+});
