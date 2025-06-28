@@ -1,0 +1,37 @@
+name: Dockerfile Build Test
+
+on:
+  push:
+    paths:
+      - 'Dockerfile'
+      - '.github/workflows/dockerfile-test.yml'
+      - 'package.json'
+      - 'package-lock.json'
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - '.github/workflows/dockerfile-test.yml'
+      - 'package.json'
+      - 'package-lock.json'
+
+permissions:
+  contents: read
+
+jobs:
+  dockerfile-build:
+    name: Build Dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test Dockerfile build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: app:test
+
+      - name: Dockerfile build succeeded
+        run: echo "Dockerfile built successfully! 🎉"
