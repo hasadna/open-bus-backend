@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-import { buildXmlFrom } from '../gov_api/template_builder.js'
-import { getReferenceNumber } from '../gov_api/get_reference_number.js'
+import { buildXmlFrom } from '../util/template_builder.js'
+import { getReferenceNumber } from '../util/get_reference_number.js'
 
 const URL = 'https://forms.gov.il/globaldata/getsequence/getHtmlForm.aspx?formType=PniotMot%40mot.gov.il'
 
