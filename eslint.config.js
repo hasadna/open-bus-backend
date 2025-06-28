@@ -5,7 +5,10 @@ import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 import globals from 'globals';
 
 export default defineConfig([
+  // Prettier integration
   eslintPluginPrettierRecommended,
+
+  // Main JS rules
   {
     files: ['**/*.{js,mjs,cjs}'],
     plugins: {
@@ -38,15 +41,7 @@ export default defineConfig([
       'import/no-amd': 'error',
       'import/first': 'error',
       'import/no-namespace': 'error',
-      'import/extensions': [
-        'error',
-        'ignorePackages',
-        {
-          js: 'always',
-          mjs: 'always',
-          cjs: 'always',
-        },
-      ],
+      'import/extensions': ['error', 'ignorePackages', { js: 'always', mjs: 'always', cjs: 'always' }],
 
       // General code quality rules
       'no-debugger': 'error',
@@ -62,16 +57,7 @@ export default defineConfig([
       'no-useless-rename': 'error',
       'object-shorthand': 'error',
       'prefer-template': 'error',
-      'prefer-destructuring': [
-        'error',
-        {
-          array: true,
-          object: true,
-        },
-        {
-          enforceForRenamedProperties: false,
-        },
-      ],
+      'prefer-destructuring': ['error', { array: true, object: true }, { enforceForRenamedProperties: false }],
 
       // Error prevention
       'no-unused-vars': [
@@ -162,6 +148,8 @@ export default defineConfig([
       'prettier/prettier': 'error',
     },
   },
+
+  // Test files override
   {
     files: ['tests/**/*.{js,mjs,cjs}'],
     languageOptions: {
@@ -173,6 +161,8 @@ export default defineConfig([
       'max-lines-per-function': 'off',
     },
   },
+
+  // Config files override
   {
     files: ['**/*.config.{js,mjs,cjs}'],
     rules: {
