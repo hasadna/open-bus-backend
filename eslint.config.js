@@ -25,10 +25,7 @@ export default defineConfig([
         'error',
         {
           groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
-          alphabetize: {
-            order: 'asc',
-            caseInsensitive: true,
-          },
+          alphabetize: { order: 'asc', caseInsensitive: true },
         },
       ],
       'import/no-duplicates': 'error',
@@ -61,16 +58,30 @@ export default defineConfig([
       'no-var': 'error',
       'prefer-const': 'error',
       'prefer-arrow-callback': 'error',
-      'arrow-spacing': 'error',
       'no-duplicate-imports': 'error',
       'no-useless-rename': 'error',
       'object-shorthand': 'error',
       'prefer-template': 'error',
-      'template-curly-spacing': 'error',
-      'prefer-destructuring': ['error', { array: true, object: true }, { enforceForRenamedProperties: false }],
+      'prefer-destructuring': [
+        'error',
+        {
+          array: true,
+          object: true,
+        },
+        {
+          enforceForRenamedProperties: false,
+        },
+      ],
 
       // Error prevention
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
+      'no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
       'no-undef': 'error',
       'no-unreachable': 'error',
       'no-constant-condition': 'error',
@@ -106,7 +117,6 @@ export default defineConfig([
       'no-extra-bind': 'error',
       'no-extra-label': 'error',
       'no-fallthrough': 'error',
-      'no-floating-decimal': 'error',
       'no-global-assign': 'error',
       'no-implicit-coercion': 'error',
       'no-implicit-globals': 'error',
@@ -115,7 +125,6 @@ export default defineConfig([
       'no-labels': 'error',
       'no-lone-blocks': 'error',
       'no-loop-func': 'error',
-      'no-multi-spaces': 'error',
       'no-multi-str': 'error',
       'no-new': 'error',
       'no-new-wrappers': 'error',
@@ -147,7 +156,6 @@ export default defineConfig([
       'require-await': 'error',
       'require-unicode-regexp': 'error',
       'vars-on-top': 'error',
-      'wrap-iife': 'error',
       yoda: 'error',
 
       // Prettier
@@ -155,12 +163,9 @@ export default defineConfig([
     },
   },
   {
-    files: ['tests/**/*.{js,mjs,cjs}', '**/*.test.{js,mjs,cjs}', '**/*.spec.{js,mjs,cjs}'],
+    files: ['tests/**/*.{js,mjs,cjs}'],
     languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.mocha,
-      },
+      globals: { ...globals.node, ...globals.mocha },
     },
     rules: {
       'no-unused-expressions': 'off',
