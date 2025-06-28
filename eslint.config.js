@@ -18,8 +18,6 @@ export default defineConfig([
     extends: ['js/recommended'],
     languageOptions: {
       globals: globals.node,
-      ecmaVersion: 2024,
-      sourceType: 'module',
     },
     rules: {
       // Import rules
