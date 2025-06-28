@@ -3,7 +3,7 @@ export const vehicles = [
   { code: '2', type: 'אחר' },
   { code: '3', type: 'רכבות' },
   { code: '6', type: 'מוניות' },
-]
+];
 
 export const subjects = [
   {
@@ -202,7 +202,7 @@ export const subjects = [
     request_subject: 'אמצעי כרטוס (רב-קו), תעריפים, הנחות',
     subject_code: '6',
   },
-]
+];
 
 export const operators = [
   { operatorsId: 2, operatorsName: 'רכבת ישראל' },
@@ -236,7 +236,7 @@ export const operators = [
   { operatorsId: 18, operatorsName: 'קווים' },
   { operatorsId: 6, operatorsName: 'ש.א.מ' },
   { operatorsId: 34, operatorsName: 'תנופה' },
-]
+];
 
 export const trainStation = [
   // StationTypeId 7 רכבת ישראל
@@ -633,7 +633,7 @@ export const trainStation = [
     cityName: 'תל אביב יפו',
     stationFullName: null,
   },
-]
+];
 
 export const lightTrainStaton = [
   // StationTypeId 4 כפיר
@@ -1049,7 +1049,7 @@ export const lightTrainStaton = [
     cityName: 'תל אביב יפו',
     stationFullName: null,
   },
-]
+];
 
 export const city = [
   { cityId: 497, cityName: 'א טייבה' },
@@ -3446,4 +3446,4 @@ export const city = [
   { cityId: 778, cityName: 'תרום' },
   { cityId: 3920, cityName: 'תרמס עיא' },
   { cityId: 3921, cityName: 'תרקומיא' },
-]
+];
