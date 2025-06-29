@@ -284,25 +284,25 @@ export const getLinesByLineSchema = {
   description: 'Retrieve bus lines by specific line ID',
   body: {
     type: 'object',
-    required: ['eventDate', 'OperatorId', 'OperatorLineId'],
+    required: ['EventDate', 'OperatorId', 'OperatorLineId'],
     properties: {
-      eventDate: {
-        type: 'string',
-        example: '13/05/2025',
-        pattern: '^\\d{2}/\\d{2}/\\d{4}$',
-        description: 'Event date in DD/MM/YYYY format',
+      EventDate: {
+        type: 'number',
+        minimum: 0,
+        description: 'Event date in number',
+        // example: 1747083600000,
       },
       OperatorId: {
         type: 'number',
-        example: 3,
-        minimum: 1,
+        minimum: 0,
         description: 'Operator ID',
+        // example: 3,
       },
       OperatorLineId: {
         type: 'number',
-        example: 83,
-        minimum: 1,
+        minimum: 0,
         description: 'Operator line ID',
+        // example: 83,
       },
     },
   },
@@ -316,13 +316,48 @@ export const getLinesByLineSchema = {
           items: {
             type: 'object',
             properties: {
-              lineId: { type: 'number' },
-              lineName: { type: 'string' },
+              lineCode: { type: 'number' },
+              lineText: { type: 'string' },
               operatorId: { type: 'number' },
-              operatorName: { type: 'string' },
-              direction: { type: 'number' },
+              eventDate: { type: 'string' },
+              directionCode: { type: 'number' },
+              directionText: { type: 'string' },
+              destinationCity: {
+                type: 'object',
+                properties: {
+                  DataCode: { type: 'number' },
+                  DataText: { type: 'string' },
+                },
+              },
+              originCity: {
+                type: 'object',
+                properties: {
+                  DataCode: { type: 'number' },
+                  DataText: { type: 'string' },
+                },
+              },
+              message: { type: ['string', 'null'] },
             },
           },
+          example: [
+            {
+              lineCode: 10083,
+              lineText: '83',
+              operatorId: 3,
+              eventDate: '2025-05-13T00:00:00',
+              directionCode: 2,
+              directionText: 'חיפה-חיפה',
+              destinationCity: {
+                DataCode: 4000,
+                DataText: 'חיפה',
+              },
+              originCity: {
+                DataCode: 4000,
+                DataText: 'חיפה',
+              },
+              message: null,
+            },
+          ],
         },
       },
     },
