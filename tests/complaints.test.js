@@ -1,12 +1,13 @@
-import { createRequire } from 'module';
 import { expect } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'mocha';
+
+import jsonData from '../gov_api/exampleInput.json' with { type: 'json' };
 import { sendComplaint } from '../src/controllers/complaints.controller.js';
 import { cleanup, createMockReply, createMockRequest } from './test.utils.js';
 
 describe('sendComplaint', () => {
-  const jsonData = createRequire(import.meta.url)('../gov_api/exampleInput.json');
-  let request, reply;
+  let reply;
+  let request;
 
   beforeEach(() => {
     request = createMockRequest(jsonData);

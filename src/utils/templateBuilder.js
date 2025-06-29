@@ -1,120 +1,155 @@
 const dataModelTemplate = {
-  contactType: { selectContactType: '', isChosenType: false },
-  personalDetails: {
-    firstName: '',
-    lastName: '',
-    iDNum: '',
-    mobile: '',
-    phone: '',
-    contactOptions: '',
-    fax: '',
-    email: '',
-    city: { dataText: '' },
-    street: '',
-    houseNumber: '',
-    appartment: '',
-    postBox: '',
-    zipCode: '',
-    name: 'personalDetails',
-    state: 'notValidated',
-    next: '',
-    prev: '',
-    isClosed: false,
-  },
-  requestSubject: {
-    applySubject: { dataText: '' },
-    applyType: { dataText: '' },
-    name: 'requestSubject',
-    state: 'notValidated',
-    next: '',
-    prev: '',
-    isClosed: true,
-  },
-  requestDetails: {
-    taxi: { taxiType: '' },
-    busAndOther: {
-      ravKav: true,
-      ravKavNumber: '',
-      reportdate: '',
-      reportTime: '',
-      addingFrequencyReason: [],
-      operator: { dataText: '' },
-      addOrRemoveStation: '',
-      driverName: '',
-      licenseNum: '',
-      eventDate: '',
-      eventHour: '',
-      fromHour: '',
-      toHour: '',
-      fillByMakatOrAddress: '',
-      makatStation: '',
-      lineNumberText: '',
-      lineNumberFromList: { dataText: '' },
-      direction: { dataText: '' },
-      raisingStation: { dataText: '' },
-      applyContent: '',
-      busDirectionFrom: '',
-      busDirectionTo: '',
-      raisingStationCity: { dataText: '' },
-      destinationStationCity: { dataText: '' },
-      raisingStationAddress: '',
-      cityId: '',
-      cityName: '',
-      originCityCode: '',
-      originCityName: '',
-      destinationCityCode: '',
-      destinationCityText: '',
-      directionCode: '',
-      stationName: '',
-      lineCode: '',
-    },
-    train: {
-      trainType: '',
-      eventDate: '',
-      eventHour: '',
-      startStation: { dataText: '' },
-      destinationStation: { dataText: '' },
-      number: '',
-      applyContent: '',
-    },
-    requestSubjectCode: '',
-    requestTypeCode: '',
-    title: '',
-    name: 'requestDetails',
-    state: 'notValidated',
-    next: '',
-    prev: '',
-    isClosed: true,
-  },
-  documentAttachment: {
-    documentsList: [{ attacmentName: '' }],
-    name: 'documentAttachment',
-    state: 'notValidated',
-    next: '',
-    prev: '',
-    isClosed: true,
-  },
-  followStatus: {
-    contactIdList: [{ ticketNumber: '' }],
-    contactIdResultList: [],
-    name: 'followStatus',
-    state: 'notValidated',
-    next: '',
-    prev: '',
-    isClosed: true,
+  contactType: {
+    isChosenType: false,
+    selectContactType: '',
   },
   containersViewModel: {
-    showPrintButton: true,
     isTabsMode: false,
+    showPrintButton: true,
     validatedStatus: true,
   },
+  documentAttachment: {
+    documentsList: [
+      {
+        attacmentName: '',
+      },
+    ],
+    isClosed: true,
+    name: 'documentAttachment',
+    next: '',
+    prev: '',
+    state: 'notValidated',
+  },
+  followStatus: {
+    contactIdList: [
+      {
+        ticketNumber: '',
+      },
+    ],
+    contactIdResultList: [],
+    isClosed: true,
+    name: 'followStatus',
+    next: '',
+    prev: '',
+    state: 'notValidated',
+  },
   formInformation: {
-    referenceNumber: '',
-    stageStatus: '',
-    loadingDate: '',
     firstLoadingDate: '',
     isMobile: false,
     language: '',
+    loadingDate: '',
+    referenceNumber: '',
+    stageStatus: '',
+  },
+  personalDetails: {
+    appartment: '',
+    city: {
+      dataText: '',
+    },
+    contactOptions: '',
+    email: '',
+    fax: '',
+    firstName: '',
+    houseNumber: '',
+    iDNum: '',
+    isClosed: false,
+    lastName: '',
+    mobile: '',
+    name: 'personalDetails',
+    next: '',
+    phone: '',
+    postBox: '',
+    prev: '',
+    state: 'notValidated',
+    street: '',
+    zipCode: '',
+  },
+  requestDetails: {
+    busAndOther: {
+      addOrRemoveStation: '',
+      addingFrequencyReason: [],
+      applyContent: '',
+      busDirectionFrom: '',
+      busDirectionTo: '',
+      cityId: '',
+      cityName: '',
+      destinationCityCode: '',
+      destinationCityText: '',
+      destinationStationCity: {
+        dataText: '',
+      },
+      direction: {
+        dataText: '',
+      },
+      directionCode: '',
+      driverName: '',
+      eventDate: '',
+      eventHour: '',
+      fillByMakatOrAddress: '',
+      fromHour: '',
+      licenseNum: '',
+      lineCode: '',
+      lineNumberFromList: {
+        dataText: '',
+      },
+      lineNumberText: '',
+      makatStation: '',
+      operator: {
+        dataText: '',
+      },
+      originCityCode: '',
+      originCityName: '',
+      raisingStation: {
+        dataText: '',
+      },
+      raisingStationAddress: '',
+      raisingStationCity: {
+        dataText: '',
+      },
+      ravKav: true,
+      ravKavNumber: '',
+      reportTime: '',
+      reportdate: '',
+      stationName: '',
+      toHour: '',
+    },
+    isClosed: true,
+    name: 'requestDetails',
+    next: '',
+    prev: '',
+    requestSubjectCode: '',
+    requestTypeCode: '',
+    state: 'notValidated',
+    taxi: {
+      taxiType: '',
+    },
+    title: '',
+    train: {
+      applyContent: '',
+      destinationStation: {
+        dataText: '',
+      },
+      eventDate: '',
+      eventHour: '',
+      number: '',
+      startStation: {
+        dataText: '',
+      },
+      trainType: '',
+    },
+  },
+  requestSubject: {
+    applySubject: {
+      dataText: '',
+    },
+    applyType: {
+      dataText: '',
+    },
+    isClosed: true,
+    name: 'requestSubject',
+    next: '',
+    prev: '',
+    state: 'notValidated',
   },
 };
 
@@ -127,16 +162,16 @@ function fillTemplate(template, data = {}) {
 
     for (const key of Object.keys(template)) {
       if (typeof template[key] === 'object' && template[key] !== null) {
-        result[key] = fillTemplate(template[key], data && Object.prototype.hasOwnProperty.call(data, key) ? data[key] : undefined);
+        result[key] = fillTemplate(template[key], data && Object.hasOwn(data, key) ? data[key] : undefined);
       } else {
-        result[key] = data && Object.prototype.hasOwnProperty.call(data, key) ? data[key] : template[key];
+        result[key] = data && Object.hasOwn(data, key) ? data[key] : template[key];
       }
     }
 
     return result;
   }
 
-  return data !== undefined ? data : template;
+  return data === undefined ? template : data;
 }
 
 export function templateBuilder(body) {
@@ -148,9 +183,9 @@ export function templateBuilder(body) {
   const input = {
     dataModelSaver: {
       personalDetails: {
+        iDNum: body.userData.id,
         firstName: body.userData.firstName,
         lastName: body.userData.lastName,
-        iDNum: body.userData.id,
         email: body.userData.email,
         phone: body.userData.phone,
       },
@@ -161,8 +196,8 @@ export function templateBuilder(body) {
       },
     },
   };
-  const dataModelSaver = JSON.stringify(fillTemplate(dataModelTemplate, input.dataModelSaver), null, 2);
 
+  const dataModelSaver = JSON.stringify(fillTemplate(dataModelTemplate, input.dataModelSaver), null, 2);
   const fields = {
     UserUImode: body.UserUImode || 'AGFrom2Html',
     BTSFormID: body.BTSFormID || null,
@@ -266,7 +301,6 @@ export function templateBuilder(body) {
     ContactID: body.ContactID || '',
     contactIdResult: body.contactIdResult || '',
   };
-
   const nil = (name) => `<${name} xsi:nil="true"></${name}>`;
 
   return `<?xml version="1.0" encoding="utf-8"?>

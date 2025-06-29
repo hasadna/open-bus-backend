@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+
 import { templateBuilder } from '../src/utils/templateBuilder.js';
 
 describe('templateBuilder', () => {
@@ -11,16 +12,16 @@ describe('templateBuilder', () => {
 
   it('should support input structured as { userData, databusData }', () => {
     const xml = templateBuilder({
+      databusData: { operator: 5 },
       userData: {
-        firstName: 'נעם',
-        lastName: 'געש',
-        id: '123456789',
-        email: 'noam.gaash@gmail.com',
-        phone: '0536218158',
         complaintType: 'no_stop',
         description: "the bus didn't stop, despite I was in the station and waved really hard :(",
+        email: 'noam.gaash@gmail.com',
+        firstName: 'נעם',
+        id: '123456789',
+        lastName: 'געש',
+        phone: '0536218158',
       },
-      databusData: { operator: 5 },
     });
 
     expect(xml).to.include('<FirstName>נעם</FirstName>');
