@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { beforeEach, describe, it } from 'mocha';
+
 import {
   getCities,
   getLinesByLine,
@@ -22,8 +23,8 @@ import {
 } from '../src/schemas/gov.schema.js';
 
 describe('Government API Controller', () => {
-  let mockRequest;
   let mockReply;
+  let mockRequest;
 
   beforeEach(() => {
     // Create mock request and reply objects
@@ -36,7 +37,7 @@ describe('Government API Controller', () => {
 
     mockReply = {
       status: (code) => ({
-        send: (data) => ({ statusCode: code, data }),
+        send: (data) => ({ data, statusCode: code }),
       }),
     };
   });
@@ -44,7 +45,7 @@ describe('Government API Controller', () => {
   describe('getLinesByStation', () => {
     it('should have correct function signature', () => {
       expect(getLinesByStation).to.be.a('function');
-      expect(getLinesByStation.length).to.equal(2); // request, reply parameters
+      expect(getLinesByStation.length).to.equal(2);
     });
 
     it('should handle request with required parameters', () => {
@@ -69,10 +70,10 @@ describe('Government API Controller', () => {
 
     it('should handle request with required parameters', () => {
       mockRequest.body = {
-        eventDate: '13/05/2025',
-        OperatorId: 3,
-        OfficelineId: 12083,
         Directions: [1],
+        OfficelineId: 12083,
+        OperatorId: 3,
+        eventDate: '13/05/2025',
       };
 
       expect(() => {
@@ -95,6 +96,11 @@ describe('Government API Controller', () => {
       expect(() => {
         getSubjects(mockRequest, mockReply);
       }).to.not.throw();
+    });
+
+    it('should not have a body schema for getSubjects', () => {
+      const schema = getSubjectsSchema;
+      expect(schema).to.not.have.property('body');
     });
   });
 
@@ -157,9 +163,9 @@ describe('Government API Controller', () => {
 
     it('should handle request with required parameters', () => {
       mockRequest.body = {
-        eventDate: '13/05/2025',
         OperatorId: 3,
         OperatorLineId: 83,
+        eventDate: '13/05/2025',
       };
 
       expect(() => {
@@ -215,7 +221,7 @@ describe('Government API Controller', () => {
     it('should validate required fields for getSubjects', () => {
       const schema = getSubjectsSchema;
 
-      expect(schema.body.required).to.include('listName');
+      expect(schema).to.not.have.property('body');
     });
 
     it('should validate required fields for getTrainStations', () => {
@@ -227,13 +233,13 @@ describe('Government API Controller', () => {
     it('should validate required fields for getPniya', () => {
       const schema = getPniyaSchema;
 
-      expect(schema.body.required).to.include('listName');
+      expect(schema).to.not.have.property('body');
     });
 
     it('should validate required fields for getNotRealNumbers', () => {
       const schema = getNotRealNumbersSchema;
 
-      expect(schema.body.required).to.include('listName');
+      expect(schema).to.not.have.property('body');
     });
 
     it('should validate required fields for getLinesByLine', () => {

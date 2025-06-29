@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'mocha';
+
 import { createIssue } from '../src/controllers/issues.controller.js';
 import {
   cleanup,
@@ -18,15 +19,15 @@ describe('createIssue', () => {
 
   beforeEach(() => {
     request = createMockRequest({
-      title: 'Test Issue',
-      contactName: 'John Doe',
+      actualBehavior: 'Does not work',
+      attachments: [],
       contactEmail: 'john@example.com',
+      contactName: 'John Doe',
       description: 'Test description',
       environment: 'Test environment',
       expectedBehavior: 'Should work',
-      actualBehavior: 'Does not work',
       reproducibility: 'Always',
-      attachments: [],
+      title: 'Test Issue',
     });
 
     reply = createMockReply();
@@ -118,9 +119,9 @@ describe('createIssue', () => {
 
   it('should handle missing GitHub env variables gracefully', async () => {
     setupGitHubEnv({
-      GITHUB_TOKEN: undefined,
       GITHUB_OWNER: undefined,
       GITHUB_REPO: undefined,
+      GITHUB_TOKEN: undefined,
     });
 
     await createIssue(request, reply, mockHttpClient);
