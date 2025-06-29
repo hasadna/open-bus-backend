@@ -13,21 +13,6 @@ export async function createServer() {
     ignoreTrailingSlash: true,
     logger: {
       level: process.env.LOG_LEVEL || (isDev ? 'debug' : 'info'),
-      serializers: {
-        req(request) {
-          return {
-            method: request.method,
-            parameters: request.params,
-            query: request.query,
-            url: request.url,
-          };
-        },
-        res(reply) {
-          return {
-            statusCode: reply.statusCode,
-          };
-        },
-      },
       transport: isDev
         ? {
             options: {
@@ -40,8 +25,6 @@ export async function createServer() {
           }
         : undefined,
     },
-    requestTimeout: parseInt(process.env.REQUEST_TIMEOUT, 10) || 10000,
-    // 10s default
     trustProxy: true,
   });
 

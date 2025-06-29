@@ -12,7 +12,7 @@ import {
 } from '../controllers/gov.controller.js';
 import {
   getCitiesSchema,
-  // GetLinesByLineSchema,
+  getLinesByLineSchema,
   // GetLinesByStationSchema,
   getNotRealNumbersSchema,
   getOperatorsSchema,
@@ -35,6 +35,7 @@ export function govRoutes(fastify) {
   fastify.post('/train-stations', { schema: getTrainStationsSchema }, getTrainStations);
   fastify.get('/pniya', { schema: getPniyaSchema }, getPniya);
   fastify.get('/not-real-numbers', { schema: getNotRealNumbersSchema }, getNotRealNumbers);
-  fastify.post('/lines-by-line', {}, getLinesByLine);
+  fastify.post('/lines-by-line', { schema: getLinesByLineSchema }, getLinesByLine);
   fastify.get('/time', { schema: getTimeSchema }, getTime);
 }
+//
