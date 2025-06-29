@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { templateBuilder, getReferenceNumber } from '../utils/index.js';
+
+import { getReferenceNumber, templateBuilder } from '../utils/index.js';
 
 const URL = 'https://forms.gov.il/globaldata/getsequence/getHtmlForm.aspx?formType=PniotMot%40mot.gov.il';
 
@@ -20,13 +21,11 @@ export async function sendComplaint(request, reply) {
 
     // Generate reference number
     const referenceNumber = getReferenceNumber(debug);
-
     // Build request payload
     const payload = {
       ...request.body,
       ReferenceNumber: referenceNumber,
     };
-
     // Generate XML
     const xml = templateBuilder(payload);
 
@@ -44,7 +43,8 @@ export async function sendComplaint(request, reply) {
     // Send to government API
     const response = await axios.post(URL, xml, {
       headers: { 'Content-Type': 'application/xml' },
-      timeout: 30000, // 30 second timeout
+      timeout: 30000,
+      // 30 second timeout
     });
 
     request.log.info('Complaint submitted successfully', {

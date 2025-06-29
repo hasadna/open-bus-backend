@@ -1,5 +1,6 @@
 import { strict as assert } from 'assert';
 import { describe, it } from 'mocha';
+
 import { getReferenceNumber } from '../src/utils/getReferenceNumber.js';
 
 describe('getReferenceNumber', () => {
