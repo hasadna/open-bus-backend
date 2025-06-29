@@ -12,12 +12,12 @@ import {
 } from '../controllers/gov.controller.js';
 import {
   getCitiesSchema,
-  // getLinesByLineSchema,
-  // getLinesByStationSchema,
+  // GetLinesByLineSchema,
+  // GetLinesByStationSchema,
   getNotRealNumbersSchema,
   getOperatorsSchema,
   getPniyaSchema,
-  // getStationByLineSchema,
+  // GetStationByLineSchema,
   getSubjectsSchema,
   getTimeSchema,
   getTrainStationsSchema,

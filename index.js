@@ -4,8 +4,8 @@ import { globalErrorHandler, notFoundHandler } from './src/middleware/index.js';
 import { registerRoutes } from './src/routes/index.js';
 import { setupGracefulShutdown } from './src/utils/index.js';
 
-const PORT = process.env.PORT || 3001;
 const HOST = process.env.HOST || '0.0.0.0';
+const PORT = process.env.PORT || 3001;
 
 // Start the server
 async function start() {
@@ -18,13 +18,13 @@ async function start() {
     fastify.setNotFoundHandler(notFoundHandler);
 
     // Register all routes
-    await registerRoutes(fastify);
+    registerRoutes(fastify);
 
     // Setup graceful shutdown handlers
     setupGracefulShutdown(fastify);
 
     // Start listening
-    fastify.listen({ port: PORT, host: HOST });
+    fastify.listen({ host: HOST, port: PORT });
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);
