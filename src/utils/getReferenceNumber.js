@@ -7,9 +7,10 @@ export async function getReferenceNumber(debug = false) {
   if (debug) {
     return '1234567';
   }
+
   const { data: html } = await axios.get(URL);
-  const $ = cheerioLoad(html);
-  const el = $('#ReferenceNumber');
+  const dom = cheerioLoad(html);
+  const el = dom('#ReferenceNumber');
 
   if (!el.length) {
     return null;

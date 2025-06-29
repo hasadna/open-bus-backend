@@ -49,15 +49,15 @@ export const swaggerConfig = {
 export const swaggerUIConfig = {
   routePrefix: '/docs',
   uiConfig: {
-    docExpansion: 'list',
     deepLinking: true,
     displayRequestDuration: true,
+    docExpansion: 'list',
     filter: true,
-    showExtensions: true,
-    showCommonExtensions: true,
-    tryItOutEnabled: true,
-    tagsSorter: 'alpha',
     operationsSorter: 'alpha',
+    showCommonExtensions: true,
+    showExtensions: true,
+    tagsSorter: 'alpha',
+    tryItOutEnabled: true,
   },
   uiHooks: {
     onRequest(request, reply, next) {

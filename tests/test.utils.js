@@ -1,22 +1,21 @@
-import sinon from 'sinon';
+import { match, restore, stub } from 'sinon';
 
 /**
  * Create a mock Fastify reply object
  */
 export function createMockReply() {
   const reply = {
-    sendCalledWith: null,
-    statusCalledWith: null,
     send(data) {
       this.sendCalledWith = data;
 
       return this;
     },
+    sendCalledWith: null,
     status(code) {
       this.statusCalledWith = code;
-
       return this;
     },
+    statusCalledWith: null,
   };
 
   // Bind methods to ensure proper context
@@ -35,14 +34,14 @@ export function createMockReply() {
 export function createMockRequest(body = {}, params = {}, query = {}) {
   return {
     body,
+    log: {
+      debug: stub(),
+      error: stub(),
+      info: stub(),
+      warn: stub(),
+    },
     params,
     query,
-    log: {
-      info: sinon.stub(),
-      error: sinon.stub(),
-      warn: sinon.stub(),
-      debug: sinon.stub(),
-    },
   };
 }
 
@@ -52,16 +51,16 @@ export function createMockRequest(body = {}, params = {}, query = {}) {
  */
 export function createMockHttpClient(responses = {}) {
   const mockClient = {
-    post: sinon.stub(),
-    get: sinon.stub(),
+    get: stub(),
+    post: stub(),
   };
 
   // Set up default responses
   Object.entries(responses).forEach(([pattern, response]) => {
     if (pattern.includes('github')) {
-      mockClient.post.withArgs(sinon.match(pattern)).resolves(response);
+      mockClient.post.withArgs(match(pattern)).resolves(response);
     } else {
-      mockClient.get.withArgs(sinon.match(pattern)).resolves(response);
+      mockClient.get.withArgs(match(pattern)).resolves(response);
     }
   });
 
@@ -77,12 +76,12 @@ export function createMockHttpClient(responses = {}) {
 export function createMockGitHubResponse(id = 123, title = 'Test Issue', state = 'open') {
   return {
     data: {
+      created_at: new Date().toISOString(),
+      html_url: `https://github.com/test/repo/issues/${id}`,
       id,
       number: id,
-      title,
       state,
-      html_url: `https://github.com/test/repo/issues/${id}`,
-      created_at: new Date().toISOString(),
+      title,
       updated_at: new Date().toISOString(),
     },
   };
@@ -98,9 +97,9 @@ export function createMockGitHubError(status = 500, message = 'Internal Server E
   const error = new Error(message);
 
   error.response = {
+    data: { message },
     status,
     statusText: message,
-    data: { message },
   };
 
   return error;
@@ -112,15 +111,14 @@ export function createMockGitHubError(status = 500, message = 'Internal Server E
  */
 export function setupGitHubEnv(env = {}) {
   const defaults = {
-    GITHUB_TOKEN: 'fake-token',
     GITHUB_OWNER: 'fake-owner',
     GITHUB_REPO: 'fake-repo',
+    GITHUB_TOKEN: 'fake-token',
   };
-
   const testEnv = { ...defaults, ...env };
 
   Object.entries(testEnv).forEach(([key, value]) => {
-    if (value === undefined) {
+    if (typeof value === 'undefined') {
       delete process.env[key];
     } else {
       process.env[key] = value;
@@ -132,12 +130,12 @@ export function setupGitHubEnv(env = {}) {
  * Restore all Sinon stubs and restore original environment
  */
 export function cleanup() {
-  sinon.restore();
+  restore();
 }
 
 /**
  * Create a sandbox for isolated test stubs
  */
 export function createSandbox() {
-  return sinon.createSandbox();
+  return createSandbox();
 }

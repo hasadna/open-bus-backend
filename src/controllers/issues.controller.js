@@ -22,7 +22,10 @@ function sendError(reply, request, status, payload, logMsg, logObj = {}) {
  * @param {object} [httpClient=axios] - HTTP client for GitHub API
  */
 export async function createIssue(request, reply, httpClient = axios) {
-  const logger = request?.log || { info: () => {}, error: () => {} };
+  const logger = request?.log || {
+    info: () => {},
+    error: () => {},
+  };
 
   try {
     const { title, contactName, contactEmail, description, environment, expectedBehavior, actualBehavior, reproducibility, attachments } =
@@ -35,16 +38,19 @@ export async function createIssue(request, reply, httpClient = axios) {
     });
 
     // Validate required environment variables
-    const token = process.env.GITHUB_TOKEN;
-    const repoOwner = process.env.GITHUB_OWNER;
     const repoName = process.env.GITHUB_REPO;
+    const repoOwner = process.env.GITHUB_OWNER;
+    const token = process.env.GITHUB_TOKEN;
 
     if (!token || !repoOwner || !repoName) {
       return sendError(
         reply,
         request,
         500,
-        { error: 'Configuration error', message: 'GitHub configuration is incomplete' },
+        {
+          error: 'Configuration error',
+          message: 'GitHub configuration is incomplete',
+        },
         'Missing GitHub configuration',
         { hasToken: Boolean(token), hasOwner: Boolean(repoOwner), hasRepo: Boolean(repoName) },
       );
@@ -53,7 +59,6 @@ export async function createIssue(request, reply, httpClient = axios) {
     // Create the body for the GitHub issue
     const body = `## Contact Information\n**Contact Name:** ${contactName}\n**Contact Email:** ${contactEmail}\n\n## Issue Details\n**Description:** \n${description}\n\n**Environment:** ${environment}\n\n**Expected Behavior:** \n${expectedBehavior}\n\n**Actual Behavior:** \n${actualBehavior}\n\n**Reproducibility:** ${reproducibility}\n\n${attachments && attachments.length > 0 ? `## Attachments\n${attachments.map((url) => `- ${url}`).join('\n')}` : ''}\n\n---\n*Issue created via API on ${new Date().toISOString()}*`;
     const labels = ['REPORTED-BY-USER'];
-
     // Create the GitHub issue
     const response = await httpClient.post(
       `https://api.github.com/repos/${repoOwner}/${repoName}/issues`,
