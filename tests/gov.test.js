@@ -245,7 +245,7 @@ describe('Government API Controller', () => {
     it('should validate required fields for getLinesByLine', () => {
       const schema = getLinesByLineSchema;
 
-      expect(schema.body.required).to.include('eventDate');
+      expect(schema.body.required).to.include('EventDate');
       expect(schema.body.required).to.include('OperatorId');
       expect(schema.body.required).to.include('OperatorLineId');
     });

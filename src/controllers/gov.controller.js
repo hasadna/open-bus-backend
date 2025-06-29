@@ -20,6 +20,19 @@ export const govRequest = {
 };
 
 /**
+ * Formats a Date object into a string in the format 'DD/MM/YYYY'.
+ *
+ * @param {Date} date - The Date object to format.
+ */
+function formatDate(date) {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+}
+
+/**
  * Get bus lines by station handler
  * @param {import('fastify').FastifyRequest} request
  * @param {import('fastify').FastifyReply} reply
@@ -167,10 +180,11 @@ export async function getNotRealNumbers(request, reply) {
  */
 export async function getLinesByLine(request, reply) {
   try {
-    const { OperatorId, OperatorLineId, eventDate } = request.body;
-    request.log.info('Getting lines by line ID', { OperatorId, OperatorLineId, eventDate });
-    const response = await govRequest.post('/trafficLicensing/GetLines');
-    return reply.status(200).send({ data: response.data, success: true });
+    const { EventDate, OperatorId, OperatorLineId } = request.body;
+    const date = formatDate(new Date(EventDate));
+    request.log.info('Getting lines by line ID', { EventDate: date, OperatorId, OperatorLineId });
+    const response = await govRequest.post('/trafficLicensing/GetLines', { EventDate: date, OperatorId, OperatorLineId });
+    return reply.status(200).send({ data: response.data.Data, success: true });
   } catch (error) {
     request.log.error('Error getting lines by line ID', { body: request.body, error: error.message });
     if (error.response) {
