@@ -5,7 +5,7 @@ export const swaggerConfig = {
   swagger: {
     info: {
       title: 'Open Bus Backend API',
-      version: process.env.npm_package_version || '1.0.0',
+      version: process.env.npm_package_version || '0.0.0',
     },
     tags: [
       { name: 'Health', description: 'Health check endpoints' },
@@ -27,7 +27,7 @@ export const swaggerConfig = {
           status: { type: 'string', example: 'alive' },
           timestamp: { type: 'string', format: 'date-time' },
           uptime: { type: 'number' },
-          version: { type: 'string' },
+          version: { type: 'string', example: '0.0.0' },
         },
       },
       SuccessResponse: {
