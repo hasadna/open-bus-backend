@@ -1,16 +1,34 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const { createIssue } = require('./controllers/issueController');
+// External dependencies
+import { createServer } from './src/config/index.js';
+import { globalErrorHandler, notFoundHandler } from './src/middleware/index.js';
+import { registerRoutes } from './src/routes/index.js';
+import { setupGracefulShutdown } from './src/utils/index.js';
 
-const app = express();
+const HOST = process.env.HOST || '0.0.0.0';
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
-app.use(bodyParser.json());
+// Start the server
+async function start() {
+  try {
+    // Create and configure Fastify instance
+    const fastify = await createServer();
 
-app.post('/create-issue', createIssue);
+    // Register global error handlers
+    fastify.setErrorHandler(globalErrorHandler);
+    fastify.setNotFoundHandler(notFoundHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+    // Register all routes
+    registerRoutes(fastify);
+
+    // Setup graceful shutdown handlers
+    setupGracefulShutdown(fastify);
+
+    // Start listening
+    fastify.listen({ host: HOST, port: PORT });
+  } catch (err) {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  }
+}
+
+start();
