@@ -13,11 +13,11 @@ import {
 import {
   getCitiesSchema,
   getLinesByLineSchema,
-  // GetLinesByStationSchema,
+  getLinesByStationSchema,
   getNotRealNumbersSchema,
   getOperatorsSchema,
   getPniyaSchema,
-  // GetStationByLineSchema,
+  getStationByLineSchema,
   getSubjectsSchema,
   getTimeSchema,
   getTrainStationsSchema,
@@ -29,8 +29,8 @@ import {
 export function govRoutes(fastify) {
   fastify.get('/cities', { schema: getCitiesSchema }, getCities);
   fastify.get('/operators', { schema: getOperatorsSchema }, getOperators);
-  fastify.post('/lines-by-station', {}, getLinesByStation);
-  fastify.post('/stations-by-line', {}, getStationByLine);
+  fastify.post('/lines-by-station', { schema: getLinesByStationSchema }, getLinesByStation);
+  fastify.post('/stations-by-line', { schema: getStationByLineSchema }, getStationByLine);
   fastify.get('/subjects', { schema: getSubjectsSchema }, getSubjects);
   fastify.post('/train-stations', { schema: getTrainStationsSchema }, getTrainStations);
   fastify.get('/pniya', { schema: getPniyaSchema }, getPniya);
@@ -38,4 +38,3 @@ export function govRoutes(fastify) {
   fastify.post('/lines-by-line', { schema: getLinesByLineSchema }, getLinesByLine);
   fastify.get('/time', { schema: getTimeSchema }, getTime);
 }
-//

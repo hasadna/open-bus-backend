@@ -28,22 +28,19 @@ export const getLinesByStationSchema = {
     required: ['EventDate', 'OperatorId', 'StationId'],
     properties: {
       EventDate: {
-        type: 'string',
-        example: '13/05/2025',
-        pattern: '^\\d{2}/\\d{2}/\\d{4}$',
-        description: 'Event date in DD/MM/YYYY format',
+        type: 'number',
+        description: 'Event date in number',
+        // example: 1747083600000,
       },
       OperatorId: {
         type: 'number',
-        example: 3,
-        minimum: 1,
         description: 'Operator ID',
+        // example: 3,
       },
       StationId: {
         type: 'number',
-        example: 57865,
-        minimum: 1,
         description: 'Station ID',
+        // example: 57865,
       },
     },
   },
@@ -57,12 +54,48 @@ export const getLinesByStationSchema = {
           items: {
             type: 'object',
             properties: {
-              lineId: { type: 'number' },
-              lineName: { type: 'string' },
+              lineCode: { type: 'number' },
+              lineText: { type: 'string' },
               operatorId: { type: 'number' },
-              operatorName: { type: 'string' },
+              eventDate: { type: 'string' },
+              directionCode: { type: 'number' },
+              directionText: { type: 'string' },
+              destinationCity: {
+                type: 'object',
+                properties: {
+                  DataCode: { type: 'number' },
+                  DataText: { type: 'string' },
+                },
+              },
+              originCity: {
+                type: 'object',
+                properties: {
+                  DataCode: { type: 'number' },
+                  DataText: { type: 'string' },
+                },
+              },
+              message: { type: ['string', 'null'] },
             },
           },
+          example: [
+            {
+              lineCode: 10083,
+              lineText: '83',
+              operatorId: 3,
+              eventDate: '2025-05-13T00:00:00',
+              directionCode: 2,
+              directionText: 'חיפה-חיפה',
+              destinationCity: {
+                DataCode: 4000,
+                DataText: 'חיפה',
+              },
+              originCity: {
+                DataCode: 4000,
+                DataText: 'חיפה',
+              },
+              message: null,
+            },
+          ],
         },
       },
     },
@@ -81,60 +114,66 @@ export const getStationByLineSchema = {
   description: 'Retrieve stations for a specific bus line',
   body: {
     type: 'object',
-    required: ['eventDate', 'OperatorId', 'OfficelineId', 'Directions'],
+    // required: ['EventDate', 'OperatorId', 'OfficelineId', 'Directions'],
     properties: {
-      eventDate: {
-        type: 'string',
-        example: '13/05/2025',
-        pattern: '^\\d{2}/\\d{2}/\\d{4}$',
-        description: 'Event date in DD/MM/YYYY format',
+      EventDate: {
+        type: 'number',
+        description: 'Event date in number',
+        // example: 1747083600000,
       },
       OperatorId: {
         type: 'number',
-        example: 3,
-        minimum: 1,
         description: 'Operator ID',
+        // example: 3,
       },
       OfficelineId: {
         type: 'number',
-        example: 12083,
-        minimum: 1,
+        // example: 12083,
         description: 'Official line ID',
       },
       Directions: {
-        type: 'array',
-        items: {
-          type: 'number',
-          minimum: 1,
-        },
-        example: [1],
-        minItems: 1,
-        description: 'Array of direction IDs',
+        type: 'number',
+        description: 'Direction IDs',
+        // example: 1,
       },
     },
   },
-  response: {
-    200: {
-      ...commonSuccessResponse,
-      properties: {
-        ...commonSuccessResponse.properties,
-        data: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              stationId: { type: 'number' },
-              stationName: { type: 'string' },
-              direction: { type: 'number' },
-              sequence: { type: 'number' },
-            },
-          },
-        },
-      },
-    },
-    400: commonErrorResponse,
-    500: commonErrorResponse,
-  },
+  // response: {
+  // 200: {
+  //   ...commonSuccessResponse,
+  //   properties: {
+  //     ...commonSuccessResponse.properties,
+  //     data: {
+  //       type: 'array',
+  //       items: {
+  //         type: 'object',
+  //         properties: {
+  //           stationId: { type: 'number' },
+  //           stationName: { type: 'string' },
+  //           direction: { type: 'number' },
+  //           sequence: { type: 'number' },
+  //         },
+  //       },
+  //       example: [
+  //         {
+  //           stationId: 57865,
+  //           stationName: 'חיפה - מרכזית המפרץ',
+  //           direction: 1,
+  //           sequence: 1,
+  //         },
+  //         {
+  //           stationId: 57866,
+  //           stationName: 'חיפה - חוף הכרמל',
+  //           direction: 1,
+  //           sequence: 2,
+  //         },
+  //       ],
+  //     },
+  //   },
+  // },
+  //   400: commonErrorResponse,
+  //   500: commonErrorResponse,
+  // },
 };
 
 /**
@@ -288,19 +327,16 @@ export const getLinesByLineSchema = {
     properties: {
       EventDate: {
         type: 'number',
-        minimum: 0,
         description: 'Event date in number',
         // example: 1747083600000,
       },
       OperatorId: {
         type: 'number',
-        minimum: 0,
         description: 'Operator ID',
         // example: 3,
       },
       OperatorLineId: {
         type: 'number',
-        minimum: 0,
         description: 'Operator line ID',
         // example: 83,
       },
