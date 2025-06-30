@@ -40,8 +40,9 @@ function formatDate(date) {
 export async function getLinesByStation(request, reply) {
   try {
     const { EventDate, OperatorId, StationId } = request.body;
-    request.log.info('Getting lines by station', { EventDate, OperatorId, StationId });
-    const response = await govRequest.post('/trafficLicensing/GetLines', request.body);
+    const date = formatDate(new Date(EventDate));
+    request.log.info('Getting lines by station', { EventDate: date, OperatorId, StationId });
+    const response = await govRequest.post('/trafficLicensing/GetLines', { EventDate: date, OperatorId, StationId });
     return reply.status(200).send({ data: response.data, success: true });
   } catch (error) {
     request.log.error('Error getting lines by station', { body: request.body, error: error.message });
@@ -62,15 +63,20 @@ export async function getLinesByStation(request, reply) {
  */
 export async function getStationByLine(request, reply) {
   try {
-    const { eventDate, OperatorId, OfficelineId, Directions } = request.body;
+    const { EventDate, OperatorId, OfficelineId, Directions } = request.body;
+    const date = formatDate(new Date(EventDate));
     request.log.info('Getting stations by line', {
+      EventDate: date,
       OfficelineId,
       OperatorId,
-      directionsCount: Directions?.length,
-      eventDate,
+      Directions,
     });
-
-    const response = await govRequest.post('/trafficLicensing/GetStationToLine', request.body);
+    const response = await govRequest.post('/trafficLicensing/GetStationToLine', {
+      EventDate: date,
+      OperatorId,
+      OfficelineId,
+      Directions: [Directions],
+    });
     return reply.status(200).send({ data: response.data, success: true });
   } catch (error) {
     request.log.error('Error getting stations by line', { body: request.body, error: error.message });
