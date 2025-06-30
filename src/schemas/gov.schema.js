@@ -114,7 +114,7 @@ export const getStationByLineSchema = {
   description: 'Retrieve stations for a specific bus line',
   body: {
     type: 'object',
-    // required: ['EventDate', 'OperatorId', 'OfficelineId', 'Directions'],
+    required: ['EventDate', 'OperatorId', 'OfficelineId', 'Directions'],
     properties: {
       EventDate: {
         type: 'number',
