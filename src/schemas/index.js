@@ -4,7 +4,7 @@ import S from 'fluent-json-schema';
 export const commonErrorResponse = S.object().prop('error', S.string()).prop('message', S.string()).prop('details', S.object());
 
 /** Common success response schema */
-export const commonSuccessResponse = S.object().prop('success', S.boolean()).prop('data', S.object());
+export const commonSuccessResponse = S.object().prop('success', S.boolean().default(true)).prop('data', S.object());
 
 /** Reusable field helpers */
 export const idField = () => S.number().description('ID');
