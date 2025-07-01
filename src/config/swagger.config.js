@@ -1,5 +1,9 @@
+import { healthCheckSchema } from '../schemas/health.schema.js';
+import { commonErrorResponse, commonSuccessResponse } from '../schemas/index.js';
+
 /**
- * Swagger configuration for API documentation
+ * Swagger configuration
+ * @type {import('fastify').FastifySwaggerOptions}
  */
 export const swaggerConfig = {
   swagger: {
@@ -14,29 +18,9 @@ export const swaggerConfig = {
       { name: 'Government Transportation API', description: 'Government transportation data endpoints' },
     ],
     definitions: {
-      Error: {
-        type: 'object',
-        properties: {
-          error: { type: 'string' },
-          message: { type: 'string' },
-        },
-      },
-      HealthResponse: {
-        type: 'object',
-        properties: {
-          status: { type: 'string', example: 'alive' },
-          timestamp: { type: 'string', format: 'date-time' },
-          uptime: { type: 'number' },
-          version: { type: 'string', example: '0.0.0' },
-        },
-      },
-      SuccessResponse: {
-        type: 'object',
-        properties: {
-          success: { type: 'boolean' },
-          data: { type: 'object' },
-        },
-      },
+      Error: commonErrorResponse.valueOf(),
+      HealthResponse: healthCheckSchema.response['200'].valueOf(),
+      SuccessResponse: commonSuccessResponse.valueOf(),
     },
   },
   staticCSP: true,
@@ -45,6 +29,7 @@ export const swaggerConfig = {
 
 /**
  * Swagger UI configuration
+ * @type {import('fastify').FastifySwaggerUiOptions}
  */
 export const swaggerUIConfig = {
   routePrefix: '/docs',
@@ -54,8 +39,6 @@ export const swaggerUIConfig = {
     docExpansion: 'list',
     filter: true,
     operationsSorter: 'alpha',
-    showCommonExtensions: true,
-    showExtensions: true,
     tagsSorter: 'alpha',
     tryItOutEnabled: true,
   },
@@ -67,6 +50,6 @@ export const swaggerUIConfig = {
       next();
     },
   },
-  staticCSP: true,
   transformStaticCSP: (header) => header,
+  staticCSP: true,
 };
