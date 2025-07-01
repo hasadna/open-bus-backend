@@ -5,16 +5,12 @@ on:
     branches: [main]
 
 permissions:
-  contents: read # for checkout and git clone
-  # actions: write # for uploading artifacts if any (optional here)
-  # workflows: write # if triggering other workflows (not used here, optional)
-  # pull-requests: write # only if modifying PRs (not used here)
+  contents: read
 
 env:
   DOCKER_APP_IMAGE_NAME: 'ghcr.io/hasadna/open-bus-backend/open-bus-backend'
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   HASADNA_K8S_DEPLOY_KEY: ${{ secrets.HASADNA_K8S_DEPLOY_KEY }}
-  SKIP_CI: ${{ secrets.SKIP_CI || vars.SKIP_CI || '' }}
 
 jobs:
   ci:
@@ -23,21 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check for skip CI
-        id: skip_check
-        run: |
-          if [[ "${SKIP_CI}" == "true" ]]; then
-            echo "skip_ci=true" >> $GITHUB_OUTPUT
-            echo "SKIP_CI is set. Skipping CI."
-          elif git log -1 --pretty=%B | grep -iqE '\[skip ci\]|\[ci skip\]'; then
-            echo "skip_ci=true" >> $GITHUB_OUTPUT
-            echo "Commit message requests to skip CI. Skipping."
-          else
-            echo "skip_ci=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Check environment variables and Docker login
-        if: steps.skip_check.outputs.skip_ci != 'true'
         run: |
           for var in DOCKER_APP_IMAGE_NAME GITHUB_TOKEN HASADNA_K8S_DEPLOY_KEY; do
             if [ -z "${!var}" ]; then
@@ -67,7 +49,6 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Build, tag, push Docker image and deploy
-        if: steps.skip_check.outputs.skip_ci != 'true'
         run: |
           if docker pull "${DOCKER_APP_IMAGE_NAME}:latest"; then
             CACHE_FROM_ARG="--cache-from=type=local,src=/tmp/.buildx-cache"
