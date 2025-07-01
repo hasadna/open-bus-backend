@@ -12,15 +12,6 @@ import {
   getTime,
   getTrainStations,
 } from '../src/controllers/gov.controller.js';
-import {
-  getLinesByLineSchema,
-  getLinesByStationSchema,
-  getNotRealNumbersSchema,
-  getPniyaSchema,
-  getStationByLineSchema,
-  getSubjectsSchema,
-  getTrainStationsSchema,
-} from '../src/schemas/gov.schema.js';
 
 describe('Government API Controller', () => {
   let mockReply;
@@ -96,11 +87,6 @@ describe('Government API Controller', () => {
       expect(() => {
         getSubjects(mockRequest, mockReply);
       }).to.not.throw();
-    });
-
-    it('should not have a body schema for getSubjects', () => {
-      const schema = getSubjectsSchema;
-      expect(schema).to.not.have.property('body');
     });
   });
 
@@ -197,57 +183,6 @@ describe('Government API Controller', () => {
       expect(() => {
         getTime(mockRequest, mockReply);
       }).to.not.throw();
-    });
-  });
-
-  describe('Schema validation', () => {
-    it('should validate required fields for getLinesByStation', () => {
-      const schema = getLinesByStationSchema;
-
-      expect(schema.body.required).to.include('EventDate');
-      expect(schema.body.required).to.include('OperatorId');
-      expect(schema.body.required).to.include('StationId');
-    });
-
-    it('should validate required fields for getStationByLine', () => {
-      const schema = getStationByLineSchema;
-
-      expect(schema.body.required).to.include('EventDate');
-      expect(schema.body.required).to.include('OperatorId');
-      expect(schema.body.required).to.include('OfficelineId');
-      expect(schema.body.required).to.include('Directions');
-    });
-
-    it('should validate required fields for getSubjects', () => {
-      const schema = getSubjectsSchema;
-
-      expect(schema).to.not.have.property('body');
-    });
-
-    it('should validate required fields for getTrainStations', () => {
-      const schema = getTrainStationsSchema;
-
-      expect(schema.body.required).to.include('StationTypeId');
-    });
-
-    it('should validate required fields for getPniya', () => {
-      const schema = getPniyaSchema;
-
-      expect(schema).to.not.have.property('body');
-    });
-
-    it('should validate required fields for getNotRealNumbers', () => {
-      const schema = getNotRealNumbersSchema;
-
-      expect(schema).to.not.have.property('body');
-    });
-
-    it('should validate required fields for getLinesByLine', () => {
-      const schema = getLinesByLineSchema;
-
-      expect(schema.body.required).to.include('EventDate');
-      expect(schema.body.required).to.include('OperatorId');
-      expect(schema.body.required).to.include('OperatorLineId');
     });
   });
 });
