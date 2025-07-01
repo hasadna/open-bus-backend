@@ -22,6 +22,7 @@ export default defineConfig([
       'capitalized-comments': 'off',
       complexity: 'off',
       'func-style': 'off',
+      'id-length': 'off',
       'init-declarations': 'off',
       'max-lines': 'off',
       'max-lines-per-function': 'off',

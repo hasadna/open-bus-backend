@@ -1,3 +1,5 @@
+import { S } from './index.js';
+
 /**
  * Create issue endpoint schema
  * @type {import('fastify').FastifySchema}
@@ -6,118 +8,35 @@ export const createIssueSchema = {
   tags: ['Issues'],
   summary: 'Create a GitHub issue',
   description: 'Creates a new GitHub issue with the provided information',
-  body: {
-    type: 'object',
-    required: ['title', 'contactName', 'contactEmail', 'description', 'environment', 'expectedBehavior', 'actualBehavior', 'reproducibility'],
-    properties: {
-      title: {
-        type: 'string',
-        description: 'Title of the issue',
-        minLength: 5,
-        maxLength: 200,
-      },
-      contactName: {
-        type: 'string',
-        description: 'Name of the person reporting the issue',
-        minLength: 1,
-        maxLength: 100,
-      },
-      contactEmail: {
-        type: 'string',
-        format: 'email',
-        description: 'Email of the person reporting the issue',
-      },
-      description: {
-        type: 'string',
-        description: 'Detailed description of the issue',
-        minLength: 10,
-        maxLength: 5000,
-      },
-      environment: {
-        type: 'string',
-        description: 'Environment where the issue occurred',
-        minLength: 1,
-        maxLength: 200,
-      },
-      expectedBehavior: {
-        type: 'string',
-        description: 'What was expected to happen',
-        minLength: 5,
-        maxLength: 1000,
-      },
-      actualBehavior: {
-        type: 'string',
-        description: 'What actually happened',
-        minLength: 5,
-        maxLength: 1000,
-      },
-      reproducibility: {
-        type: 'string',
-        description: 'How often the issue can be reproduced',
-        enum: ['always', 'sometimes', 'rarely', 'once'],
-      },
-      attachments: {
-        type: 'array',
-        items: {
-          type: 'string',
-          format: 'uri',
-        },
-        description: 'Optional attachments (file URLs)',
-        maxItems: 10,
-      },
-    },
-  },
+  body: S.object()
+    .prop('title', S.string().minLength(5).maxLength(200).description('Title of the issue'))
+    .prop('contactName', S.string().minLength(1).maxLength(100).description('Name of the person reporting the issue'))
+    .prop('contactEmail', S.string().format('email').description('Email of the person reporting the issue'))
+    .prop('description', S.string().minLength(10).maxLength(5000).description('Detailed description of the issue'))
+    .prop('environment', S.string().minLength(1).maxLength(200).description('Environment where the issue occurred'))
+    .prop('expectedBehavior', S.string().minLength(5).maxLength(1000).description('What was expected to happen'))
+    .prop('actualBehavior', S.string().minLength(5).maxLength(1000).description('What actually happened'))
+    .prop('reproducibility', S.string().enum(['always', 'sometimes', 'rarely', 'once']).description('How often the issue can be reproduced'))
+    .prop('attachments', S.array().items(S.string().format('uri')).maxItems(10).description('Optional attachments (file URLs)'))
+    .required(['title', 'contactName', 'contactEmail', 'description', 'environment', 'expectedBehavior', 'actualBehavior', 'reproducibility']),
   response: {
-    200: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean' },
-        data: {
-          type: 'object',
-          properties: {
-            id: { type: 'number' },
-            number: { type: 'number' },
-            title: { type: 'string' },
-            body: { type: 'string' },
-            state: { type: 'string' },
-            created_at: { type: 'string', format: 'date-time' },
-            updated_at: { type: 'string', format: 'date-time' },
-            closed_at: { type: 'string', format: 'date-time' },
-            labels: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  id: { type: 'number' },
-                  name: { type: 'string' },
-                  color: { type: 'string' },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    400: {
-      type: 'object',
-      properties: {
-        error: { type: 'string' },
-        details: { type: 'object' },
-      },
-    },
-    401: {
-      type: 'object',
-      properties: {
-        error: { type: 'string' },
-        message: { type: 'string' },
-      },
-    },
-    500: {
-      type: 'object',
-      properties: {
-        error: { type: 'string' },
-        message: { type: 'string' },
-      },
-    },
+    200: S.object()
+      .prop('success', S.boolean())
+      .prop(
+        'data',
+        S.object()
+          .prop('id', S.number())
+          .prop('number', S.number())
+          .prop('title', S.string())
+          .prop('body', S.string())
+          .prop('state', S.string())
+          .prop('created_at', S.string().format('date-time'))
+          .prop('updated_at', S.string().format('date-time'))
+          .prop('closed_at', S.string().format('date-time'))
+          .prop('labels', S.array().items(S.object().prop('id', S.number()).prop('name', S.string()).prop('color', S.string()))),
+      ),
+    400: S.object().prop('error', S.string()).prop('details', S.object()),
+    401: S.object().prop('error', S.string()).prop('message', S.string()),
+    500: S.object().prop('error', S.string()).prop('message', S.string()),
   },
 };
