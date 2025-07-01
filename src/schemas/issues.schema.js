@@ -40,3 +40,15 @@ export const createIssueSchema = {
     500: S.object().prop('error', S.string()).prop('message', S.string()),
   },
 };
+
+/**
+ * Create issue endpoint schema (deprecated)
+ * @type {import('fastify').FastifySchema}
+ */
+export const createIssueDepractedSchema = {
+  tags: ['Issues'],
+  summary: 'Create a GitHub issue (deprecated)',
+  description: 'Creates a new GitHub issue with the provided information (deprecated)',
+  body: createIssueSchema.body,
+  response: createIssueSchema.response,
+};
