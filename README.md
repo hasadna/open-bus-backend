@@ -127,7 +127,6 @@ docker run -it -p 3001:3001 \
   -e GITHUB_TOKEN=your_github_token \
   -e GITHUB_OWNER=your_github_owner \
   -e GITHUB_REPO=your_github_repo \
-  -e NODE_ENV=production \
   -e LOG_LEVEL=info \
   open-bus-backend
 ```

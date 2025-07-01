@@ -55,9 +55,6 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           outputs: type=docker
 
-      # - name: Run tests in Docker container
-      #   run: docker run --rm -e GITHUB_ACTIONS=true app:test npm test
-
       - name: Check if app is alive
         run: |
           docker run -d -p 3001:3001 --name app_test_alive app:test
