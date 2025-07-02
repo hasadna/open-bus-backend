@@ -29,9 +29,9 @@ export const swaggerConfig = {
     ],
     definitions: {
       // Response schemas
-      ErrorResponse: commonErrorResponse.valueOf(),
-      HealthResponse: healthCheckSchema.response['200'].valueOf(),
-      SuccessResponse: commonSuccessResponse().valueOf(),
+      'Error Response': commonErrorResponse.valueOf(),
+      'Health Response': healthCheckSchema.response['200'].valueOf(),
+      'Success Response': commonSuccessResponse().valueOf(),
 
       // Reusable fragments
       City: cityFragment.valueOf(),
