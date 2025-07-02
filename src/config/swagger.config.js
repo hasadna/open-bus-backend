@@ -1,3 +1,13 @@
+import {
+  cityFragment,
+  lineFragment,
+  notRealNumbersFragment,
+  operatorFragment,
+  pniyaFragment,
+  stationFragment,
+  subjectFragment,
+  trainStationFragment,
+} from '../schemas/gov.schema.js';
 import { healthCheckSchema } from '../schemas/health.schema.js';
 import { commonErrorResponse, commonSuccessResponse } from '../schemas/index.js';
 
@@ -12,15 +22,26 @@ export const swaggerConfig = {
       version: process.env.npm_package_version || '0.0.0',
     },
     tags: [
-      { name: 'Health', description: 'Health check endpoints' },
-      { name: 'Issues', description: 'GitHub issue management' },
       { name: 'Complaints', description: 'Complaint submission to government' },
       { name: 'Government Transportation API', description: 'Government transportation data endpoints' },
+      { name: 'Health', description: 'Health check endpoints' },
+      { name: 'Issues', description: 'GitHub issue management' },
     ],
     definitions: {
-      Error: commonErrorResponse.valueOf(),
+      // Response schemas
+      ErrorResponse: commonErrorResponse.valueOf(),
       HealthResponse: healthCheckSchema.response['200'].valueOf(),
-      SuccessResponse: commonSuccessResponse.valueOf(),
+      SuccessResponse: commonSuccessResponse().valueOf(),
+
+      // Reusable fragments
+      City: cityFragment.valueOf(),
+      Line: lineFragment.valueOf(),
+      notRealNumbersFragment: notRealNumbersFragment.valueOf(),
+      Operator: operatorFragment.valueOf(),
+      Pniya: pniyaFragment.valueOf(),
+      Station: stationFragment.valueOf(),
+      Subject: subjectFragment.valueOf(),
+      TrainStation: trainStationFragment.valueOf(),
     },
   },
   staticCSP: true,
