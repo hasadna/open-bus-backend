@@ -2,12 +2,14 @@ name: Docker Test
 
 on:
   push:
+    branches: [main]
     paths:
       - 'Dockerfile'
       - '.github/workflows/dockerfile-test.yml'
       - 'package.json'
       - 'package-lock.json'
   pull_request:
+    branches: [main]
     paths:
       - 'Dockerfile'
       - '.github/workflows/dockerfile-test.yml'
