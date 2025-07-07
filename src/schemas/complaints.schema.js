@@ -9,7 +9,7 @@ export const sendComplaintSchema = {
   summary: 'Send a complaint',
   description: 'Submits a complaint to the government forms system',
   body: S.object()
-    .prop('debug', S.boolean().description('Enable debug mode to return XML without sending').default(false))
+    .prop('debug', S.boolean().description('Enable debug mode to return XML without sending').default(true))
     .prop(
       'userData',
       S.object()
@@ -17,34 +17,34 @@ export const sendComplaintSchema = {
         .prop('lastName', S.string().minLength(1).maxLength(100).description('Last name of the complainant'))
         .prop('id', S.string().pattern('^[0-9]{9}$').description('ID number of the complainant'))
         .prop('email', S.string().format('email').description('Email address of the complainant'))
-        .prop('phone', S.string().pattern('^[0-9-+ ()]{7,20}$').description('Phone number of the complainant'))
-        .prop('complaintType', S.string().enum(['no_stop', 'late', 'crowded', 'other']).description('Type of complaint (e.g., no_stop)'))
+        .prop('phone', S.string().default('1234567890').description('Phone number of the complainant'))
+        .prop('complaintType', S.string().description('Type of complaint (e.g., no_stop)'))
         .prop('description', S.string().minLength(10).maxLength(1000).description('Detailed description of the complaint'))
         .required(['firstName', 'lastName', 'id', 'email', 'phone']),
     )
     .prop(
       'databusData',
-      S.object()
-        .prop('operator', S.number().minimum(1).description('Bus operator ID'))
-        .prop('loc', S.array().items([S.number(), S.number()]).minItems(2).maxItems(2).description('Location coordinates [longitude, latitude]'))
-        .prop('color', S.number().minimum(0).description('Bus color code'))
-        .prop('bearing', S.number().minimum(0).maximum(360).description('Direction bearing in degrees'))
-        .prop('recorded_at_time', S.number().minimum(0).description('Timestamp when the incident was recorded'))
-        .prop(
-          'point',
-          S.object()
-            .prop('id', S.number())
-            .prop('siri_snapshot_id', S.number())
-            .prop('siri_ride_stop_id', S.number())
-            .prop('recorded_at_time', S.string().format('date-time'))
-            .prop('lon', S.number())
-            .prop('lat', S.number())
-            .prop('bearing', S.number())
-            .prop('velocity', S.number())
-            .prop('distance_from_journey_start', S.number())
-            .prop('distance_from_siri_ride_stop_meters', S.number()),
-        )
-        .required(['operator']),
+      S.object(),
+      // .prop('operator', S.number().description('Bus operator ID'))
+      // .prop('loc', S.array().items([S.number(), S.number()]).description('Location coordinates [longitude, latitude]'))
+      // .prop('color', S.number().description('Bus color code'))
+      // .prop('bearing', S.number().description('Direction bearing in degrees'))
+      // .prop('recorded_at_time', S.number().description('Timestamp when the incident was recorded'))
+      // .prop(
+      //   'point',
+      //   S.object()
+      //     .prop('id', S.number())
+      //     .prop('siri_snapshot_id', S.number())
+      //     .prop('siri_ride_stop_id', S.number())
+      //     .prop('recorded_at_time', S.string().format('date-time'))
+      //     .prop('lon', S.number())
+      //     .prop('lat', S.number())
+      //     .prop('bearing', S.number())
+      //     .prop('velocity', S.number())
+      //     .prop('distance_from_journey_start', S.number())
+      //     .prop('distance_from_siri_ride_stop_meters', S.number()),
+      // ),
+      // .required(['operator']),
     ),
   response: {
     200: S.object()
