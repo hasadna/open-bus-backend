@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import { getReferenceNumber, templateBuilder } from '../utils/index.js';
 
-const URL = 'https://forms.gov.il/globaldata/getsequence/getHtmlForm.aspx?formType=PniotMot%40mot.gov.il';
+const URL = 'https://forms.gov.il/globaldata/getsequence/setform.aspx?formtype=PniotMot%40mot.gov.il';
 
 /**
  * Send complaint handler
