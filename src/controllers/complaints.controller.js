@@ -20,7 +20,7 @@ export async function sendComplaint(request, reply) {
     });
 
     // Generate reference number
-    const referenceNumber = getReferenceNumber(debug);
+    const referenceNumber = await getReferenceNumber(debug);
     // Build request payload
     const payload = {
       ...request.body,
