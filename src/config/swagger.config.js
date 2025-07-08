@@ -6,7 +6,6 @@ import {
   pniyaFragment,
   stationFragment,
   subjectFragment,
-  trainStationFragment,
 } from '../schemas/gov.schema.js';
 import { healthCheckSchema } from '../schemas/health.schema.js';
 import { commonErrorResponse, commonSuccessResponse } from '../schemas/index.js';
@@ -41,7 +40,6 @@ export const swaggerConfig = {
       'Pniya (Vehicles Types)': pniyaFragment.valueOf(),
       Station: stationFragment.valueOf(),
       Subject: subjectFragment.valueOf(),
-      'Train Station': trainStationFragment.valueOf(),
     },
   },
   staticCSP: true,

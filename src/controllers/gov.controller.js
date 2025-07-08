@@ -7,13 +7,14 @@ const GOV_BASE_URL = 'https://esb.gov.il/govServiceList';
  * Helper object to make government API requests
  */
 export const govRequest = {
+  globalOptions: { timeout: 30000 },
   get(endpoint, options = {}) {
-    const config = { timeout: 30000, ...options };
+    const config = { ...this.globalOptions, ...options };
     const url = `${GOV_BASE_URL}${endpoint}`;
     return axios.get(url, config);
   },
   post(endpoint, data, options = {}) {
-    const config = { timeout: 30000, ...options };
+    const config = { ...this.globalOptions, ...options };
     const url = `${GOV_BASE_URL}${endpoint}`;
     return axios.post(url, data, config);
   },
@@ -43,7 +44,7 @@ export async function getLinesByStation(request, reply) {
     const date = formatDate(new Date(EventDate));
     request.log.info('Getting lines by station', { EventDate: date, OperatorId, StationId });
     const response = await govRequest.post('/trafficLicensing/GetLines', { EventDate: date, OperatorId, StationId });
-    return reply.status(200).send({ data: response.data, success: true });
+    return reply.status(200).send({ data: response.data.Data, success: true });
   } catch (error) {
     request.log.error('Error getting lines by station', { body: request.body, error: error.message });
     if (error.response) {
@@ -65,19 +66,14 @@ export async function getStationByLine(request, reply) {
   try {
     const { EventDate, OperatorId, OfficelineId, Directions } = request.body;
     const date = formatDate(new Date(EventDate));
-    request.log.info('Getting stations by line', {
-      EventDate: date,
-      OfficelineId,
-      OperatorId,
-      Directions,
-    });
+    request.log.info('Getting stations by line', { EventDate: date, OfficelineId, OperatorId, Directions });
     const response = await govRequest.post('/trafficLicensing/GetStationToLine', {
       EventDate: date,
       OperatorId,
       OfficelineId,
       Directions: [Directions],
     });
-    return reply.status(200).send({ data: response.data, success: true });
+    return reply.status(200).send({ data: response.data.Data, success: true });
   } catch (error) {
     request.log.error('Error getting stations by line', { body: request.body, error: error.message });
     if (error.response) {

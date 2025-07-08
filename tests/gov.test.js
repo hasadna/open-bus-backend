@@ -1,188 +1,151 @@
 import { expect } from 'chai';
-import { beforeEach, describe, it } from 'mocha';
+import sinon from 'sinon';
 
-import {
-  getCities,
-  getLinesByLine,
-  getLinesByStation,
-  getNotRealNumbers,
-  getPniya,
-  getStationByLine,
-  getSubjects,
-  getTime,
-  getTrainStations,
-} from '../src/controllers/gov.controller.js';
+import * as govController from '../src/controllers/gov.controller.js';
+import { cleanup, createMockReply, createMockRequest } from './test.utils.js';
 
 describe('Government API Controller', () => {
-  let mockReply;
-  let mockRequest;
+  let reply;
+  let request;
+  let post;
+  let get;
 
   beforeEach(() => {
-    // Create mock request and reply objects
-    mockRequest = {
-      body: {},
-      log: {
-        error: () => {},
-      },
+    request = createMockRequest();
+    reply = createMockReply();
+    post = sinon.stub(govController.govRequest, 'post');
+    get = sinon.stub(govController.govRequest, 'get');
+  });
+
+  afterEach(() => {
+    sinon.restore();
+    cleanup();
+  });
+
+  it('getLinesByStation should return expected data', async () => {
+    const mockLine = {
+      lineCode: 11005,
+      lineText: '5',
+      operatorId: 3,
+      eventDate: '2025-05-13T00:00:00',
+      directionCode: 3,
+      directionText: null,
+      destinationCity: { DataCode: 2800, DataText: 'קרית שמונה' },
+      originCity: { DataCode: 2800, DataText: 'קרית שמונה' },
+      message: null,
     };
+    const expected = { data: [mockLine], success: true };
+    post.resolves({ data: { Data: [mockLine] } });
+    request.body = { EventDate: 1747083600000, OperatorId: 3, StationId: 57865 };
+    await govController.getLinesByStation(request, reply);
+    expect(reply.sendCalledWith).to.deep.equal(expected);
+  });
 
-    mockReply = {
-      status: (code) => ({
-        send: (data) => ({ data, statusCode: code }),
-      }),
+  it('getStationByLine should return expected data', async () => {
+    const mockStation = {
+      stationId: 52298,
+      stationName: 'בית ספר קורצק/יהודה הלוי',
+      cityId: 2800,
+      cityName: 'קרית שמונה',
+      stationFullName: 'בית ספר קורצק/יהודה הלוי, קרית שמונה',
     };
+    const expected = { data: [mockStation], success: true };
+    post.resolves({ data: { Data: [mockStation] } });
+    request.body = { EventDate: 1747083600000, OperatorId: 3, OfficelineId: 12083, Directions: 1 };
+    await govController.getStationByLine(request, reply);
+    expect(reply.sendCalledWith).to.deep.equal(expected);
   });
 
-  describe('getLinesByStation', () => {
-    it('should have correct function signature', () => {
-      expect(getLinesByStation).to.be.a('function');
-      expect(getLinesByStation.length).to.equal(2);
-    });
-
-    it('should handle request with required parameters', () => {
-      mockRequest.body = {
-        EventDate: '13/05/2025',
-        OperatorId: 3,
-        StationId: 57865,
-      };
-
-      // Test that the function can be called without throwing
-      expect(() => {
-        getLinesByStation(mockRequest, mockReply);
-      }).to.not.throw();
-    });
+  it('getSubjects should return expected data', async () => {
+    const mockSubject = {
+      RowNumber: '2',
+      code: '2',
+      vehicles_type_: 'אוטובוס',
+      vehicles_type_code: '0',
+      request_subject: 'אי ביצוע נסיעה',
+      subject_code: '3',
+    };
+    const expected = { data: [mockSubject], success: true };
+    post.resolves({ data: { Data: { List: [mockSubject] } } });
+    await govController.getSubjects(request, reply);
+    expect(reply.sendCalledWith).to.deep.equal(expected);
   });
 
-  describe('getStationByLine', () => {
-    it('should have correct function signature', () => {
-      expect(getStationByLine).to.be.a('function');
-      expect(getStationByLine.length).to.equal(2);
-    });
-
-    it('should handle request with required parameters', () => {
-      mockRequest.body = {
-        Directions: [1],
-        OfficelineId: 12083,
-        OperatorId: 3,
-        eventDate: '13/05/2025',
-      };
-
-      expect(() => {
-        getStationByLine(mockRequest, mockReply);
-      }).to.not.throw();
-    });
+  it('getTrainStations should return expected data', async () => {
+    const mockTrainStation = {
+      stationId: 17109,
+      stationName: 'אופקים',
+      cityId: 0,
+      cityName: 'אופקים',
+      stationFullName: null,
+    };
+    const expected = { data: [mockTrainStation], success: true };
+    post.resolves({ data: { Data: [mockTrainStation] } });
+    request.body = { StationTypeId: 7 };
+    await govController.getTrainStations(request, reply);
+    expect(reply.sendCalledWith).to.deep.equal(expected);
   });
 
-  describe('getSubjects', () => {
-    it('should have correct function signature', () => {
-      expect(getSubjects).to.be.a('function');
-      expect(getSubjects.length).to.equal(2);
-    });
-
-    it('should handle request with required parameters', () => {
-      mockRequest.body = {
-        listName: 'subject_type_vehicles',
-      };
-
-      expect(() => {
-        getSubjects(mockRequest, mockReply);
-      }).to.not.throw();
-    });
+  it('getPniya should return expected data', async () => {
+    const mockPniya = { RowNumber: '1', code: '0', pniya: 'אוטובוס' };
+    const expected = { data: [mockPniya], success: true };
+    post.resolves({ data: { Data: { List: [mockPniya] } } });
+    await govController.getPniya(request, reply);
+    expect(reply.sendCalledWith).to.deep.equal(expected);
   });
 
-  describe('getTrainStations', () => {
-    it('should have correct function signature', () => {
-      expect(getTrainStations).to.be.a('function');
-      expect(getTrainStations.length).to.equal(2);
-    });
-
-    it('should handle request with required parameters', () => {
-      mockRequest.body = {
-        StationTypeId: 7,
-      };
-
-      expect(() => {
-        getTrainStations(mockRequest, mockReply);
-      }).to.not.throw();
-    });
+  it('getNotRealNumbers should return expected data', async () => {
+    const mockNotReal = { RowNumber: '1', Code: '1', IdNum: '123456782' };
+    const expected = { data: [mockNotReal], success: true };
+    post.resolves({ data: { Data: { List: [mockNotReal] } } });
+    await govController.getNotRealNumbers(request, reply);
+    expect(reply.sendCalledWith).to.deep.equal(expected);
   });
 
-  describe('getPniya', () => {
-    it('should have correct function signature', () => {
-      expect(getPniya).to.be.a('function');
-      expect(getPniya.length).to.equal(2);
-    });
-
-    it('should handle request with required parameters', () => {
-      mockRequest.body = {
-        listName: 'pniya',
-      };
-
-      expect(() => {
-        getPniya(mockRequest, mockReply);
-      }).to.not.throw();
-    });
+  it('getLinesByLine should return expected data', async () => {
+    const mockLine = {
+      lineCode: 10083,
+      lineText: '83',
+      operatorId: 3,
+      eventDate: '2025-05-13T00:00:00',
+      directionCode: 2,
+      directionText: 'חיפה-חיפה',
+      destinationCity: { DataCode: 4000, DataText: 'חיפה' },
+      originCity: { DataCode: 4000, DataText: 'חיפה' },
+      message: null,
+    };
+    const expected = { data: [mockLine], success: true };
+    post.resolves({ data: { Data: [mockLine] } });
+    request.body = {
+      EventDate: 1747083600000,
+      OperatorId: 3,
+      OperatorLineId: 83,
+    };
+    await govController.getLinesByLine(request, reply);
+    expect(reply.sendCalledWith).to.deep.equal(expected);
   });
 
-  describe('getNotRealNumbers', () => {
-    it('should have correct function signature', () => {
-      expect(getNotRealNumbers).to.be.a('function');
-      expect(getNotRealNumbers.length).to.equal(2);
-    });
-
-    it('should handle request with required parameters', () => {
-      mockRequest.body = {
-        listName: 'notrealnumbers',
-      };
-
-      expect(() => {
-        getNotRealNumbers(mockRequest, mockReply);
-      }).to.not.throw();
-    });
+  it('getCities should return expected data', async () => {
+    const mockCity = { DataCode: 5000, DataText: 'תל אביב יפו' };
+    const expected = { data: [mockCity], success: true };
+    post.resolves({ data: { Data: [mockCity] } });
+    await govController.getCities(request, reply);
+    expect(reply.sendCalledWith).to.deep.equal(expected);
   });
 
-  describe('getLinesByLine', () => {
-    it('should have correct function signature', () => {
-      expect(getLinesByLine).to.be.a('function');
-      expect(getLinesByLine.length).to.equal(2);
-    });
-
-    it('should handle request with required parameters', () => {
-      mockRequest.body = {
-        OperatorId: 3,
-        OperatorLineId: 83,
-        eventDate: '13/05/2025',
-      };
-
-      expect(() => {
-        getLinesByLine(mockRequest, mockReply);
-      }).to.not.throw();
-    });
+  it('getOperators should return expected data', async () => {
+    const mockOperator = { DataCode: 3, DataText: 'אגד' };
+    const expected = { data: [mockOperator], success: true };
+    post.resolves({ data: { Data: [mockOperator] } });
+    await govController.getOperators(request, reply);
+    expect(reply.sendCalledWith).to.deep.equal(expected);
   });
 
-  describe('getCities', () => {
-    it('should have correct function signature', () => {
-      expect(getCities).to.be.a('function');
-      expect(getCities.length).to.equal(2);
-    });
-
-    it('should handle request without body', () => {
-      expect(() => {
-        getCities(mockRequest, mockReply);
-      }).to.not.throw();
-    });
-  });
-
-  describe('getTime', () => {
-    it('should have correct function signature', () => {
-      expect(getTime).to.be.a('function');
-      expect(getTime.length).to.equal(2);
-    });
-
-    it('should handle request without body', () => {
-      expect(() => {
-        getTime(mockRequest, mockReply);
-      }).to.not.throw();
-    });
+  it('getTime should return expected data', async () => {
+    const mockTime = '7/8/2025 10:09:25 PM';
+    const expected = { data: { serverTime: mockTime }, success: true };
+    get.resolves({ data: mockTime });
+    await govController.getTime(request, reply);
+    expect(reply.sendCalledWith).to.deep.equal(expected);
   });
 });

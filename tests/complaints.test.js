@@ -30,7 +30,7 @@ describe('sendComplaint', () => {
   });
 
   it('should handle missing required fields', async () => {
-    request = createMockRequest({ debug: true });
+    request.body = { debug: true };
 
     await sendComplaint(request, reply);
 

@@ -25,7 +25,7 @@ export const lineFragment = S.object()
   .prop('operatorId', S.number())
   .prop('eventDate', S.string())
   .prop('directionCode', S.number())
-  .prop('directionText', S.string())
+  .prop('directionText', S.oneOf([S.string(), S.null()]))
   .prop('destinationCity', cityFragment)
   .prop('originCity', cityFragment)
   .prop('message', S.oneOf([S.string(), S.null()]));
@@ -39,8 +39,9 @@ export const pniyaFragment = S.object().prop('RowNumber', S.string()).prop('code
 export const stationFragment = S.object()
   .prop('stationId', S.number())
   .prop('stationName', S.string())
-  .prop('direction', S.number())
-  .prop('sequence', S.number());
+  .prop('cityId', S.number())
+  .prop('cityName', S.string())
+  .prop('stationFullName', S.oneOf([S.string(), S.null()]));
 
 export const subjectFragment = S.object()
   .prop('RowNumber', S.string())
@@ -49,13 +50,6 @@ export const subjectFragment = S.object()
   .prop('vehicles_type_code', S.string())
   .prop('request_subject', S.string())
   .prop('subject_code', S.string());
-
-export const trainStationFragment = S.object()
-  .prop('stationId', S.number())
-  .prop('stationName', S.string())
-  .prop('cityId', S.number())
-  .prop('cityName', S.string())
-  .prop('stationFullName', S.null());
 // --- Endpoint Schemas ---
 
 /**
@@ -93,7 +87,7 @@ export const getStationByLineSchema = {
     .prop('Directions', directions())
     .required(['EventDate', 'OperatorId', 'OfficelineId', 'Directions']),
   response: {
-    200: commonSuccessResponse(stationFragment),
+    200: commonSuccessResponse(S.array().items(stationFragment)),
     400: commonErrorResponse,
     500: commonErrorResponse,
   },
@@ -124,7 +118,7 @@ export const getTrainStationsSchema = {
   description: 'Retrieve train stations by station type\n7 - Israel Train\n4 - Kfir Light Train\n13 - Tevel Ligh Train',
   body: S.object().prop('StationTypeId', stationTypeId()).required(['StationTypeId']),
   response: {
-    200: commonSuccessResponse(S.array().items(trainStationFragment)),
+    200: commonSuccessResponse(S.array().items(stationFragment)),
     400: commonErrorResponse,
     500: commonErrorResponse,
   },
