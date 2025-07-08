@@ -1,19 +1,13 @@
+import axios from 'axios';
 import { expect } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'mocha';
+import sinon from 'sinon';
 
 import { createIssue } from '../src/controllers/issues.controller.js';
-import {
-  cleanup,
-  createMockGitHubError,
-  createMockGitHubResponse,
-  createMockHttpClient,
-  createMockReply,
-  createMockRequest,
-  setupGitHubEnv,
-} from './test.utils.js';
+import { cleanup, createMockGitHubError, createMockGitHubResponse, createMockReply, createMockRequest, setupGitHubEnv } from './test.utils.js';
 
 describe('createIssue', () => {
-  let mockHttpClient;
+  let post;
   let reply;
   let request;
 
@@ -31,7 +25,7 @@ describe('createIssue', () => {
     });
 
     reply = createMockReply();
-    mockHttpClient = createMockHttpClient();
+    post = sinon.stub(axios, 'post');
     setupGitHubEnv();
   });
 
@@ -42,23 +36,23 @@ describe('createIssue', () => {
   it('should create a GitHub issue and return the response data', async () => {
     const mockResponse = createMockGitHubResponse(123, 'Test Issue');
 
-    mockHttpClient.post.resolves(mockResponse);
+    post.resolves(mockResponse);
 
-    await createIssue(request, reply, mockHttpClient);
+    await createIssue(request, reply, axios);
 
     expect(reply.sendCalledWith.success).to.equal(true);
     expect(reply.sendCalledWith.data).to.deep.equal(mockResponse.data);
     expect(reply.statusCalledWith).to.equal(200);
-    expect(mockHttpClient.post.calledOnce).to.be.true;
+    expect(post.calledOnce).to.be.true;
   });
 
   it('should handle errors and return 500', async () => {
     const error = new Error('GitHub error');
 
     error.code = undefined;
-    mockHttpClient.post.rejects(error);
+    post.rejects(error);
 
-    await createIssue(request, reply, mockHttpClient);
+    await createIssue(request, reply, axios);
 
     expect(reply.statusCalledWith).to.equal(500);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -70,9 +64,9 @@ describe('createIssue', () => {
   it('should handle 401 Unauthorized from GitHub API', async () => {
     const error = createMockGitHubError(401, 'Unauthorized');
 
-    mockHttpClient.post.rejects(error);
+    post.rejects(error);
 
-    await createIssue(request, reply, mockHttpClient);
+    await createIssue(request, reply, axios);
 
     expect(reply.statusCalledWith).to.equal(401);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -84,13 +78,13 @@ describe('createIssue', () => {
   it('should send correct payload to GitHub API', async () => {
     const mockResponse = createMockGitHubResponse(1, 'Test Issue');
 
-    mockHttpClient.post.resolves(mockResponse);
+    post.resolves(mockResponse);
 
-    await createIssue(request, reply, mockHttpClient);
+    await createIssue(request, reply, axios);
 
-    expect(mockHttpClient.post.calledOnce).to.be.true;
+    expect(post.calledOnce).to.be.true;
 
-    const [url, payload, config] = mockHttpClient.post.firstCall.args;
+    const [url, payload, config] = post.firstCall.args;
 
     expect(url).to.equal('https://api.github.com/repos/fake-owner/fake-repo/issues');
     expect(payload.title).to.equal('Test Issue');
@@ -109,9 +103,9 @@ describe('createIssue', () => {
 
     const mockResponse = createMockGitHubResponse(123, 'Test Issue');
 
-    mockHttpClient.post.resolves(mockResponse);
+    post.resolves(mockResponse);
 
-    await createIssue(request, reply, mockHttpClient);
+    await createIssue(request, reply, axios);
 
     expect(reply.sendCalledWith).to.have.property('success', true);
     expect(reply.sendCalledWith.data).to.have.property('id', 123);
@@ -124,7 +118,7 @@ describe('createIssue', () => {
       GITHUB_TOKEN: undefined,
     });
 
-    await createIssue(request, reply, mockHttpClient);
+    await createIssue(request, reply, axios);
 
     expect(reply.sendCalledWith).to.deep.equal({
       error: 'Configuration error',
@@ -135,9 +129,9 @@ describe('createIssue', () => {
   it('should handle 404 Repository not found', async () => {
     const error = createMockGitHubError(404, 'Not Found');
 
-    mockHttpClient.post.rejects(error);
+    post.rejects(error);
 
-    await createIssue(request, reply, mockHttpClient);
+    await createIssue(request, reply, axios);
 
     expect(reply.statusCalledWith).to.equal(500);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -149,9 +143,9 @@ describe('createIssue', () => {
   it('should handle 422 Validation error', async () => {
     const error = createMockGitHubError(422, 'Validation Failed');
 
-    mockHttpClient.post.rejects(error);
+    post.rejects(error);
 
-    await createIssue(request, reply, mockHttpClient);
+    await createIssue(request, reply, axios);
 
     expect(reply.statusCalledWith).to.equal(400);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -164,9 +158,9 @@ describe('createIssue', () => {
     const error = new Error('timeout of 30000ms exceeded');
 
     error.code = 'ECONNABORTED';
-    mockHttpClient.post.rejects(error);
+    post.rejects(error);
 
-    await createIssue(request, reply, mockHttpClient);
+    await createIssue(request, reply, axios);
 
     expect(reply.statusCalledWith).to.equal(500);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -179,9 +173,9 @@ describe('createIssue', () => {
     const error = new Error('getaddrinfo ENOTFOUND api.github.com');
 
     error.code = 'ENOTFOUND';
-    mockHttpClient.post.rejects(error);
+    post.rejects(error);
 
-    await createIssue(request, reply, mockHttpClient);
+    await createIssue(request, reply, axios);
 
     expect(reply.statusCalledWith).to.equal(500);
     expect(reply.sendCalledWith).to.deep.equal({

@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import * as govController from '../src/controllers/gov.controller.js';
+import { govRequest } from '../src/utils/govRequest.js';
 import { cleanup, createMockReply, createMockRequest } from './test.utils.js';
 
 describe('Government API Controller', () => {
@@ -13,12 +14,11 @@ describe('Government API Controller', () => {
   beforeEach(() => {
     request = createMockRequest();
     reply = createMockReply();
-    post = sinon.stub(govController.govRequest, 'post');
-    get = sinon.stub(govController.govRequest, 'get');
+    post = sinon.stub(govRequest, 'post');
+    get = sinon.stub(govRequest, 'get');
   });
 
   afterEach(() => {
-    sinon.restore();
     cleanup();
   });
 

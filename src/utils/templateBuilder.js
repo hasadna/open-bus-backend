@@ -170,7 +170,6 @@ function fillTemplate(template, data = {}) {
 
     return result;
   }
-
   return data === undefined ? template : data;
 }
 

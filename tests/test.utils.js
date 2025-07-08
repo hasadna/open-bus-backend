@@ -1,4 +1,4 @@
-import { match, restore, stub } from 'sinon';
+import { restore, stub } from 'sinon';
 
 /**
  * Create a mock Fastify reply object
@@ -46,28 +46,6 @@ export function createMockRequest(body = {}, params = {}, query = {}) {
 }
 
 /**
- * Create a mock HTTP client (axios-like)
- * @param {Object} responses - Map of URL patterns to responses
- */
-export function createMockHttpClient(responses = {}) {
-  const mockClient = {
-    get: stub(),
-    post: stub(),
-  };
-
-  // Set up default responses
-  Object.entries(responses).forEach(([pattern, response]) => {
-    if (pattern.includes('github')) {
-      mockClient.post.withArgs(match(pattern)).resolves(response);
-    } else {
-      mockClient.get.withArgs(match(pattern)).resolves(response);
-    }
-  });
-
-  return mockClient;
-}
-
-/**
  * Create a mock GitHub API response
  * @param {number} id - Issue ID
  * @param {string} title - Issue title
@@ -103,6 +81,19 @@ export function createMockGitHubError(status = 500, message = 'Internal Server E
   };
 
   return error;
+}
+
+/**
+ * Create a mock Fastify Server
+ */
+export function createFastifyMock() {
+  return {
+    log: {
+      info: stub(),
+      error: stub(),
+    },
+    close: stub().resolves(),
+  };
 }
 
 /**
