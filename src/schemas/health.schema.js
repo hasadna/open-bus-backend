@@ -11,6 +11,12 @@ export const healthCheckSchema = {
   response: {
     200: S.object()
       .prop('status', S.string().examples(['alive']))
+      .prop(
+        'gov_api',
+        S.object()
+          .prop('form_server', S.string().examples(['alive', 'unreachable']))
+          .prop('data_server', S.string().examples(['alive', 'unreachable'])),
+      )
       .prop('timestamp', S.string().format('date-time').examples(['2025-07-01T13:09:05.570Z']))
       .prop('uptime', S.number().examples([23.1655282]))
       .prop('version', S.string().examples(['2.0.0'])),

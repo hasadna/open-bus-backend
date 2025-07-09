@@ -1,18 +1,39 @@
+import axios from 'axios';
+
 /**
  * Health check handler
  * @param {import('fastify').FastifyRequest} request
  * @param {import('fastify').FastifyReply} reply
  */
-export function healthCheck(request, reply) {
+
+export async function healthCheck(request, reply) {
   try {
+    // Map URLs to friendly names
+    const govApiMap = {
+      form_server: 'https://forms.gov.il/globaldata/getsequence/setform.aspx',
+      data_server: 'https://esb.gov.il/govServiceList/',
+    };
+    const govApiStatuses = {};
+    await Promise.all(
+      Object.entries(govApiMap).map(async ([name, url]) => {
+        try {
+          const res = await axios.get(url, { timeout: 3000 });
+          govApiStatuses[name] = res.status === 200 ? 'alive' : `status_${res.status}`;
+        } catch {
+          govApiStatuses[name] = 'unreachable';
+        }
+      }),
+    );
+
     const healthData = {
       status: 'alive',
+      gov_api: govApiStatuses,
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       version: process.env.npm_package_version || '0.0.0',
     };
 
-    request.log.info('Health check requested', { status: healthData.status });
+    request.log.info('Health check requested', { status: healthData.status, gov_api: govApiStatuses });
 
     return reply.status(200).send(healthData);
   } catch (error) {
