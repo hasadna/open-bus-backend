@@ -12,7 +12,7 @@ import { commonErrorResponse, commonSuccessResponse } from '../schemas/index.js'
 
 /**
  * Swagger configuration
- * @type {import('fastify').FastifySwaggerOptions}
+ * @type {import('@fastify/swagger').SwaggerOptions}
  */
 export const swaggerConfig = {
   swagger: {
@@ -20,6 +20,7 @@ export const swaggerConfig = {
       title: 'Open Bus Backend API',
       version: process.env.npm_package_version || '0.0.0',
     },
+    externalDocs: { url: 'https://github.com/hasadna/open-bus-backend', description: 'Github' },
     tags: [
       { name: 'Complaints', description: 'Complaint submission to government' },
       { name: 'Government Transportation API', description: 'Government transportation data endpoints' },
@@ -48,7 +49,7 @@ export const swaggerConfig = {
 
 /**
  * Swagger UI configuration
- * @type {import('fastify').FastifySwaggerUiOptions}
+ * @type {import('@fastify/swagger-ui').FastifySwaggerUiOptions}
  */
 export const swaggerUIConfig = {
   routePrefix: '/docs',
