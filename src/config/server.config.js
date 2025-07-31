@@ -1,3 +1,4 @@
+import cors from '@fastify/cors';
 import fastify2 from 'fastify';
 
 import { swaggerConfig, swaggerUIConfig } from './swagger.config.js';
@@ -33,6 +34,9 @@ export async function createServer() {
 
   // Register Swagger UI
   await fastify.register(import('@fastify/swagger-ui'), swaggerUIConfig);
+
+  // Register Cors Origin requests from all origins
+  await fastify.register(cors, { origin: '*' });
 
   return fastify;
 }
