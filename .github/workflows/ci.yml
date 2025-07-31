@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 env:
   DOCKER_APP_IMAGE_NAME: 'ghcr.io/hasadna/open-bus-backend/open-bus-backend'
