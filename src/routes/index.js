@@ -1,4 +1,5 @@
-import { createIssueDepractedSchema } from '../schemas/issues.schema.js';
+import { createIssue } from '../controllers/issues.controller.js';
+import { createIssueSchema } from '../schemas/issues.schema.js';
 import { complaintsRoutes } from './complaints.routes.js';
 import { govRoutes } from './gov.routes.js';
 import { healthRoutes } from './health.routes.js';
@@ -15,7 +16,5 @@ export function registerRoutes(fastify) {
   fastify.register(govRoutes, { prefix: 'gov' });
 
   // Deprecated route for backward compatibility
-  fastify.post('/create-issue', { schema: createIssueDepractedSchema }, (request, reply) => {
-    reply.redirect(302, '/issues/create');
-  });
+  fastify.post('/create-issue', { schema: createIssueSchema }, createIssue);
 }
