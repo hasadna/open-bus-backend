@@ -5,6 +5,7 @@
 The API documentation is automatically generated and available at:
 
 ```
+https://open-bus-backend.k8s.hasadna.org.il/docs
 http://localhost:3001/docs
 ```
 
