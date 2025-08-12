@@ -64,7 +64,7 @@ export const subjectModel = S.object()
  * @type {import('fastify').FastifySchema}
  */
 export const getLinesByStationSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get bus lines by station',
   description: 'Retrieve bus lines available at a specific station',
   body: S.object()
@@ -84,7 +84,7 @@ export const getLinesByStationSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getStationByLineSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get stations by line',
   description: 'Retrieve stations for a specific bus line',
   body: S.object()
@@ -105,7 +105,7 @@ export const getStationByLineSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getSubjectsSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get subject types for vehicles',
   description: 'Retrieve subject types for vehicles from the government list',
   response: {
@@ -120,7 +120,7 @@ export const getSubjectsSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getTrainStationsSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get train stations',
   description: 'Retrieve train stations by station type\n7 - Israel Train\n4 - Kfir Light Train\n13 - Tevel Ligh Train',
   body: S.object().prop('StationTypeId', stationTypeId()).required(['StationTypeId']),
@@ -137,7 +137,7 @@ export const getTrainStationsSchema = {
  */
 
 export const getPniyaSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get Pniya (Vehicles type)',
   description: 'Retrieve pniya list for vehicles',
   response: {
@@ -152,7 +152,7 @@ export const getPniyaSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getNotRealNumbersSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get not real numbers (Testing)',
   description: 'Retrieve not real numbers list for testing',
   response: {
@@ -167,7 +167,7 @@ export const getNotRealNumbersSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getLinesByLineSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get lines by line ID',
   description: 'Retrieve bus lines by specific line ID',
   body: S.object()
@@ -187,7 +187,7 @@ export const getLinesByLineSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getCitiesSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get cities',
   description: 'Retrieve list of cities',
   response: {
@@ -202,7 +202,7 @@ export const getCitiesSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getOperatorsSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get operators',
   description: 'Retrieve list of operators',
   response: {
@@ -216,7 +216,7 @@ export const getOperatorsSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getTimeSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get current time',
   description: 'Retrieve current server time',
   response: {
