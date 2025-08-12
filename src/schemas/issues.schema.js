@@ -46,9 +46,9 @@ export const createIssueSchema = {
           .prop('closed_at', S.string().format('date-time'))
           .prop('labels', S.array().items(S.object().prop('id', S.number()).prop('name', S.string()).prop('color', S.string()))),
       ),
-    400: S.object().prop('error', S.string()).prop('details', S.object()),
-    401: S.object().prop('error', S.string()).prop('message', S.string()),
-    500: S.object().prop('error', S.string()).prop('message', S.string()),
+    400: S.ref('ErrorResponseModel'),
+    401: S.ref('ErrorResponseModel'),
+    500: S.ref('ErrorResponseModel'),
   },
 };
 
