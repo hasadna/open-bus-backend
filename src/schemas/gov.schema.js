@@ -1,4 +1,4 @@
-import { commonErrorResponse, commonSuccessResponse, S } from './index.js';
+import { commonSuccessResponse, S } from './index.js';
 
 // --- Reusable field helpers ---
 const eventDate = () =>
@@ -16,34 +16,41 @@ const directions = () => S.number().description('Direction code (e.g., 1)').defa
 
 const stationTypeId = () => S.number().description('Station type ID (e.g., 7 for Israel Train)').default(7);
 
-// --- Common reusable fragments ---
-export const cityFragment = S.object().prop('DataCode', S.number()).prop('DataText', S.string());
+// --- Common reusable Models ---
+export const cityModel = S.object().id('CityModel').prop('DataCode', S.number()).prop('DataText', S.string());
 
-export const lineFragment = S.object()
+export const lineModel = S.object()
+  .id('LineModel')
   .prop('lineCode', S.number())
   .prop('lineText', S.string())
   .prop('operatorId', S.number())
   .prop('eventDate', S.string())
   .prop('directionCode', S.number())
   .prop('directionText', S.oneOf([S.string(), S.null()]))
-  .prop('destinationCity', cityFragment)
-  .prop('originCity', cityFragment)
+  .prop('destinationCity', S.ref('CityModel'))
+  .prop('originCity', S.ref('CityModel'))
   .prop('message', S.oneOf([S.string(), S.null()]));
 
-export const notRealNumbersFragment = S.object().prop('RowNumber', S.string()).prop('Code', S.string()).prop('IdNum', S.string());
+export const notRealNumberModel = S.object()
+  .id('NotRealNumberModel')
+  .prop('RowNumber', S.string())
+  .prop('Code', S.string())
+  .prop('IdNum', S.string());
 
-export const operatorFragment = S.object().prop('DataCode', S.number()).prop('DataText', S.string());
+export const operatorModel = S.object().id('OperatorModel').prop('DataCode', S.number()).prop('DataText', S.string());
 
-export const pniyaFragment = S.object().prop('RowNumber', S.string()).prop('code', S.string()).prop('pniya', S.string());
+export const pniyaModel = S.object().id('PniyaModel').prop('RowNumber', S.string()).prop('code', S.string()).prop('pniya', S.string());
 
-export const stationFragment = S.object()
+export const stationModel = S.object()
+  .id('StationModel')
   .prop('stationId', S.number())
   .prop('stationName', S.string())
   .prop('cityId', S.number())
   .prop('cityName', S.string())
   .prop('stationFullName', S.oneOf([S.string(), S.null()]));
 
-export const subjectFragment = S.object()
+export const subjectModel = S.object()
+  .id('SubjectModel')
   .prop('RowNumber', S.string())
   .prop('code', S.string())
   .prop('vehicles_type_', S.string())
@@ -57,7 +64,7 @@ export const subjectFragment = S.object()
  * @type {import('fastify').FastifySchema}
  */
 export const getLinesByStationSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get bus lines by station',
   description: 'Retrieve bus lines available at a specific station',
   body: S.object()
@@ -66,9 +73,9 @@ export const getLinesByStationSchema = {
     .prop('StationId', stationId())
     .required(['EventDate', 'OperatorId', 'StationId']),
   response: {
-    200: commonSuccessResponse(S.array().items(lineFragment)),
-    400: commonErrorResponse,
-    500: commonErrorResponse,
+    200: commonSuccessResponse(S.array().items(S.ref('LineModel'))),
+    400: S.ref('ErrorResponseModel'),
+    500: S.ref('ErrorResponseModel'),
   },
 };
 
@@ -77,7 +84,7 @@ export const getLinesByStationSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getStationByLineSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get stations by line',
   description: 'Retrieve stations for a specific bus line',
   body: S.object()
@@ -87,9 +94,9 @@ export const getStationByLineSchema = {
     .prop('Directions', directions())
     .required(['EventDate', 'OperatorId', 'OfficelineId', 'Directions']),
   response: {
-    200: commonSuccessResponse(S.array().items(stationFragment)),
-    400: commonErrorResponse,
-    500: commonErrorResponse,
+    200: commonSuccessResponse(S.array().items(S.ref('StationModel'))),
+    400: S.ref('ErrorResponseModel'),
+    500: S.ref('ErrorResponseModel'),
   },
 };
 
@@ -98,13 +105,13 @@ export const getStationByLineSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getSubjectsSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get subject types for vehicles',
   description: 'Retrieve subject types for vehicles from the government list',
   response: {
-    200: commonSuccessResponse(S.array().items(subjectFragment)),
-    400: commonErrorResponse,
-    500: commonErrorResponse,
+    200: commonSuccessResponse(S.array().items(S.ref('SubjectModel'))),
+    400: S.ref('ErrorResponseModel'),
+    500: S.ref('ErrorResponseModel'),
   },
 };
 
@@ -113,14 +120,14 @@ export const getSubjectsSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getTrainStationsSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get train stations',
   description: 'Retrieve train stations by station type\n7 - Israel Train\n4 - Kfir Light Train\n13 - Tevel Ligh Train',
   body: S.object().prop('StationTypeId', stationTypeId()).required(['StationTypeId']),
   response: {
-    200: commonSuccessResponse(S.array().items(stationFragment)),
-    400: commonErrorResponse,
-    500: commonErrorResponse,
+    200: commonSuccessResponse(S.array().items(S.ref('StationModel'))),
+    400: S.ref('ErrorResponseModel'),
+    500: S.ref('ErrorResponseModel'),
   },
 };
 
@@ -130,13 +137,13 @@ export const getTrainStationsSchema = {
  */
 
 export const getPniyaSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get Pniya (Vehicles type)',
   description: 'Retrieve pniya list for vehicles',
   response: {
-    200: commonSuccessResponse(S.array().items(pniyaFragment)),
-    400: commonErrorResponse,
-    500: commonErrorResponse,
+    200: commonSuccessResponse(S.array().items(S.ref('PniyaModel'))),
+    400: S.ref('ErrorResponseModel'),
+    500: S.ref('ErrorResponseModel'),
   },
 };
 
@@ -145,13 +152,13 @@ export const getPniyaSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getNotRealNumbersSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get not real numbers (Testing)',
   description: 'Retrieve not real numbers list for testing',
   response: {
-    200: commonSuccessResponse(S.array().items(notRealNumbersFragment)),
-    400: commonErrorResponse,
-    500: commonErrorResponse,
+    200: commonSuccessResponse(S.array().items(S.ref('NotRealNumberModel'))),
+    400: S.ref('ErrorResponseModel'),
+    500: S.ref('ErrorResponseModel'),
   },
 };
 
@@ -160,7 +167,7 @@ export const getNotRealNumbersSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getLinesByLineSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get lines by line ID',
   description: 'Retrieve bus lines by specific line ID',
   body: S.object()
@@ -169,9 +176,9 @@ export const getLinesByLineSchema = {
     .prop('OperatorLineId', operatorLineId())
     .required(['EventDate', 'OperatorId', 'OperatorLineId']),
   response: {
-    200: commonSuccessResponse(S.array().items(lineFragment)),
-    400: commonErrorResponse,
-    500: commonErrorResponse,
+    200: commonSuccessResponse(S.array().items(S.ref('LineModel'))),
+    400: S.ref('ErrorResponseModel'),
+    500: S.ref('ErrorResponseModel'),
   },
 };
 
@@ -180,13 +187,13 @@ export const getLinesByLineSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getCitiesSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get cities',
   description: 'Retrieve list of cities',
   response: {
-    200: commonSuccessResponse(S.array().items(cityFragment)),
-    400: commonErrorResponse,
-    500: commonErrorResponse,
+    200: commonSuccessResponse(S.array().items(S.ref('CityModel'))),
+    400: S.ref('ErrorResponseModel'),
+    500: S.ref('ErrorResponseModel'),
   },
 };
 
@@ -195,12 +202,12 @@ export const getCitiesSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getOperatorsSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get operators',
   description: 'Retrieve list of operators',
   response: {
-    200: commonSuccessResponse(S.array().items(operatorFragment)),
-    500: commonErrorResponse,
+    200: commonSuccessResponse(S.array().items(S.ref('OperatorModel'))),
+    500: S.ref('ErrorResponseModel'),
   },
 };
 
@@ -209,11 +216,11 @@ export const getOperatorsSchema = {
  * @type {import('fastify').FastifySchema}
  */
 export const getTimeSchema = {
-  tags: ['Government Transportation API'],
+  tags: ['Government Transportation'],
   summary: 'Get current time',
   description: 'Retrieve current server time',
   response: {
     200: commonSuccessResponse(S.object().prop('serverTime', S.string())),
-    500: commonErrorResponse,
+    500: S.ref('ErrorResponseModel'),
   },
 };

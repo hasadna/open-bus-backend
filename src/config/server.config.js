@@ -1,5 +1,5 @@
 import cors from '@fastify/cors';
-import fastify2 from 'fastify';
+import f from 'fastify';
 
 import { swaggerConfig, swaggerUIConfig } from './swagger.config.js';
 
@@ -9,7 +9,7 @@ import { swaggerConfig, swaggerUIConfig } from './swagger.config.js';
  */
 export async function createServer() {
   const isDev = process.env.NODE_ENV !== 'production';
-  const fastify = fastify2({
+  const fastify = f({
     caseSensitive: false,
     ignoreTrailingSlash: true,
     logger: {

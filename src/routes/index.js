@@ -1,5 +1,6 @@
 import { createIssue } from '../controllers/issues.controller.js';
 import { createIssueSchema } from '../schemas/issues.schema.js';
+import { loadModels } from '../schemas/loadModels.js';
 import { complaintsRoutes } from './complaints.routes.js';
 import { govRoutes } from './gov.routes.js';
 import { healthRoutes } from './health.routes.js';
@@ -10,6 +11,10 @@ import { issuesRoutes } from './issues.routes.js';
  * @param {import('fastify').FastifyInstance} fastify - Fastify instance
  */
 export function registerRoutes(fastify) {
+  // load Models
+  loadModels(fastify);
+
+  // Routes
   fastify.register(healthRoutes);
   fastify.register(issuesRoutes, { prefix: 'issues' });
   fastify.register(complaintsRoutes, { prefix: 'complaints' });

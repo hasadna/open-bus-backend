@@ -27,7 +27,7 @@ http://localhost:3001/docs
 - Requires: userData (firstName, lastName, id, email, phone), databusData (operator)
 - Optional: debug mode for testing, complaintType, description
 
-#### Government Transportation API
+#### Government Transportation
 
 The following endpoints provide access to government transportation data:
 
