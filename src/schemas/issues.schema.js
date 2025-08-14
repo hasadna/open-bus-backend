@@ -11,116 +11,6 @@ const antdUploadFileSchema = S.object()
   .prop('percent', S.number().minimum(0).maximum(100).description('Upload progress percentage.'))
   .prop('type', S.string().description('MIME type of the file.'));
 
-const simpleUserSchema = S.object()
-  .id('Simple User')
-  .description('A GitHub user.')
-  .prop('name', S.string().raw({ type: ['string', 'null'] }))
-  .prop('email', S.string().raw({ type: ['string', 'null'] }))
-  .prop('login', S.string().examples(['octocat']).required())
-  .prop('id', S.integer().format('int64').examples([1]).required())
-  .prop('node_id', S.string().examples(['MDQ6VXNlcjE=']).required())
-  .prop('avatar_url', S.string().format('uri').examples(['https://github.com/images/error/octocat_happy.gif']).required())
-  .prop(
-    'gravatar_id',
-    S.string()
-      .raw({ type: ['string', 'null'] })
-      .examples(['41d064eb2195891e12d0413f63227ea7'])
-      .required(),
-  )
-  .prop('url', S.string().format('uri').examples(['https://api.github.com/users/octocat']).required())
-  .prop('html_url', S.string().format('uri').examples(['https://github.com/octocat']).required())
-  .prop('followers_url', S.string().format('uri').examples(['https://api.github.com/users/octocat/followers']).required())
-  .prop('following_url', S.string().examples(['https://api.github.com/users/octocat/following{/other_user}']).required())
-  .prop('gists_url', S.string().examples(['https://api.github.com/users/octocat/gists{/gist_id}']).required())
-  .prop('starred_url', S.string().examples(['https://api.github.com/users/octocat/starred{/owner}{/repo}']).required())
-  .prop('subscriptions_url', S.string().format('uri').examples(['https://api.github.com/users/octocat/subscriptions']).required())
-  .prop('organizations_url', S.string().format('uri').examples(['https://api.github.com/users/octocat/orgs']).required())
-  .prop('repos_url', S.string().format('uri').examples(['https://api.github.com/users/octocat/repos']).required())
-  .prop('events_url', S.string().examples(['https://api.github.com/users/octocat/events{/privacy}']).required())
-  .prop('received_events_url', S.string().format('uri').examples(['https://api.github.com/users/octocat/received_events']).required())
-  .prop('type', S.string().examples(['User']).required())
-  .prop('site_admin', S.boolean().required())
-  .prop('starred_at', S.string().examples(['"2020-07-09T00:17:55Z"']))
-  .prop('user_view_type', S.string().examples(['public']))
-  .required([
-    'avatar_url',
-    'events_url',
-    'followers_url',
-    'following_url',
-    'gists_url',
-    'gravatar_id',
-    'html_url',
-    'id',
-    'node_id',
-    'login',
-    'organizations_url',
-    'received_events_url',
-    'repos_url',
-    'site_admin',
-    'starred_url',
-    'subscriptions_url',
-    'type',
-    'url',
-  ]);
-
-const milestoneSchema = S.object()
-  .id('Milestone')
-  .description('A collection of related issues and pull requests.')
-  .prop('url', S.string().format('uri').examples(['https://api.github.com/repos/octocat/Hello-World/milestones/1']).required())
-  .prop('html_url', S.string().format('uri').examples(['https://github.com/octocat/Hello-World/milestones/v1.0']).required())
-  .prop('labels_url', S.string().format('uri').examples(['https://api.github.com/repos/octocat/Hello-World/milestones/1/labels']).required())
-  .prop('id', S.integer().examples([1002604]).required())
-  .prop('node_id', S.string().examples(['MDk6TWlsZXN0b25lMTAwMjYwNA==']).required())
-  .prop('number', S.integer().description('The number of the milestone.').examples([42]).required())
-  .prop('state', S.string().description('The state of the milestone.').enum(['open', 'closed']).default('open').examples(['open']).required())
-  .prop('title', S.string().description('The title of the milestone.').examples(['v1.0']).required())
-  .prop(
-    'description',
-    S.string()
-      .raw({ type: ['string', 'null'] })
-      .examples(['Tracking milestone for version 1.0'])
-      .required(),
-  )
-  .prop('creator', S.anyOf([S.null(), S.ref(simpleUserSchema)]).required())
-  .prop('open_issues', S.integer().examples([4]).required())
-  .prop('closed_issues', S.integer().examples([8]).required())
-  .prop('created_at', S.string().format('date-time').examples(['2011-04-10T20:09:31Z']).required())
-  .prop('updated_at', S.string().format('date-time').examples(['2014-03-03T18:58:10Z']).required())
-  .prop(
-    'closed_at',
-    S.string()
-      .raw({ type: ['string', 'null'] })
-      .format('date-time')
-      .examples(['2013-02-12T13:22:01Z'])
-      .required(),
-  )
-  .prop(
-    'due_on',
-    S.string()
-      .raw({ type: ['string', 'null'] })
-      .format('date-time')
-      .examples(['2012-10-09T23:39:01Z'])
-      .required(),
-  )
-  .required([
-    'closed_issues',
-    'creator',
-    'description',
-    'due_on',
-    'closed_at',
-    'id',
-    'node_id',
-    'labels_url',
-    'html_url',
-    'number',
-    'open_issues',
-    'state',
-    'title',
-    'url',
-    'created_at',
-    'updated_at',
-  ]);
-
 export const issueSchema = S.object()
   .id('Issue')
   .description('Issues are a great way to keep track of tasks, enhancements, and bugs for your projects.')
@@ -152,7 +42,7 @@ export const issueSchema = S.object()
         'It looks like the new widget form is broken on Safari. When I try and create the widget, Safari crashes. This is reproducible on 10.8, but not 10.9. Maybe a browser bug?',
       ]),
   )
-  .prop('user', S.anyOf([S.null(), S.ref(simpleUserSchema)]))
+  .prop('user', S.anyOf([S.null(), S.object()]))
   .prop(
     'labels',
     S.array()
@@ -174,14 +64,14 @@ export const issueSchema = S.object()
       )
       .examples(['bug', 'registration']),
   )
-  .prop('assignee', S.anyOf([S.null(), S.ref(simpleUserSchema)]))
+  .prop('assignee', S.anyOf([S.null(), S.object()]))
   .prop(
     'assignees',
     S.array()
       .raw({ type: ['array', 'null'] })
-      .items(S.ref(simpleUserSchema)),
+      .items(S.object()),
   )
-  .prop('milestone', S.anyOf([S.null(), S.ref(milestoneSchema)]))
+  .prop('milestone', S.anyOf([S.null(), S.object()]))
   .prop('locked', S.boolean())
   .prop('active_lock_reason', S.string().raw({ type: ['string', 'null'] }))
   .prop('comments', S.integer())
@@ -233,7 +123,7 @@ export const issueSchema = S.object()
   .prop('created_at', S.string().format('date-time'))
   .prop('updated_at', S.string().format('date-time'))
   .prop('draft', S.boolean())
-  .prop('closed_by', S.anyOf([S.null(), S.ref(simpleUserSchema)]))
+  .prop('closed_by', S.anyOf([S.null(), S.object()]))
   .required([
     'id',
     'node_id',
@@ -281,8 +171,8 @@ export const createIssueSchema = {
     .prop('environment', S.string().minLength(1).maxLength(200).description('Environment where the issue occurred'))
     .prop('expectedBehavior', S.string().minLength(5).maxLength(1000).description('What was expected to happen'))
     .prop('actualBehavior', S.string().minLength(5).maxLength(1000).description('What actually happened'))
-    .prop('reproducibility', S.string().minLength(1).maxLength(100).description('How often the issue can be reproduced'))
-    .items(S.anyOf([S.string().format('uri').description('A simple URL string for the attachment.'), S.ref(antdUploadFileSchema)]))
+    .prop('reproducibility', S.string().enum(['always', 'sometimes', 'rarely', 'once']).description('How often the issue can be reproduced'))
+    .items(S.ref(antdUploadFileSchema))
     .required([
       'type',
       'title',
