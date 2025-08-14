@@ -9,7 +9,6 @@ export async function createIssue(request, reply) {
   try {
     const { title, contactName, contactEmail, description, environment, expectedBehavior, actualBehavior, reproducibility, attachments } =
       request.body;
-    console.log(attachments);
 
     request.log.info('GitHub issue creation started', { title, contactEmail, reproducibility });
 
@@ -27,7 +26,6 @@ export async function createIssue(request, reply) {
     const body = `## Contact Information\n**Contact Name:** ${contactName}\n**Contact Email:** ${contactEmail}\n\n## Issue Details\n**Description:** \n${description}\n\n**Environment:** ${environment}\n\n**Expected Behavior:** \n${expectedBehavior}\n\n**Actual Behavior:** \n${actualBehavior}\n\n**Reproducibility:** ${reproducibility}\n\n${attachments && attachments.length > 0 ? `## Attachments\n${attachments.map((url) => `- ${url}`).join('\n')}` : ''}\n\n---\n*Issue created via API on ${new Date().toISOString()}*`;
     const labels = ['REPORTED-BY-USER'];
     // Create the GitHub issue
-
     const response = await axios.post(
       `https://api.github.com/repos/${repoOwner}/${repoName}/issues`,
       { title, body, labels },
