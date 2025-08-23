@@ -100,16 +100,13 @@ docker run -it -p 3001:3001 \
 ### 🐞 GitHub Issues
 
 - `POST /issues` → Create a new GitHub issue
-
   - **Required:** `title`, `contactName`, `contactEmail`, `description`, `environment`, `expectedBehavior`, `actualBehavior`, `reproducibility`
   - **Optional:** `attachments[]` (array of URLs)
 
 ### 📣 Complaints
 
 - `POST /complaints` → Submit a complaint to government forms
-
   - **Required:**
-
     - `userData`: `firstName`, `lastName`, `id`, `email`, `phone`
     - `databusData`: `operator`
 
