@@ -1,72 +1,33 @@
-# Open Bus Backend
+# 🚌 Open Bus Backend
 
-### Swagger UI
+A backend service powering the Open-Bus platform.
+Provides APIs for health checks, GitHub issue creation, complaints, and government transportation data.
 
-The API documentation is automatically generated and available at:
+## 📢 Get Involved
 
-```
-https://open-bus-backend.k8s.hasadna.org.il/docs
-http://localhost:3001/docs
-```
+- 💬 For general help and system updates, join the Hasadna Slack: [#open-bus channel](https://join.slack.com/t/hasadna/shared_invite/zt-167h764cg-J18ZcY1odoitq978IyMMig)
+- 🐞 Found a bug or have a feature request? [Open an issue](https://github.com/hasadna/open-bus-map-search/issues/new)
+- 🤝 Want to contribute? See our [contributing guidelines](https://github.com/hasadna/open-bus-pipelines/blob/main/CONTRIBUTING.md)
 
-## API Endpoints
+## 📖 API Documentation
 
-### Health Check
+- 📄 Swagger UI (production): [https://open-bus-backend.k8s.hasadna.org.il/docs](https://open-bus-backend.k8s.hasadna.org.il/docs)
+- 🖥️ Swagger UI (local): [http://localhost:3001/docs](http://localhost:3001/docs)
 
-- **GET** `/` - Health check endpoint
+## 🔗 Related Projects
 
-#### GitHub Issues
+- [🗺️ Open Bus Map Search (Client App)](https://github.com/hasadna/open-bus-map-search) - [Live Website](https://open-bus-map-search.hasadna.org.il/dashboard)
+- [📦 NPM Package](https://www.npmjs.com/package/@hasadna/open-bus-api-client)
 
-- **POST** `/issues` - Create a new GitHub issue
-- Requires: title, contactName, contactEmail, description, environment, expectedBehavior, actualBehavior, reproducibility
-- Optional: attachments (array of URLs)
-
-#### Complaints
-
-- **POST** `/complaints` - Submit a complaint to government forms
-- Requires: userData (firstName, lastName, id, email, phone), databusData (operator)
-- Optional: debug mode for testing, complaintType, description
-
-#### Government Transportation
-
-The following endpoints provide access to government transportation data:
-
-- **POST** `/gov/lines-by-station` - Get bus lines by station
-  - Requires: EventDate (DD/MM/YYYY), OperatorId, StationId
-
-- **POST** `/gov/stations-by-line` - Get stations by line
-  - Requires: eventDate (DD/MM/YYYY), OperatorId, OfficelineId, Directions
-
-- **POST** `/gov/subjects` - Get subject types for vehicles
-  - Requires: listName (set to "subject_type_vehicles")
-
-- **POST** `/gov/train-stations` - Get train stations
-  - Requires: StationTypeId
-
-- **POST** `/gov/pniya` - Get pniya (vehicles type)
-  - Requires: listName (set to "pniya")
-
-- **POST** `/gov/not-real-numbers` - Get not real numbers
-  - Requires: listName (set to "notrealnumbers")
-
-- **POST** `/gov/lines-by-line` - Get lines by line ID
-  - Requires: eventDate (DD/MM/YYYY), OperatorId, OperatorLineId
-
-- **POST** `/gov/cities` - Get cities list
-  - No body required
-
-- **GET** `/gov/time` - Get current server time
-  - No body required
-
-## Installation
+## ⚙️ Installation
 
 ```bash
 npm install
 ```
 
-## Environment Variables
+## 🌍 Environment Variables
 
-Create a `.env` file with the following variables:
+Create a `.env` file:
 
 ```env
 # Server Configuration
@@ -81,7 +42,7 @@ GITHUB_OWNER=your_github_username
 GITHUB_REPO=your_repository_name
 ```
 
-## Running the Application
+## 🚀 Running the Server
 
 ### Development
 
@@ -95,33 +56,31 @@ npm run dev
 npm start
 ```
 
-## Testing
+## 🧪 Testing
 
 ```bash
 # Run all tests
 npm test
 
-# Run tests with coverage
+# Run with coverage
 npm run test:coverage
 
-# Run linting
+# Run lint checks
 npm run test:lint
 
-# Fix linting issues
+# Fix lint issues
 npm run lint:fix
 ```
 
-## Running with Docker
+## 🐳 Running with Docker
 
-To build and run the backend using Docker:
-
-1. **Build the Docker image:**
+1. **Build the image**
 
 ```bash
 docker build -t open-bus-backend .
 ```
 
-2. **Run the container:**
+2. **Run the container**
 
 ```bash
 docker run -it -p 3001:3001 \
@@ -132,6 +91,42 @@ docker run -it -p 3001:3001 \
   open-bus-backend
 ```
 
-Replace the environment variable values with your actual configuration.
+## 🔗 API Endpoints
 
-The server will be accessible at `http://localhost:3001`.
+### 🩺 Health Check
+
+- `GET /` → Returns server status
+
+### 🐞 GitHub Issues
+
+- `POST /issues` → Create a new GitHub issue
+
+  - **Required:** `title`, `contactName`, `contactEmail`, `description`, `environment`, `expectedBehavior`, `actualBehavior`, `reproducibility`
+  - **Optional:** `attachments[]` (array of URLs)
+
+### 📣 Complaints
+
+- `POST /complaints` → Submit a complaint to government forms
+
+  - **Required:**
+
+    - `userData`: `firstName`, `lastName`, `id`, `email`, `phone`
+    - `databusData`: `operator`
+
+  - **Optional:** `debug`, `complaintType`, `description`
+
+### 🏛️ Government Transportation
+
+| Endpoint                | Method | Required Body                                           |
+| ----------------------- | ------ | ------------------------------------------------------- |
+| `/gov/lines-by-station` | POST   | `EventDate`, `OperatorId`, `StationId`                  |
+| `/gov/stations-by-line` | POST   | `eventDate`, `OperatorId`, `OfficelineId`, `Directions` |
+| `/gov/subjects`         | POST   | `listName = "subject_type_vehicles"`                    |
+| `/gov/train-stations`   | POST   | `StationTypeId`                                         |
+| `/gov/pniya`            | POST   | `listName = "pniya"`                                    |
+| `/gov/not-real-numbers` | POST   | `listName = "notrealnumbers"`                           |
+| `/gov/lines-by-line`    | POST   | `eventDate`, `OperatorId`, `OperatorLineId`             |
+| `/gov/cities`           | POST   | none                                                    |
+| `/gov/time`             | GET    | none                                                    |
+
+Server will be available at: [http://localhost:3001](http://localhost:3001)
