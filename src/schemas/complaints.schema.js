@@ -1,5 +1,53 @@
 import { S } from './index.js';
 
+export const complaintsUserDataSchema = S.object()
+  .id('ComplaintsUserDataSchema')
+  .prop('firstName', S.string().maxLength(25))
+  .prop('lastName', S.string().maxLength(25))
+  .prop('id', S.string().maxLength(9).pattern(/\d+/u))
+  .prop('email', S.string().format('email'))
+  .prop('phone', S.string().maxLength(11))
+  .prop('complaintType', S.string())
+  .prop('description', S.string().minLength(2).maxLength(1500))
+  .prop('from', S.string().maxLength(90))
+  .prop('to', S.string().maxLength(90))
+  .prop('timeEvent', S.string().pattern(/^[0-2][0-9]:[0-5][0-9]$/u))
+  .prop('startWait', S.string().pattern(/^[0-2][0-9]:[0-5][0-9]$/u))
+  .prop('endWait', S.string().pattern(/^[0-2][0-9]:[0-5][0-9]$/u))
+  .required(['firstName', 'lastName', 'id', 'email', 'phone', 'complaintType', 'description', 'timeEvent', 'startWait', 'endWait']);
+
+export const complaintsDataBusDataModel = S.object()
+  .id('ComplaintsDataBusDataModel')
+  .prop('id', S.number())
+  .prop('siriRouteId', S.number())
+  .prop('journeyRef', S.string())
+  .prop('scheduledStartTime', S.string().format('date-time'))
+  .prop('vehicleRef', S.string())
+  .prop('updatedFirstLastVehicleLocations', S.string().format('date-time'))
+  .prop('firstVehicleLocationId', S.number())
+  .prop('lastVehicleLocationId', S.number())
+  .prop('updatedDurationMinutes', S.string().format('date-time'))
+  .prop('durationMinutes', S.number())
+  .prop('journeyGtfsRideId', S.number())
+  .prop('routeGtfsRideId', S.number())
+  .prop('gtfsRideId', S.number())
+  .prop('siriRouteLineRef', S.number())
+  .prop('siriRouteOperatorRef', S.number())
+  .prop('gtfsRideGtfsRouteId', S.number())
+  .prop('gtfsRideJourneyRef', S.string())
+  .prop('gtfsRideStartTime', S.string().format('date-time'))
+  .prop('gtfsRideEndTime', S.string().format('date-time'))
+  .prop('gtfsRouteDate', S.string().format('date-time'))
+  .prop('gtfsRouteLineRef', S.number())
+  .prop('gtfsRouteOperatorRef', S.number())
+  .prop('gtfsRouteRouteShortName', S.string())
+  .prop('gtfsRouteRouteLongName', S.string())
+  .prop('gtfsRouteRouteMkt', S.string())
+  .prop('gtfsRouteRouteDirection', S.string())
+  .prop('gtfsRouteRouteAlternative', S.string())
+  .prop('gtfsRouteAgencyName', S.string())
+  .prop('gtfsRouteRouteType', S.string());
+
 /**
  * Send complaint endpoint schema
  * @type {import('fastify').FastifySchema}
@@ -10,42 +58,8 @@ export const sendComplaintSchema = {
   description: 'Submits a complaint to the government forms system',
   body: S.object()
     .prop('debug', S.boolean().description('Enable debug mode to return XML without sending').default(true))
-    .prop(
-      'userData',
-      S.object()
-        .prop('firstName', S.string().minLength(1).maxLength(100).description('First name of the complainant'))
-        .prop('lastName', S.string().minLength(1).maxLength(100).description('Last name of the complainant'))
-        .prop('id', S.string().pattern('^[0-9]{9}$').description('ID number of the complainant'))
-        .prop('email', S.string().format('email').description('Email address of the complainant'))
-        .prop('phone', S.string().default('1234567890').description('Phone number of the complainant'))
-        .prop('complaintType', S.string().description('Type of complaint (e.g., no_stop)'))
-        .prop('description', S.string().minLength(10).maxLength(1000).description('Detailed description of the complaint'))
-        .required(['firstName', 'lastName', 'id', 'email', 'phone']),
-    )
-    .prop(
-      'databusData',
-      S.object(),
-      // .prop('operator', S.number().description('Bus operator ID'))
-      // .prop('loc', S.array().items([S.number(), S.number()]).description('Location coordinates [longitude, latitude]'))
-      // .prop('color', S.number().description('Bus color code'))
-      // .prop('bearing', S.number().description('Direction bearing in degrees'))
-      // .prop('recorded_at_time', S.number().description('Timestamp when the incident was recorded'))
-      // .prop(
-      //   'point',
-      //   S.object()
-      //     .prop('id', S.number())
-      //     .prop('siri_snapshot_id', S.number())
-      //     .prop('siri_ride_stop_id', S.number())
-      //     .prop('recorded_at_time', S.string().format('date-time'))
-      //     .prop('lon', S.number())
-      //     .prop('lat', S.number())
-      //     .prop('bearing', S.number())
-      //     .prop('velocity', S.number())
-      //     .prop('distance_from_journey_start', S.number())
-      //     .prop('distance_from_siri_ride_stop_meters', S.number()),
-      // ),
-      // .required(['operator']),
-    ),
+    .prop('userData', S.ref('ComplaintsUserDataSchema'))
+    .prop('databusData', S.ref('ComplaintsDataBusDataModel')),
   response: {
     200: S.object()
       .prop('success', S.boolean())

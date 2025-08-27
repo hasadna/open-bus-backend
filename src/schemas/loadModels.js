@@ -1,3 +1,4 @@
+import { complaintsDataBusDataModel, complaintsUserDataSchema } from './complaints.schema.js';
 import { cityModel, lineModel, notRealNumberModel, operatorModel, pniyaModel, stationModel, subjectModel } from './gov.schema.js';
 import { commonErrorResponse } from './index.js';
 import { githubIssueModel, githubMilestoneModel, githubUserModel } from './issues.schema.js';
@@ -7,6 +8,8 @@ import { githubIssueModel, githubMilestoneModel, githubUserModel } from './issue
  * @param {import('fastify').FastifyInstance} fastify - Fastify instance
  */
 export function loadModels(fastify) {
+  fastify.addSchema(complaintsUserDataSchema);
+  fastify.addSchema(complaintsDataBusDataModel);
   fastify.addSchema(commonErrorResponse);
   fastify.addSchema(cityModel);
   fastify.addSchema(lineModel);
