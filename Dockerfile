@@ -1,4 +1,4 @@
-FROM node:24.3-alpine@sha256:49e45bf002728e35c3a466737d8bcfe12c29731c7c2f3e223f9a7c794fff19a4 
+FROM node:24.8.0-alpine3.22@sha256:3e843c608bb5232f39ecb2b25e41214b958b0795914707374c8acc28487dea17
 ENV NODE_ENV=production
 WORKDIR /usr/src/app
 COPY package*.json ./
