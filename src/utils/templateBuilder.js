@@ -1,3 +1,5 @@
+import { idValidator } from './idValidator.js';
+
 const dataModelTemplate = {
   contactType: {
     isChosenType: false,
@@ -178,6 +180,11 @@ export function templateBuilder(body) {
   if (!(body.userData && body.databusData)) {
     throw new Error('Input must have userData and databusData');
   }
+
+  if (!idValidator(String(body.userData?.id))) {
+    throw new Error('Invalid Id Number');
+  }
+
   // Map userData and databusData to the expected structure
   const input = {
     dataModelSaver: {

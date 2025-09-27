@@ -1,4 +1,8 @@
-export function IDValidator(id) {
+/**
+ * @param {string} id
+ * @returns
+ */
+export function idValidator(id) {
   const n = Number(id);
   if (!n || isNaN(n) || id.length !== 9 || n <= 0) return false;
   let sum = 0;
