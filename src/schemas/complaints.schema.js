@@ -14,7 +14,8 @@ export const complaintsUserDataSchema = S.object()
   .prop('timeEvent', S.string().pattern(/^[0-2][0-9]:[0-5][0-9]$/u))
   .prop('startWait', S.string().pattern(/^[0-2][0-9]:[0-5][0-9]$/u))
   .prop('endWait', S.string().pattern(/^[0-2][0-9]:[0-5][0-9]$/u))
-  .required(['firstName', 'lastName', 'id', 'email', 'phone', 'complaintType', 'description', 'timeEvent', 'startWait', 'endWait']);
+  .prop('ravkavId', S.string().maxLength(10))
+  .required(['firstName', 'lastName', 'id', 'email', 'phone', 'complaintType', 'description']);
 
 export const complaintsDataBusDataModel = S.object()
   .id('ComplaintsDataBusDataModel')
