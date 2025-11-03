@@ -176,31 +176,19 @@ function fillTemplate(template, data = {}) {
 }
 
 export function templateBuilder(body) {
-  // Only support new input structure: { userData, databusData }
-  if (!(body.userData && body.databusData)) {
-    throw new Error('Input must have userData and databusData');
+  // Support new input structure: { debug?, data: FormDataModelSchema }
+  if (!body.data) {
+    throw new Error('Input must have data property');
   }
 
-  if (!idValidator(String(body.userData?.id))) {
+  // Validate ID number from personal details
+  if (!idValidator(String(body.data.personalDetails?.iDNum))) {
     throw new Error('Invalid Id Number');
   }
 
-  // Map userData and databusData to the expected structure
+  // Use the data directly as it already matches the expected structure
   const input = {
-    dataModelSaver: {
-      personalDetails: {
-        iDNum: body.userData.id,
-        firstName: body.userData.firstName,
-        lastName: body.userData.lastName,
-        email: body.userData.email,
-        phone: body.userData.phone,
-      },
-      requestDetails: {
-        busAndOther: {
-          operator: { dataText: String(body.databusData.operator) },
-        },
-      },
-    },
+    dataModelSaver: body.data,
   };
 
   const dataModelSaver = JSON.stringify(fillTemplate(dataModelTemplate, input.dataModelSaver), null, 2);
