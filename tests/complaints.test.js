@@ -39,9 +39,19 @@ describe('sendComplaint', () => {
   });
 
   it('should handle invalid id field', async () => {
-    request.body.userData.id = '123456789';
+    // Create a fresh request with invalid ID
+    const invalidRequest = createMockRequest({
+      debug: true,
+      data: {
+        ...jsonData.data,
+        personalDetails: {
+          ...jsonData.data.personalDetails,
+          iDNum: '123456789',
+        },
+      },
+    });
 
-    await sendComplaint(request, reply);
+    await sendComplaint(invalidRequest, reply);
 
     expect(reply.statusCalledWith).to.equal(500);
     expect(reply.sendCalledWith).to.have.property('error');
