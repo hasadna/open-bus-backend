@@ -1,20 +1,4 @@
-import {
-  busAndOtherDetailsSchema,
-  contactIdResultSchema,
-  contactIdSchema,
-  contactTypeSchema,
-  containersViewModelSchema,
-  dataCodeSchema,
-  documentAttachmentSchema,
-  followStatusSchema,
-  formDataModelSchema,
-  formInformationSchema,
-  personalDetailsSchema,
-  requestDetailsSchema,
-  requestSubjectSchema,
-  taxiDetailsSchema,
-  trainDetailsSchema,
-} from './complaints.schema.js';
+import { ComplaintFormValuesSchema, DataCodeSchema, sendComplaintSchema, UserSchema } from './complaints.schema.js';
 import { cityModel, lineModel, notRealNumberModel, operatorModel, pniyaModel, stationModel, subjectModel } from './gov.schema.js';
 import { commonErrorResponse } from './index.js';
 import { githubIssueModel, githubMilestoneModel, githubUserModel } from './issues.schema.js';
@@ -26,22 +10,10 @@ import { githubIssueModel, githubMilestoneModel, githubUserModel } from './issue
 export function loadModels(fastify) {
   fastify.addSchema(commonErrorResponse);
 
-  fastify.addSchema(dataCodeSchema);
-  fastify.addSchema(contactIdSchema);
-  fastify.addSchema(contactTypeSchema);
-
-  fastify.addSchema(busAndOtherDetailsSchema);
-  fastify.addSchema(contactIdResultSchema);
-  fastify.addSchema(containersViewModelSchema);
-  fastify.addSchema(documentAttachmentSchema);
-  fastify.addSchema(followStatusSchema);
-  fastify.addSchema(formDataModelSchema);
-  fastify.addSchema(formInformationSchema);
-  fastify.addSchema(personalDetailsSchema);
-  fastify.addSchema(requestDetailsSchema);
-  fastify.addSchema(requestSubjectSchema);
-  fastify.addSchema(taxiDetailsSchema);
-  fastify.addSchema(trainDetailsSchema);
+  fastify.addSchema(ComplaintFormValuesSchema);
+  fastify.addSchema(DataCodeSchema);
+  fastify.addSchema(sendComplaintSchema);
+  fastify.addSchema(UserSchema);
 
   fastify.addSchema(cityModel);
   fastify.addSchema(lineModel);
