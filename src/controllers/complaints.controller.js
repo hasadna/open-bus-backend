@@ -11,10 +11,10 @@ const URL = 'https://forms.gov.il/globaldata/getsequence/setform.aspx?formtype=P
  */
 export async function sendComplaint(request, reply) {
   try {
-    const { debug, userData, databusData } = request.body;
+    const { debug, data } = request.body;
     const isDebug = Boolean(debug) || process.env.NODE_ENV === 'test' || process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
 
-    request.log.info('Complaint submission started', { debug: isDebug, userEmail: userData?.email, operator: databusData?.operator });
+    request.log.info('Complaint submission started', { debug: isDebug, userEmail: data?.email, operator: data?.busOperator?.dataText });
 
     const referenceNumber = isDebug ? '1234567' : await getReferenceNumber();
     const xml = templateBuilder({ ...request.body, ReferenceNumber: referenceNumber });

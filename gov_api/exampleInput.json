@@ -1,161 +1,64 @@
 {
   "debug": true,
   "data": {
-    "contactType": {
-      "selectContactType": "1",
-      "isChosenType": true
+    "firstName": "נעם",
+    "lastName": "געש",
+    "iDNum": "212121214",
+    "mobile": "0536218158",
+    "phone": "",
+    "contactOptions": "1",
+    "fax": "",
+    "email": "emainh@gmail.com",
+    "city": {
+      "dataCode": -1,
+      "dataText": ""
     },
-    "personalDetails": {
-      "firstName": "נעם",
-      "lastName": "געש",
-      "iDNum": "212121214",
-      "mobile": "0536218158",
-      "phone": "",
-      "contactOptions": "1",
-      "fax": "",
-      "email": "emainh@gmail.com",
-      "city": {
-        "dataCode": -1,
-        "dataText": ""
-      },
-      "street": "",
-      "houseNumber": "",
-      "appartment": "",
-      "postBox": "",
-      "zipCode": "",
-      "name": "personalDetails",
-      "state": "completed",
-      "next": "",
-      "prev": "",
-      "isClosed": true
+    "street": "",
+    "houseNumber": "",
+    "appartment": "",
+    "postBox": "",
+    "zipCode": "",
+    "applySubject": {
+      "dataCode": "0",
+      "dataText": "אוטובוס"
     },
-    "requestSubject": {
-      "applySubject": {
-        "dataCode": "0",
-        "dataText": "אוטובוס"
-      },
-      "applyType": {
-        "dataCode": "3",
-        "dataText": "אי עצירה בתחנה"
-      },
-      "name": "requestSubject",
-      "state": "completed",
-      "next": "",
-      "prev": "",
-      "isClosed": true
+    "applyType": {
+      "dataCode": "3",
+      "dataText": "אי עצירה בתחנה"
     },
-    "requestDetails": {
-      "taxi": {
-        "taxiType": "2"
-      },
-      "busAndOther": {
-        "ravKav": true,
-        "ravKavNumber": "",
-        "reportdate": "",
-        "reportTime": "",
-        "addingFrequencyReason": [],
-        "operator": {
-          "dataCode": 5,
-          "dataText": "אגד"
-        },
-        "addOrRemoveStation": "2",
-        "driverName": "",
-        "licenseNum": "",
-        "eventDate": "",
-        "eventHour": "",
-        "fromHour": "",
-        "toHour": "",
-        "fillByMakatOrAddress": "2",
-        "makatStation": "",
-        "lineNumberText": "",
-        "lineNumberFromList": {
-          "dataText": ""
-        },
-        "direction": {
-          "dataText": ""
-        },
-        "raisingStation": {
-          "dataText": ""
-        },
-        "applyContent": "the bus didn't stop, despite I was in the station and waved really hard :(",
-        "busDirectionFrom": "",
-        "busDirectionTo": "",
-        "raisingStationCity": {
-          "dataText": ""
-        },
-        "destinationStationCity": {
-          "dataText": ""
-        },
-        "raisingStationAddress": "",
-        "cityId": "",
-        "cityName": "",
-        "originCityCode": "",
-        "originCityName": "",
-        "destinationCityCode": "",
-        "destinationCityText": "",
-        "directionCode": "",
-        "stationName": "",
-        "lineCode": ""
-      },
-      "train": {
-        "trainType": "1",
-        "eventDate": "",
-        "eventHour": "",
-        "startStation": {
-          "dataText": ""
-        },
-        "destinationStation": {
-          "dataText": ""
-        },
-        "number": "",
-        "applyContent": ""
-      },
-      "requestSubjectCode": "",
-      "requestTypeCode": "",
-      "title": "",
-      "name": "requestDetails",
-      "state": "notValidated",
-      "next": "",
-      "prev": "",
-      "isClosed": false
+    "applyContent": "the bus didn't stop, despite I was in the station and waved really hard :(",
+    "busOperator": {
+      "dataCode": 5,
+      "dataText": "אגד"
     },
-    "documentAttachment": {
-      "documentsList": [
-        {
-          "attacmentName": ""
-        }
-      ],
-      "name": "documentAttachment",
-      "state": "notValidated",
-      "next": "",
-      "prev": "",
-      "isClosed": true
+    "licenseNum": "",
+    "eventDate": "",
+    "lineNumberText": "",
+    "eventTime": "",
+    "direction": {
+      "dataText": ""
     },
-    "followStatus": {
-      "contactIdList": [
-        {
-          "ticketNumber": ""
-        }
-      ],
-      "contactIdResultList": [],
-      "name": "followStatus",
-      "state": "notValidated",
-      "next": "",
-      "prev": "",
-      "isClosed": true
+    "wait": [],
+    "raisingStation": {
+      "dataText": ""
     },
-    "containersViewModel": {
-      "showPrintButton": true,
-      "isTabsMode": false,
-      "validatedStatus": true
+    "raisingStationCity": {
+      "dataText": ""
     },
-    "formInformation": {
-      "referenceNumber": "",
-      "stageStatus": "",
-      "loadingDate": "",
-      "firstLoadingDate": "",
-      "isMobile": false,
-      "language": ""
-    }
+    "destinationStationCity": {
+      "dataText": ""
+    },
+    "reportdate": "",
+    "reportTime": "",
+    "busDirectionFrom": "",
+    "busDirectionTo": "",
+    "addOrRemoveStation": "2",
+    "raisingStationAddress": "",
+    "addFrequencyOverCrowd": false,
+    "addFrequencyLongWait": false,
+    "addFrequencyExtendTime": false,
+    "firstDeclaration": false,
+    "secondDeclaration": false,
+    "ravKavNumber": ""
   }
 }

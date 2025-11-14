@@ -44,10 +44,7 @@ describe('sendComplaint', () => {
       debug: true,
       data: {
         ...jsonData.data,
-        personalDetails: {
-          ...jsonData.data.personalDetails,
-          iDNum: '123456789',
-        },
+        iDNum: '123456789',
       },
     });
 

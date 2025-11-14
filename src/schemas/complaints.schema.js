@@ -11,11 +11,11 @@ export const UserSchema = S.object()
   .prop('lastName', S.string().required())
   .prop('iDNum', S.string().required())
   .prop('email', S.string().required())
-  .prop('mobile', S.string().required());
+  .prop('mobile', S.string().required())
+  .additionalProperties(false);
 
 export const ComplaintFormValuesSchema = S.object()
   .id('ComplaintFormValuesSchema')
-  .extend({ UserSchema })
   .prop('applySubject', S.ref('DataCodeSchema').required())
   .prop('applyType', S.ref('DataCodeSchema').required())
   .prop('applyContent', S.string())
@@ -43,7 +43,9 @@ export const ComplaintFormValuesSchema = S.object()
   .prop('firstDeclaration', S.boolean())
   .prop('secondDeclaration', S.boolean())
   .prop('ravKavNumber', S.string())
-  .prop('addFrequencyReason', S.string());
+  .prop('addFrequencyReason', S.string())
+  .extend(UserSchema);
+
 // Train
 // .prop('trainType', S.string())
 // .prop('eventDate', S.string())

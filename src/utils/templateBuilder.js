@@ -181,6 +181,153 @@ export function templateBuilder(body) {
     throw new Error('Input must have data property');
   }
 
+  // If data is flattened, nest it
+  if (body.data.firstName) {
+    body.data = {
+      personalDetails: {
+        firstName: body.data.firstName,
+        lastName: body.data.lastName,
+        iDNum: body.data.iDNum,
+        email: body.data.email,
+        mobile: body.data.mobile,
+        city: body.data.city,
+        street: body.data.street || '',
+        houseNumber: body.data.houseNumber || '',
+        appartment: body.data.appartment || '',
+        postBox: body.data.postBox || '',
+        zipCode: body.data.zipCode || '',
+        phone: body.data.phone || '',
+        contactOptions: body.data.contactOptions || '',
+        fax: body.data.fax || '',
+        state: 'completed',
+        next: '',
+        prev: '',
+        isClosed: true,
+        name: 'personalDetails',
+      },
+      requestSubject: {
+        applySubject: body.data.applySubject,
+        applyType: body.data.applyType,
+        state: 'completed',
+        next: '',
+        prev: '',
+        isClosed: true,
+        name: 'requestSubject',
+      },
+      requestDetails: {
+        busAndOther: {
+          ravKav: body.data.ravKav || true,
+          ravKavNumber: body.data.ravKavNumber || '',
+          reportdate: body.data.reportdate || '',
+          reportTime: body.data.reportTime || '',
+          addingFrequencyReason: body.data.addFrequencyReason ? [body.data.addFrequencyReason] : [],
+          operator: body.data.busOperator,
+          addOrRemoveStation: body.data.addOrRemoveStation || '',
+          driverName: body.data.driverName || '',
+          licenseNum: body.data.licenseNum || '',
+          eventDate: body.data.eventDate || '',
+          eventHour: body.data.eventTime || '',
+          fromHour: '',
+          toHour: '',
+          fillByMakatOrAddress: '2',
+          makatStation: '',
+          lineNumberText: body.data.lineNumberText || '',
+          lineNumberFromList: {
+            dataText: '',
+          },
+          direction: body.data.direction,
+          raisingStation: body.data.raisingStation,
+          applyContent: body.data.applyContent || '',
+          busDirectionFrom: body.data.busDirectionFrom,
+          busDirectionTo: body.data.busDirectionTo,
+          raisingStationCity: body.data.raisingStationCity,
+          destinationStationCity: body.data.destinationStationCity,
+          raisingStationAddress: body.data.raisingStationAddress || '',
+          cityId: '',
+          cityName: '',
+          originCityCode: '',
+          originCityName: '',
+          destinationCityCode: '',
+          destinationCityText: '',
+          directionCode: '',
+          stationName: '',
+          lineCode: '',
+          addFrequencyOverCrowd: body.data.addFrequencyOverCrowd || false,
+          addFrequencyLongWait: body.data.addFrequencyLongWait || false,
+          addFrequencyExtendTime: body.data.addFrequencyExtendTime || false,
+          firstDeclaration: body.data.firstDeclaration || false,
+          secondDeclaration: body.data.secondDeclaration || false,
+        },
+        taxi: {
+          taxiType: '',
+        },
+        train: {
+          trainType: '',
+          eventDate: '',
+          eventHour: '',
+          startStation: {
+            dataText: '',
+          },
+          destinationStation: {
+            dataText: '',
+          },
+          number: '',
+          applyContent: '',
+        },
+        requestSubjectCode: '',
+        requestTypeCode: '',
+        title: '',
+        name: 'requestDetails',
+        state: 'notValidated',
+        next: '',
+        prev: '',
+        isClosed: false,
+      },
+      documentAttachment: {
+        documentsList: [
+          {
+            attacmentName: '',
+          },
+        ],
+        name: 'documentAttachment',
+        state: 'notValidated',
+        next: '',
+        prev: '',
+        isClosed: true,
+      },
+      followStatus: {
+        contactIdList: [
+          {
+            ticketNumber: '',
+          },
+        ],
+        contactIdResultList: [],
+        name: 'followStatus',
+        state: 'notValidated',
+        next: '',
+        prev: '',
+        isClosed: true,
+      },
+      containersViewModel: {
+        showPrintButton: true,
+        isTabsMode: false,
+        validatedStatus: true,
+      },
+      formInformation: {
+        referenceNumber: '',
+        stageStatus: '',
+        loadingDate: '',
+        firstLoadingDate: '',
+        isMobile: false,
+        language: '',
+      },
+      contactType: {
+        isChosenType: true,
+        selectContactType: '1',
+      },
+    };
+  }
+
   // Validate ID number from personal details
   if (!idValidator(String(body.data.personalDetails?.iDNum))) {
     throw new Error('Invalid Id Number');
@@ -337,8 +484,8 @@ export function templateBuilder(body) {
     <DestStation text="${fields.requestDetails.train?.destinationStation?.dataText}"></DestStation>
     <TrainNumber>${fields.requestDetails.train?.number}</TrainNumber>
     <ApplyContent3>${fields.requestDetails.train?.applyContent}</ApplyContent3>
-    <FirstDeclaration>false</FirstDeclaration>
-    <SecondDeclaration>false</SecondDeclaration>
+     <FirstDeclaration>${fields.requestDetails.busAndOther.firstDeclaration || false}</FirstDeclaration>
+     <SecondDeclaration>${fields.requestDetails.busAndOther.secondDeclaration || false}</SecondDeclaration>
     <EventDetails></EventDetails>
     <Invoice></Invoice>
     <Evidence></Evidence>
@@ -354,10 +501,10 @@ export function templateBuilder(body) {
     <FinanceRavKav>${fields.requestDetails.busAndOther.ravKav}</FinanceRavKav>
     <FinanceRavKavNumber>${fields.requestDetails.busAndOther.ravKavNumber}</FinanceRavKavNumber>
     <FinanceOther>false</FinanceOther>
-    <SingleTrip>false</SingleTrip>
-    <LoadTopics>false</LoadTopics>
-    <LongWaiting>false</LongWaiting>
-    <ExtensionHours>false</ExtensionHours>
+     <SingleTrip>false</SingleTrip>
+     <LoadTopics>${fields.requestDetails.busAndOther.addFrequencyOverCrowd || false}</LoadTopics>
+     <LongWaiting>${fields.requestDetails.busAndOther.addFrequencyLongWait || false}</LongWaiting>
+     <ExtensionHours>${fields.requestDetails.busAndOther.addFrequencyExtendTime || false}</ExtensionHours>
     <Operator text="${fields.requestDetails.busAndOther.operator.dataText}"></Operator>
     <BusDriverName>${fields.requestDetails.busAndOther.driverName}</BusDriverName>
     <BusLicenseNum>${fields.requestDetails.busAndOther.licenseNum}</BusLicenseNum>

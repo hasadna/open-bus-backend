@@ -1,4 +1,4 @@
-import { ComplaintFormValuesSchema, DataCodeSchema, sendComplaintSchema, UserSchema } from './complaints.schema.js';
+import { ComplaintFormValuesSchema, DataCodeSchema, UserSchema } from './complaints.schema.js';
 import { cityModel, lineModel, notRealNumberModel, operatorModel, pniyaModel, stationModel, subjectModel } from './gov.schema.js';
 import { commonErrorResponse } from './index.js';
 import { githubIssueModel, githubMilestoneModel, githubUserModel } from './issues.schema.js';
@@ -10,10 +10,9 @@ import { githubIssueModel, githubMilestoneModel, githubUserModel } from './issue
 export function loadModels(fastify) {
   fastify.addSchema(commonErrorResponse);
 
-  fastify.addSchema(ComplaintFormValuesSchema);
   fastify.addSchema(DataCodeSchema);
-  fastify.addSchema(sendComplaintSchema);
   fastify.addSchema(UserSchema);
+  fastify.addSchema(ComplaintFormValuesSchema);
 
   fastify.addSchema(cityModel);
   fastify.addSchema(lineModel);
