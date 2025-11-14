@@ -1,3 +1,5 @@
+import { FastifySchema } from 'fastify';
+
 import { commonSuccessResponse, S } from './index.js';
 
 // --- Reusable field helpers ---
@@ -59,11 +61,7 @@ export const subjectModel = S.object()
   .prop('subject_code', S.string());
 // --- Endpoint Schemas ---
 
-/**
- * GetLinesByStation endpoint schema
- * @type {import('fastify').FastifySchema}
- */
-export const getLinesByStationSchema = {
+export const getLinesByStationSchema: FastifySchema = {
   tags: ['Government Transportation'],
   summary: 'Get bus lines by station',
   description: 'Retrieve bus lines available at a specific station',
@@ -79,11 +77,7 @@ export const getLinesByStationSchema = {
   },
 };
 
-/**
- * GetStationByLine endpoint schema
- * @type {import('fastify').FastifySchema}
- */
-export const getStationByLineSchema = {
+export const getStationByLineSchema: FastifySchema = {
   tags: ['Government Transportation'],
   summary: 'Get stations by line',
   description: 'Retrieve stations for a specific bus line',
@@ -100,11 +94,7 @@ export const getStationByLineSchema = {
   },
 };
 
-/**
- * GetSubjects endpoint schema
- * @type {import('fastify').FastifySchema}
- */
-export const getSubjectsSchema = {
+export const getSubjectsSchema: FastifySchema = {
   tags: ['Government Transportation'],
   summary: 'Get subject types for vehicles',
   description: 'Retrieve subject types for vehicles from the government list',
@@ -115,11 +105,7 @@ export const getSubjectsSchema = {
   },
 };
 
-/**
- * GetTrainStations endpoint schema
- * @type {import('fastify').FastifySchema}
- */
-export const getTrainStationsSchema = {
+export const getTrainStationsSchema: FastifySchema = {
   tags: ['Government Transportation'],
   summary: 'Get train stations',
   description: 'Retrieve train stations by station type\n7 - Israel Train\n4 - Kfir Light Train\n13 - Tevel Ligh Train',
@@ -131,12 +117,7 @@ export const getTrainStationsSchema = {
   },
 };
 
-/**
- * GetPniya endpoint schema
- * @type {import('fastify').FastifySchema}
- */
-
-export const getPniyaSchema = {
+export const getPniyaSchema: FastifySchema = {
   tags: ['Government Transportation'],
   summary: 'Get Pniya (Vehicles type)',
   description: 'Retrieve pniya list for vehicles',
@@ -147,11 +128,7 @@ export const getPniyaSchema = {
   },
 };
 
-/**
- * GetNotRealNumbers endpoint schema
- * @type {import('fastify').FastifySchema}
- */
-export const getNotRealNumbersSchema = {
+export const getNotRealNumbersSchema: FastifySchema = {
   tags: ['Government Transportation'],
   summary: 'Get not real numbers (Testing)',
   description: 'Retrieve not real numbers list for testing',
@@ -162,11 +139,7 @@ export const getNotRealNumbersSchema = {
   },
 };
 
-/**
- * GetLinesByLine endpoint schema
- * @type {import('fastify').FastifySchema}
- */
-export const getLinesByLineSchema = {
+export const getLinesByLineSchema: FastifySchema = {
   tags: ['Government Transportation'],
   summary: 'Get lines by line ID',
   description: 'Retrieve bus lines by specific line ID',
@@ -182,11 +155,7 @@ export const getLinesByLineSchema = {
   },
 };
 
-/**
- * GetCities endpoint schema
- * @type {import('fastify').FastifySchema}
- */
-export const getCitiesSchema = {
+export const getCitiesSchema: FastifySchema = {
   tags: ['Government Transportation'],
   summary: 'Get cities',
   description: 'Retrieve list of cities',
@@ -197,11 +166,7 @@ export const getCitiesSchema = {
   },
 };
 
-/**
- * GetOperators endpoint schema
- * @type {import('fastify').FastifySchema}
- */
-export const getOperatorsSchema = {
+export const getOperatorsSchema: FastifySchema = {
   tags: ['Government Transportation'],
   summary: 'Get operators',
   description: 'Retrieve list of operators',
@@ -211,11 +176,7 @@ export const getOperatorsSchema = {
   },
 };
 
-/**
- * GetTime endpoint schema
- * @type {import('fastify').FastifySchema}
- */
-export const getTimeSchema = {
+export const getTimeSchema: FastifySchema = {
   tags: ['Government Transportation'],
   summary: 'Get current time',
   description: 'Retrieve current server time',

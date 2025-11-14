@@ -13,7 +13,7 @@ export async function healthCheck(request, reply) {
       form_server: 'https://forms.gov.il/globaldata/getsequence/setform.aspx',
       data_server: 'https://esb.gov.il/govServiceList/',
     };
-    const govApiStatuses = {};
+    const govApiStatuses: Record<string, string> = {};
     await Promise.all(
       Object.entries(govApiMap).map(async ([name, url]) => {
         try {

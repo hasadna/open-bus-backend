@@ -1,12 +1,10 @@
+import { FastifyInstance } from 'fastify';
+
 import { cityModel, lineModel, notRealNumberModel, operatorModel, pniyaModel, stationModel, subjectModel } from './gov.schema.js';
 import { commonErrorResponse } from './index.js';
 import { githubIssueModel, githubMilestoneModel, githubUserModel } from './issues.schema.js';
 
-/**
- * Register all application routes
- * @param {import('fastify').FastifyInstance} fastify - Fastify instance
- */
-export function loadModels(fastify) {
+export function loadModels(fastify: FastifyInstance) {
   fastify.addSchema(commonErrorResponse);
   fastify.addSchema(cityModel);
   fastify.addSchema(lineModel);

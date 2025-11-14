@@ -69,10 +69,18 @@ export function createMockGitHubResponse(id = 123, title = 'Test Issue', state =
  * Create a mock GitHub API error
  * @param {number} status - HTTP status code
  * @param {string} message - Error message
- * @returns {Error} Mock GitHub API error
+ * @returns {GitHubError} Mock GitHub API error
  */
-export function createMockGitHubError(status = 500, message = 'Internal Server Error') {
-  const error = new Error(message);
+interface GitHubError extends Error {
+  response?: {
+    data: { message: string };
+    status: number;
+    statusText: string;
+  };
+}
+
+export function createMockGitHubError(status = 500, message = 'Internal Server Error'): GitHubError {
+  const error: GitHubError = new Error(message);
 
   error.response = {
     data: { message },

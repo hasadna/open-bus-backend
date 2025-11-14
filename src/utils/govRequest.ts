@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 
 // Base URL for government services
 const GOV_BASE_URL = 'https://esb.gov.il/govServiceList';
@@ -8,12 +8,12 @@ const GOV_BASE_URL = 'https://esb.gov.il/govServiceList';
  */
 export const govRequest = {
   globalOptions: { timeout: 30000 },
-  get(endpoint, options = {}) {
+  get<T>(endpoint: string, options: AxiosRequestConfig<T> = {}) {
     const config = { ...this.globalOptions, ...options };
     const url = `${GOV_BASE_URL}${endpoint}`;
     return axios.get(url, config);
   },
-  post(endpoint, data, options = {}) {
+  post<T>(endpoint: string, data?: T, options: AxiosRequestConfig<T> = {}) {
     const config = { ...this.globalOptions, ...options };
     const url = `${GOV_BASE_URL}${endpoint}`;
     return axios.post(url, data, config);

@@ -73,6 +73,7 @@ describe('setupGracefulShutdown error handlers', () => {
     handlers = {};
     sinon.stub(process, 'on').callsFake((event, handler) => {
       handlers[event] = handler;
+      return process;
     });
   });
 

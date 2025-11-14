@@ -1,3 +1,5 @@
+import { FastifyInstance } from 'fastify';
+
 import {
   getCities,
   getLinesByLine,
@@ -23,10 +25,7 @@ import {
   getTrainStationsSchema,
 } from '../schemas/gov.schema.js';
 
-/**
- * @param {import('fastify').FastifyInstance} fastify
- */
-export function govRoutes(fastify) {
+export function govRoutes(fastify: FastifyInstance) {
   fastify.get('/cities', { schema: getCitiesSchema }, getCities);
   fastify.get('/operators', { schema: getOperatorsSchema }, getOperators);
   fastify.post('/lines-by-station', { schema: getLinesByStationSchema }, getLinesByStation);

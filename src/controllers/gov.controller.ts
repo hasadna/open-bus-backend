@@ -1,11 +1,6 @@
 import { govRequest } from '../utils/govRequest.js';
 
-/**
- * Formats a Date object into a string in the format 'DD/MM/YYYY'.
- *
- * @param {Date} date - The Date object to format.
- */
-function formatDate(date) {
+function formatDate(date: Date) {
   const day = String(date.getDate()).padStart(2, '0');
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const year = date.getFullYear();

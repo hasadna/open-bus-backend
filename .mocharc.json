@@ -1,5 +1,5 @@
 {
-  "extension": ["js"],
-  "spec": "tests/**/*.test.js",
+  "extension": ["js", "ts"],
+  "spec": "tests/**/*.test.{js,ts}",
   "node-option": ["experimental-specifier-resolution=node"]
 }

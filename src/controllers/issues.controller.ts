@@ -1,11 +1,11 @@
-import axios from 'axios';
+import ax from 'axios';
 
 /**
  * Create issue handler
  * @param {import('fastify').FastifyRequest} request
  * @param {import('fastify').FastifyReply} reply
  */
-export async function createIssue(request, reply) {
+export async function createIssue(request, reply, axios = ax) {
   try {
     const { title, contactName, contactEmail, description, environment, expectedBehavior, actualBehavior, reproducibility, attachments } =
       request.body;

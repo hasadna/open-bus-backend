@@ -1,10 +1,8 @@
+import { FastifySchema } from 'fastify';
+
 import { S } from './index.js';
 
-/**
- * Send complaint endpoint schema
- * @type {import('fastify').FastifySchema}
- */
-export const sendComplaintSchema = {
+export const sendComplaintSchema: FastifySchema = {
   tags: ['Complaints'],
   summary: 'Send a complaint',
   description: 'Submits a complaint to the government forms system',

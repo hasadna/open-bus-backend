@@ -6,6 +6,15 @@ import sinon from 'sinon';
 import { createIssue } from '../src/controllers/issues.controller.js';
 import { cleanup, createMockGitHubError, createMockGitHubResponse, createMockReply, createMockRequest, setupGitHubEnv } from './test.utils.js';
 
+interface GitHubError extends Error {
+  response?: {
+    data: { message: string };
+    status: number;
+    statusText: string;
+  };
+  code?: string;
+}
+
 describe('createIssue', () => {
   let post;
   let reply;
@@ -47,7 +56,7 @@ describe('createIssue', () => {
   });
 
   it('should handle errors and return 500', async () => {
-    const error = new Error('GitHub error');
+    const error: GitHubError = new Error('GitHub error');
 
     error.code = undefined;
     post.rejects(error);
@@ -155,7 +164,7 @@ describe('createIssue', () => {
   });
 
   it('should handle network timeout errors', async () => {
-    const error = new Error('timeout of 30000ms exceeded');
+    const error: GitHubError = new Error('timeout of 30000ms exceeded');
 
     error.code = 'ECONNABORTED';
     post.rejects(error);
@@ -170,7 +179,7 @@ describe('createIssue', () => {
   });
 
   it('should handle network connection errors', async () => {
-    const error = new Error('getaddrinfo ENOTFOUND api.github.com');
+    const error: GitHubError = new Error('getaddrinfo ENOTFOUND api.github.com');
 
     error.code = 'ENOTFOUND';
     post.rejects(error);

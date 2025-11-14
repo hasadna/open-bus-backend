@@ -1,3 +1,4 @@
+// @ts-nocheck
 const dataModelTemplate = {
   contactType: {
     isChosenType: false,

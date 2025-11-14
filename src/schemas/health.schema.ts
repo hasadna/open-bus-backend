@@ -1,10 +1,8 @@
+import { FastifySchema } from 'fastify';
+
 import { S } from './index.js';
 
-/**
- * Health check endpoint schema
- * @type {import('fastify').FastifySchema}
- */
-export const healthCheckSchema = {
+export const healthCheckSchema: FastifySchema = {
   tags: ['Health'],
   summary: 'Health check endpoint',
   description: 'Returns the health status of the API',
