@@ -10,7 +10,6 @@ const PORT = process.env.PORT || 3001;
 // Start the server
 async function start() {
   try {
-    process.addListener('unhandledRejection', console.log);
     // Create and configure Fastify instance
     const fastify = await createServer();
 
