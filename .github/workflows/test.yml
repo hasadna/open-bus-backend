@@ -38,8 +38,8 @@ jobs:
       - name: Run lint tests
         run: npm run test:lint
 
-  mocha-test:
-    name: Mocha Test
+  jest-test:
+    name: Jest Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -60,6 +60,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Create reports directory
+        run: mkdir -p reports
 
       - name: Run tests
         run: npm run test:unit -- --json --outputFile=reports/test-results.json
