@@ -1,66 +1,100 @@
 import { S } from './index.js';
 
-export const UserSchema = S.object()
-  .id('UserSchema')
+const MobileSchema = () => S.string().pattern('^05\\d(-)?[2-9]\\d{6}$');
+const DateStringSchema = () => S.string().format('date'); // YYYY-MM-DD
+const HourStringSchema = () => S.string().pattern('^([01]\\d|2[0-3]):([0-5]\\d)$');
+const AttachmentSchema = () =>
+  S.object().prop('attachmentName', S.string().pattern('.*\\.(docx|jpeg|jpg|pdf|doc|gif|tiff|png)$')).prop('data', S.string().maxLength(5120));
+
+export const PersonalDetailsSchema = S.object()
+  .id('PersonalDetailsSchema')
   .prop('firstName', S.string().required())
   .prop('lastName', S.string().required())
   .prop('iDNum', S.string().required())
   .prop('email', S.string().required())
-  .prop('mobile', S.string().required())
-  .additionalProperties(false);
+  .prop('mobile', MobileSchema().required())
+  .prop('applySubject', S.ref('DataCodeModel'))
+  .prop('applyType', S.ref('DataCodeModel'));
 
-export const ComplaintFormValuesSchema = S.object()
-  .id('ComplaintFormValuesSchema')
-  .prop('applySubject', S.ref('DataCodeModel').required())
-  .prop('applyType', S.ref('DataCodeModel').required())
-  .prop('applyContent', S.string())
-  // Bus And Other
-  .prop('busOperator', S.ref('DataCodeModel'))
+export const BusAndOtherSchema = S.object()
+  .id('BusAndOtherSchema')
+  .prop('ravKav', S.boolean())
+  .prop('ravKavNumber', S.string())
+  .prop('reportdate', DateStringSchema())
+  .prop('reportTime', HourStringSchema())
+  .prop('addingFrequencyReason', S.array().items(S.string().enum(['LoadTopics', 'LongWaiting', 'ExtensionHours'])))
+  .prop('operator', S.ref('DataCodeModel'))
+  .prop('addOrRemoveStation', S.string().enum(['1', '2'])) // 1 = Remove, 2 = Add
+  .prop('driverName', S.string())
   .prop('licenseNum', S.string())
-  .prop('eventDate', S.string())
+  .prop('eventDate', DateStringSchema())
+  .prop('eventHour', HourStringSchema())
+  .prop('fromHour', HourStringSchema())
+  .prop('toHour', HourStringSchema())
+  .prop('fillByMakatOrAddress', S.string().enum(['1', '2'])) // 1 = Makat Station, 2 = Line Number
+  .prop('makatStation', S.string())
   .prop('lineNumberText', S.string())
-  .prop('eventTime', S.string())
+  .prop('lineNumberFromList', S.ref('DataCodeModel'))
   .prop('direction', S.ref('DataCodeModel'))
-  .prop('wait', S.array().items(S.string()).maxItems(2).minItems(2))
   .prop('raisingStation', S.ref('DataCodeModel'))
-  .prop('city', S.ref('DataCodeModel'))
+  .prop('applyContent', S.string())
+  .prop('busDirectionFrom', S.string())
+  .prop('busDirectionTo', S.string())
   .prop('raisingStationCity', S.ref('DataCodeModel'))
   .prop('destinationStationCity', S.ref('DataCodeModel'))
-  .prop('reportdate', S.string())
-  .prop('reportTime', S.string())
-  .prop('busDirectionFrom', S.ref('DataCodeModel'))
-  .prop('busDirectionTo', S.ref('DataCodeModel'))
-  .prop('addOrRemoveStation', S.string())
   .prop('raisingStationAddress', S.string())
-  .prop('addFrequencyOverCrowd', S.boolean())
-  .prop('addFrequencyLongWait', S.boolean())
-  .prop('addFrequencyExtendTime', S.boolean())
+  .prop('cityId', S.string())
+  .prop('cityName', S.string())
+  .prop('raisingStationCityCode', S.string())
+  .prop('raisingStationCityName', S.string())
+  .prop('destinationStationCityCode', S.string())
+  .prop('destinationStationCityText', S.string())
+  .prop('directionCode', S.string())
+  .prop('stationName', S.string())
+  .prop('lineCode', S.string());
+
+export const TrainSchema = S.object()
+  .id('TrainSchema')
+  .prop('trainType', S.string().enum(['1', '2'])) // 1 = Israel Train, 2 = Light Train
+  .prop('eventDate', DateStringSchema())
+  .prop('eventHour', HourStringSchema())
+  .prop('startStation', S.ref('DataCodeModel'))
+  .prop('destinationStation', S.ref('DataCodeModel'))
+  .prop('number', S.string())
+  .prop('applyContent', S.string());
+
+export const TaxiSchema = S.object()
+  .id('TaxiSchema')
+  .prop('eventDetails', S.string())
+  .prop('invoice', S.string())
+  .prop('evidence', S.string())
+  .prop('otherFactors', S.string())
+  .prop('taxiType', S.string().enum(['1', '2'])) // 1 = Taxi, 2 = Service Taxi
+  .prop('licenseNum', S.string())
+  .prop('cap', S.string())
+  .prop('eventDate', DateStringSchema())
+  .prop('eventHour', HourStringSchema())
+  .prop('eventLocation', S.string())
   .prop('firstDeclaration', S.boolean())
   .prop('secondDeclaration', S.boolean())
-  .prop('ravKavNumber', S.string())
-  .prop('addFrequencyReason', S.string())
-  .extend(UserSchema);
+  .prop('applyContent', S.string());
 
-// Train
-// .prop('trainType', S.string())
-// .prop('eventDate', S.string())
-// .prop('eventHour', S.string())
-// .prop('startStation', S.ref('DataCodeModel'))
-// .prop('destinationStation', S.ref('DataCodeModel'))
-// .prop('number', S.string())
-// Taxi
-// .prop('eventDetails', S.string())
-// .prop('invoice', S.string())
-// .prop('evidence', S.string())
-// .prop('otherFactors', S.string())
-// .prop('taxiType', S.string())
-// .prop('licenseNum', S.string())
-// .prop('cap', S.string())
-// .prop('eventDate', S.string())
-// .prop('eventHour', S.string())
-// .prop('eventLocation', S.string())
-// .prop('firstDeclaration', S.boolean())
-// .prop('secondDeclaration', S.boolean());
+export const ComplaintFormSchema = S.id('ComplaintFormSchema').anyOf([
+  S.object()
+    .prop('personalDetails', S.ref('PersonalDetailsSchema'))
+    .prop('busAndOther', S.ref('BusAndOtherSchema'))
+    .prop('documentsList', S.array().items(AttachmentSchema())),
+
+  S.object()
+    .prop('personalDetails', S.ref('PersonalDetailsSchema'))
+    .prop('train', S.ref('TrainSchema'))
+    .prop('documentsList', S.array().items(AttachmentSchema())),
+
+  S.object()
+    .prop('personalDetails', S.ref('PersonalDetailsSchema'))
+    .prop('taix', S.ref('TaxiSchema'))
+    .prop('documentsList', S.array().items(AttachmentSchema())),
+]);
 
 /**
  * Send complaint endpoint schema
@@ -72,7 +106,7 @@ export const sendComplaintSchema = {
   description: 'Submits a complaint to the government forms system',
   body: S.object()
     .prop('debug', S.boolean().description('Enable debug mode to return XML without sending').default(true))
-    .prop('data', S.ref('ComplaintFormValuesSchema')),
+    .prop('data', S.ref('ComplaintFormSchema')),
   response: {
     200: S.object()
       .prop('success', S.boolean())
