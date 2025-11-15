@@ -62,7 +62,7 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npx mocha --reporter json --reporter-option output=reports/test-results.json
+        run: npm run test:unit -- --json --outputFile=reports/test-results.json
 
       - name: Upload test report
         uses: actions/upload-artifact@v4
@@ -73,9 +73,9 @@ jobs:
       - uses: dorny/test-reporter@v2
         with:
           artifact: test-results
-          name: Mocha Tests
+          name: Jest Tests
           path: 'test-results.json'
-          reporter: mocha-json
+          reporter: jest-json
 
   coverage-test:
     name: Test Whit Coverage

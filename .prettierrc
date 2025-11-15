@@ -6,8 +6,16 @@
   "trailingComma": "all",
   "bracketSameLine": true,
   "endOfLine": "auto",
-  "importOrder": ["^@core/(.*)$", "^@server/(.*)$", "^@ui/(.*)$", "^[./]"],
+  "importOrder": ["^@nestjs", "^axios", "^[./]"],
   "importOrderCaseInsensitive": true,
   "importOrderSeparation": true,
-  "importOrderSortSpecifiers": true
+  "importOrderSortSpecifiers": true,
+  "overrides": [
+    {
+      "files": "*.ts",
+      "options": {
+        "parser": "babel-ts"
+      }
+    }
+  ]
 }

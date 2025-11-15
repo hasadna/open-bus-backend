@@ -1,2 +1,5 @@
-forms.gov.il.har
-postman.json
+dist/
+coverage/
+node_modules/
+*.har
+**/postman.json
