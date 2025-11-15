@@ -1,6 +1,6 @@
 import { cityModel, lineModel, notRealNumberModel, operatorModel, pniyaModel, stationModel, subjectModel } from './gov.schema.js';
 import { commonErrorResponse } from './index.js';
-import { githubIssueModel, githubMilestoneModel, githubUserModel } from './issues.schema.js';
+import { githubIssueModel } from './issues.schema.js';
 
 /**
  * Register all application routes
@@ -15,7 +15,5 @@ export function loadModels(fastify) {
   fastify.addSchema(pniyaModel);
   fastify.addSchema(stationModel);
   fastify.addSchema(subjectModel);
-  fastify.addSchema(githubUserModel);
-  fastify.addSchema(githubMilestoneModel);
   fastify.addSchema(githubIssueModel);
 }
