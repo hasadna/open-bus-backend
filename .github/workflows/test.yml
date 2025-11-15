@@ -78,7 +78,7 @@ jobs:
           artifact: test-results
           name: Jest Tests
           path: 'test-results.json'
-          reporter: jest-json
+          reporter: jest
 
   coverage-test:
     name: Test Whit Coverage
