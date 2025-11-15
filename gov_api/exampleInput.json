@@ -1,64 +1,70 @@
 {
   "debug": true,
   "data": {
-    "firstName": "נעם",
-    "lastName": "געש",
-    "iDNum": "212121214",
-    "mobile": "0536218158",
-    "phone": "",
-    "contactOptions": "1",
-    "fax": "",
-    "email": "emainh@gmail.com",
-    "city": {
-      "dataCode": -1,
-      "dataText": ""
+    "personalDetails": {
+      "firstName": "נעם",
+      "lastName": "געש",
+      "iDNum": "212121214",
+      "email": "emainh@gmail.com",
+      "mobile": "0536218158",
+      "applySubject": {
+        "dataCode": "0",
+        "dataText": "אוטובוס"
+      },
+      "applyType": {
+        "dataCode": "3",
+        "dataText": "אי עצירה בתחנה"
+      }
     },
-    "street": "",
-    "houseNumber": "",
-    "appartment": "",
-    "postBox": "",
-    "zipCode": "",
-    "applySubject": {
-      "dataCode": "0",
-      "dataText": "אוטובוס"
+    "busAndOther": {
+      "ravKav": true,
+      "ravKavNumber": "",
+      "reportdate": "",
+      "reportTime": "",
+      "addingFrequencyReason": [],
+      "operator": {
+        "dataCode": 5,
+        "dataText": "אגד"
+      },
+      "addOrRemoveStation": "2",
+      "driverName": "",
+      "licenseNum": "",
+      "eventDate": "",
+      "eventHour": "",
+      "fromHour": "",
+      "toHour": "",
+      "fillByMakatOrAddress": "2",
+      "makatStation": "",
+      "lineNumberText": "",
+      "lineNumberFromList": {
+        "dataText": ""
+      },
+      "direction": {
+        "dataText": ""
+      },
+      "raisingStation": {
+        "dataText": ""
+      },
+      "applyContent": "the bus didn't stop, despite I was in the station and waved really hard :(",
+      "busDirectionFrom": "",
+      "busDirectionTo": "",
+      "raisingStationCity": {
+        "dataText": ""
+      },
+      "destinationStationCity": {
+        "dataText": ""
+      },
+      "raisingStationAddress": "",
+      "cityId": "",
+      "cityName": "",
+      "raisingStationCityCode": "",
+      "raisingStationCityName": "",
+      "destinationStationCityCode": "",
+      "destinationStationCityText": "",
+      "directionCode": "",
+      "stationName": "",
+      "lineCode": ""
     },
-    "applyType": {
-      "dataCode": "3",
-      "dataText": "אי עצירה בתחנה"
-    },
-    "applyContent": "the bus didn't stop, despite I was in the station and waved really hard :(",
-    "busOperator": {
-      "dataCode": 5,
-      "dataText": "אגד"
-    },
-    "licenseNum": "",
-    "eventDate": "",
-    "lineNumberText": "",
-    "eventTime": "",
-    "direction": {
-      "dataText": ""
-    },
-    "wait": [],
-    "raisingStation": {
-      "dataText": ""
-    },
-    "raisingStationCity": {
-      "dataText": ""
-    },
-    "destinationStationCity": {
-      "dataText": ""
-    },
-    "reportdate": "",
-    "reportTime": "",
-    "busDirectionFrom": "",
-    "busDirectionTo": "",
-    "addOrRemoveStation": "2",
-    "raisingStationAddress": "",
-    "addFrequencyOverCrowd": false,
-    "addFrequencyLongWait": false,
-    "addFrequencyExtendTime": false,
-    "firstDeclaration": false,
-    "secondDeclaration": false,
-    "ravKavNumber": ""
+    "documentsList": []
   }
 }

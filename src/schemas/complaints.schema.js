@@ -1,37 +1,41 @@
 import { S } from './index.js';
 
-const MobileSchema = () => S.string().pattern('^05\\d(-)?[2-9]\\d{6}$');
-const DateStringSchema = () => S.string().format('date'); // YYYY-MM-DD
-const HourStringSchema = () => S.string().pattern('^([01]\\d|2[0-3]):([0-5]\\d)$');
-const AttachmentSchema = () =>
-  S.object().prop('attachmentName', S.string().pattern('.*\\.(docx|jpeg|jpg|pdf|doc|gif|tiff|png)$')).prop('data', S.string().maxLength(5120));
+const mobileSchema = () => S.string().pattern(/^05\d-?[2-9]\d{6}$/u);
+const dateStringSchema = () => S.string().format('date');
+const hourStringSchema = () => S.string();
+const attachmentSchema = () =>
+  S.object()
+    .prop('attachmentName', S.string().pattern(/.*\.[docx|jpeg|jpg|pdf|doc|gif|tiff|png]$/u))
+    .prop('data', S.string().maxLength(5120));
 
-export const PersonalDetailsSchema = S.object()
+export const personalDetailsSchema = S.object()
   .id('PersonalDetailsSchema')
   .prop('firstName', S.string().required())
   .prop('lastName', S.string().required())
   .prop('iDNum', S.string().required())
   .prop('email', S.string().required())
-  .prop('mobile', MobileSchema().required())
+  .prop('mobile', mobileSchema().required())
   .prop('applySubject', S.ref('DataCodeModel'))
   .prop('applyType', S.ref('DataCodeModel'));
 
-export const BusAndOtherSchema = S.object()
+export const busAndOtherSchema = S.object()
   .id('BusAndOtherSchema')
   .prop('ravKav', S.boolean())
   .prop('ravKavNumber', S.string())
-  .prop('reportdate', DateStringSchema())
-  .prop('reportTime', HourStringSchema())
+  .prop('reportdate', dateStringSchema())
+  .prop('reportTime', hourStringSchema())
   .prop('addingFrequencyReason', S.array().items(S.string().enum(['LoadTopics', 'LongWaiting', 'ExtensionHours'])))
   .prop('operator', S.ref('DataCodeModel'))
-  .prop('addOrRemoveStation', S.string().enum(['1', '2'])) // 1 = Remove, 2 = Add
+  // 1 = Remove, 2 = Add
+  .prop('addOrRemoveStation', S.string().enum(['1', '2']))
   .prop('driverName', S.string())
   .prop('licenseNum', S.string())
-  .prop('eventDate', DateStringSchema())
-  .prop('eventHour', HourStringSchema())
-  .prop('fromHour', HourStringSchema())
-  .prop('toHour', HourStringSchema())
-  .prop('fillByMakatOrAddress', S.string().enum(['1', '2'])) // 1 = Makat Station, 2 = Line Number
+  .prop('eventDate', dateStringSchema())
+  .prop('eventHour', hourStringSchema())
+  .prop('fromHour', hourStringSchema())
+  .prop('toHour', hourStringSchema())
+  // 1 = Makat Station, 2 = Line Number
+  .prop('fillByMakatOrAddress', S.string().enum(['1', '2']))
   .prop('makatStation', S.string())
   .prop('lineNumberText', S.string())
   .prop('lineNumberFromList', S.ref('DataCodeModel'))
@@ -53,47 +57,49 @@ export const BusAndOtherSchema = S.object()
   .prop('stationName', S.string())
   .prop('lineCode', S.string());
 
-export const TrainSchema = S.object()
+export const trainSchema = S.object()
   .id('TrainSchema')
-  .prop('trainType', S.string().enum(['1', '2'])) // 1 = Israel Train, 2 = Light Train
-  .prop('eventDate', DateStringSchema())
-  .prop('eventHour', HourStringSchema())
+  // 1 = Israel Train, 2 = Light Train
+  .prop('trainType', S.string().enum(['1', '2']))
+  .prop('eventDate', dateStringSchema())
+  .prop('eventHour', hourStringSchema())
   .prop('startStation', S.ref('DataCodeModel'))
   .prop('destinationStation', S.ref('DataCodeModel'))
   .prop('number', S.string())
   .prop('applyContent', S.string());
 
-export const TaxiSchema = S.object()
+export const taxiSchema = S.object()
   .id('TaxiSchema')
   .prop('eventDetails', S.string())
   .prop('invoice', S.string())
   .prop('evidence', S.string())
   .prop('otherFactors', S.string())
-  .prop('taxiType', S.string().enum(['1', '2'])) // 1 = Taxi, 2 = Service Taxi
+  // 1 = Taxi, 2 = Service Taxi
+  .prop('taxiType', S.string().enum(['1', '2']))
   .prop('licenseNum', S.string())
   .prop('cap', S.string())
-  .prop('eventDate', DateStringSchema())
-  .prop('eventHour', HourStringSchema())
+  .prop('eventDate', dateStringSchema())
+  .prop('eventHour', hourStringSchema())
   .prop('eventLocation', S.string())
   .prop('firstDeclaration', S.boolean())
   .prop('secondDeclaration', S.boolean())
   .prop('applyContent', S.string());
 
-export const ComplaintFormSchema = S.id('ComplaintFormSchema').anyOf([
+export const complaintFormSchema = S.id('ComplaintFormSchema').anyOf([
   S.object()
     .prop('personalDetails', S.ref('PersonalDetailsSchema'))
     .prop('busAndOther', S.ref('BusAndOtherSchema'))
-    .prop('documentsList', S.array().items(AttachmentSchema())),
+    .prop('documentsList', S.array().items(attachmentSchema())),
 
   S.object()
     .prop('personalDetails', S.ref('PersonalDetailsSchema'))
     .prop('train', S.ref('TrainSchema'))
-    .prop('documentsList', S.array().items(AttachmentSchema())),
+    .prop('documentsList', S.array().items(attachmentSchema())),
 
   S.object()
     .prop('personalDetails', S.ref('PersonalDetailsSchema'))
-    .prop('taix', S.ref('TaxiSchema'))
-    .prop('documentsList', S.array().items(AttachmentSchema())),
+    .prop('taxi', S.ref('TaxiSchema'))
+    .prop('documentsList', S.array().items(attachmentSchema())),
 ]);
 
 /**

@@ -12,3 +12,17 @@ export function idValidator(id) {
   }
   return sum % 10 === 0;
 }
+
+/**
+ *
+ * @param {string} mobile
+ * @returns
+ */
+export function mobileValidator(mobile) {
+  const mobilePattern = /^05\d-?[2-9]\d{6}$/u;
+  if (mobile && mobilePattern.test(mobile)) {
+    if (mobile.length === 10) return `${mobile.slice(0, 3)}-${mobile.slice(3)}`;
+    return mobile;
+  }
+  return false;
+}

@@ -1,4 +1,4 @@
-import { idValidator } from './idValidator.js';
+import { idValidator } from './complaintsValidator.js';
 
 const dataModelTemplate = {
   contactType: {
@@ -181,164 +181,147 @@ export function templateBuilder(body) {
     throw new Error('Input must have data property');
   }
 
-  // If data is flattened, nest it
-  if (body.data.firstName) {
-    body.data = {
-      personalDetails: {
-        firstName: body.data.firstName,
-        lastName: body.data.lastName,
-        iDNum: body.data.iDNum,
-        email: body.data.email,
-        mobile: body.data.mobile,
-        city: body.data.city,
-        street: body.data.street || '',
-        houseNumber: body.data.houseNumber || '',
-        appartment: body.data.appartment || '',
-        postBox: body.data.postBox || '',
-        zipCode: body.data.zipCode || '',
-        phone: body.data.phone || '',
-        contactOptions: body.data.contactOptions || '',
-        fax: body.data.fax || '',
-        state: 'completed',
-        next: '',
-        prev: '',
-        isClosed: true,
-        name: 'personalDetails',
+  // Restructure the input to match the template structure
+  const restructuredData = {
+    personalDetails: {
+      ...dataModelTemplate.personalDetails,
+      ...body.data.personalDetails,
+      state: 'completed',
+      next: '',
+      prev: '',
+      isClosed: true,
+      name: 'personalDetails',
+    },
+    requestSubject: {
+      applySubject: body.data.personalDetails.applySubject,
+      applyType: body.data.personalDetails.applyType,
+      state: 'completed',
+      next: '',
+      prev: '',
+      isClosed: true,
+      name: 'requestSubject',
+    },
+    requestDetails: {
+      busAndOther: body.data.busAndOther || {
+        ravKav: true,
+        ravKavNumber: '',
+        reportdate: '',
+        reportTime: '',
+        addingFrequencyReason: [],
+        operator: { dataText: '' },
+        addOrRemoveStation: '',
+        driverName: '',
+        licenseNum: '',
+        eventDate: '',
+        eventHour: '',
+        fromHour: '',
+        toHour: '',
+        fillByMakatOrAddress: '2',
+        makatStation: '',
+        lineNumberText: '',
+        lineNumberFromList: { dataText: '' },
+        direction: { dataText: '' },
+        raisingStation: { dataText: '' },
+        applyContent: '',
+        busDirectionFrom: '',
+        busDirectionTo: '',
+        raisingStationCity: { dataText: '' },
+        destinationStationCity: { dataText: '' },
+        raisingStationAddress: '',
+        cityId: '',
+        cityName: '',
+        originCityCode: '',
+        originCityName: '',
+        destinationCityCode: '',
+        destinationCityText: '',
+        directionCode: '',
+        stationName: '',
+        lineCode: '',
       },
-      requestSubject: {
-        applySubject: body.data.applySubject,
-        applyType: body.data.applyType,
-        state: 'completed',
-        next: '',
-        prev: '',
-        isClosed: true,
-        name: 'requestSubject',
+      taxi: body.data.taxi || {
+        taxiType: '',
+        eventDetails: '',
+        invoice: '',
+        evidence: '',
+        otherFactors: '',
+        licenseNum: '',
+        cap: '',
+        eventDate: '',
+        eventHour: '',
+        eventLocation: '',
+        firstDeclaration: false,
+        secondDeclaration: false,
+        applyContent: '',
       },
-      requestDetails: {
-        busAndOther: {
-          ravKav: body.data.ravKav || true,
-          ravKavNumber: body.data.ravKavNumber || '',
-          reportdate: body.data.reportdate || '',
-          reportTime: body.data.reportTime || '',
-          addingFrequencyReason: body.data.addFrequencyReason ? [body.data.addFrequencyReason] : [],
-          operator: body.data.busOperator,
-          addOrRemoveStation: body.data.addOrRemoveStation || '',
-          driverName: body.data.driverName || '',
-          licenseNum: body.data.licenseNum || '',
-          eventDate: body.data.eventDate || '',
-          eventHour: body.data.eventTime || '',
-          fromHour: '',
-          toHour: '',
-          fillByMakatOrAddress: '2',
-          makatStation: '',
-          lineNumberText: body.data.lineNumberText || '',
-          lineNumberFromList: {
-            dataText: '',
-          },
-          direction: body.data.direction,
-          raisingStation: body.data.raisingStation,
-          applyContent: body.data.applyContent || '',
-          busDirectionFrom: body.data.busDirectionFrom,
-          busDirectionTo: body.data.busDirectionTo,
-          raisingStationCity: body.data.raisingStationCity,
-          destinationStationCity: body.data.destinationStationCity,
-          raisingStationAddress: body.data.raisingStationAddress || '',
-          cityId: '',
-          cityName: '',
-          originCityCode: '',
-          originCityName: '',
-          destinationCityCode: '',
-          destinationCityText: '',
-          directionCode: '',
-          stationName: '',
-          lineCode: '',
-          addFrequencyOverCrowd: body.data.addFrequencyOverCrowd || false,
-          addFrequencyLongWait: body.data.addFrequencyLongWait || false,
-          addFrequencyExtendTime: body.data.addFrequencyExtendTime || false,
-          firstDeclaration: body.data.firstDeclaration || false,
-          secondDeclaration: body.data.secondDeclaration || false,
-        },
-        taxi: {
-          taxiType: '',
-        },
-        train: {
-          trainType: '',
-          eventDate: '',
-          eventHour: '',
-          startStation: {
-            dataText: '',
-          },
-          destinationStation: {
-            dataText: '',
-          },
-          number: '',
-          applyContent: '',
-        },
-        requestSubjectCode: '',
-        requestTypeCode: '',
-        title: '',
-        name: 'requestDetails',
-        state: 'notValidated',
-        next: '',
-        prev: '',
-        isClosed: false,
+      train: body.data.train || {
+        trainType: '',
+        eventDate: '',
+        eventHour: '',
+        startStation: { dataText: '' },
+        destinationStation: { dataText: '' },
+        number: '',
+        applyContent: '',
       },
-      documentAttachment: {
-        documentsList: [
-          {
-            attacmentName: '',
-          },
-        ],
-        name: 'documentAttachment',
-        state: 'notValidated',
-        next: '',
-        prev: '',
-        isClosed: true,
-      },
-      followStatus: {
-        contactIdList: [
-          {
-            ticketNumber: '',
-          },
-        ],
-        contactIdResultList: [],
-        name: 'followStatus',
-        state: 'notValidated',
-        next: '',
-        prev: '',
-        isClosed: true,
-      },
-      containersViewModel: {
-        showPrintButton: true,
-        isTabsMode: false,
-        validatedStatus: true,
-      },
-      formInformation: {
-        referenceNumber: '',
-        stageStatus: '',
-        loadingDate: '',
-        firstLoadingDate: '',
-        isMobile: false,
-        language: '',
-      },
-      contactType: {
-        isChosenType: true,
-        selectContactType: '1',
-      },
-    };
-  }
+      requestSubjectCode: '',
+      requestTypeCode: '',
+      title: '',
+      name: 'requestDetails',
+      state: 'notValidated',
+      next: '',
+      prev: '',
+      isClosed: false,
+    },
+    documentAttachment: {
+      documentsList: body.data.documentsList || [],
+      name: 'documentAttachment',
+      state: 'notValidated',
+      next: '',
+      prev: '',
+      isClosed: true,
+    },
+    followStatus: {
+      contactIdList: [{ ticketNumber: '' }],
+      contactIdResultList: [],
+      name: 'followStatus',
+      state: 'notValidated',
+      next: '',
+      prev: '',
+      isClosed: true,
+    },
+    containersViewModel: {
+      showPrintButton: true,
+      isTabsMode: false,
+      validatedStatus: true,
+    },
+    formInformation: {
+      referenceNumber: '',
+      stageStatus: '',
+      loadingDate: '',
+      firstLoadingDate: '',
+      isMobile: false,
+      language: '',
+    },
+    contactType: {
+      isChosenType: true,
+      selectContactType: '1',
+    },
+  };
+
+  // Remove applySubject and applyType from personalDetails
+  delete restructuredData.personalDetails.applySubject;
+  delete restructuredData.personalDetails.applyType;
+
+  // Use the restructured data
+  const templateInput = {
+    dataModelSaver: restructuredData,
+  };
 
   // Validate ID number from personal details
   if (!idValidator(String(body.data.personalDetails?.iDNum))) {
     throw new Error('Invalid Id Number');
   }
 
-  // Use the data directly as it already matches the expected structure
-  const input = {
-    dataModelSaver: body.data,
-  };
-
-  const dataModelSaver = JSON.stringify(fillTemplate(dataModelTemplate, input.dataModelSaver), null, 2);
+  const dataModelSaver = JSON.stringify(fillTemplate(dataModelTemplate, templateInput.dataModelSaver), null, 2);
   const fields = {
     UserUImode: body.UserUImode || 'AGFrom2Html',
     BTSFormID: body.BTSFormID || null,
@@ -350,14 +333,14 @@ export function templateBuilder(body) {
     DeviceType: body.DeviceType || null,
     FirstLoadingDate: body.FirstLoadingDate || null,
     Date: body.Date || '',
-    contactType: input.dataModelSaver.contactType || dataModelTemplate.contactType,
-    personalDetails: input.dataModelSaver.personalDetails || dataModelTemplate.personalDetails,
-    requestSubject: input.dataModelSaver.requestSubject || dataModelTemplate.requestSubject,
-    requestDetails: input.dataModelSaver.requestDetails || dataModelTemplate.requestDetails,
-    documentAttachment: input.dataModelSaver.documentAttachment || dataModelTemplate.documentAttachment,
-    followStatus: input.dataModelSaver.followStatus || dataModelTemplate.followStatus,
-    containersViewModel: input.dataModelSaver.containersViewModel || dataModelTemplate.containersViewModel,
-    formInformation: input.dataModelSaver.formInformation || dataModelTemplate.formInformation,
+    contactType: templateInput.dataModelSaver.contactType || dataModelTemplate.contactType,
+    personalDetails: templateInput.dataModelSaver.personalDetails || dataModelTemplate.personalDetails,
+    requestSubject: templateInput.dataModelSaver.requestSubject || dataModelTemplate.requestSubject,
+    requestDetails: templateInput.dataModelSaver.requestDetails || dataModelTemplate.requestDetails,
+    documentAttachment: templateInput.dataModelSaver.documentAttachment || dataModelTemplate.documentAttachment,
+    followStatus: templateInput.dataModelSaver.followStatus || dataModelTemplate.followStatus,
+    containersViewModel: templateInput.dataModelSaver.containersViewModel || dataModelTemplate.containersViewModel,
+    formInformation: templateInput.dataModelSaver.formInformation || dataModelTemplate.formInformation,
     FirstName: body.FirstName || '',
     LastName: body.LastName || '',
     IDNum: body.IDNum || '',
