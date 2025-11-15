@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+import { maskEmail } from '../utils/maskEmail.js';
+
 /**
  * Create issue handler
  * @param {import('fastify').FastifyRequest} request
@@ -28,7 +30,7 @@ export async function createIssue(request, reply) {
       });
     }
 
-    const maskedEmail = contactEmail.replace(/(.{4}).*(@.*)/, '$1****$2');
+    const maskedEmail = maskEmail(contactEmail);
     request.log.info('GitHub issue creation started', { title, contactEmail: maskedEmail, reproducibility });
 
     // Validate required environment variables
