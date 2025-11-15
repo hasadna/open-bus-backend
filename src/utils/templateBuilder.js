@@ -1,159 +1,129 @@
-import { idValidator } from './complaintsValidator.js';
+import { idValidator, mobileValidator } from './complaintsValidator.js';
 
-const dataModelTemplate = {
+const defualt = {
   contactType: {
-    isChosenType: false,
-    selectContactType: '',
-  },
-  containersViewModel: {
-    isTabsMode: false,
-    showPrintButton: true,
-    validatedStatus: true,
-  },
-  documentAttachment: {
-    documentsList: [
-      {
-        attacmentName: '',
-      },
-    ],
-    isClosed: true,
-    name: 'documentAttachment',
-    next: '',
-    prev: '',
-    state: 'notValidated',
-  },
-  followStatus: {
-    contactIdList: [
-      {
-        ticketNumber: '',
-      },
-    ],
-    contactIdResultList: [],
-    isClosed: true,
-    name: 'followStatus',
-    next: '',
-    prev: '',
-    state: 'notValidated',
-  },
-  formInformation: {
-    firstLoadingDate: '',
-    isMobile: false,
-    language: '',
-    loadingDate: '',
-    referenceNumber: '',
-    stageStatus: '',
+    selectContactType: '1',
+    isChosenType: true,
   },
   personalDetails: {
-    appartment: '',
-    city: {
-      dataText: '',
-    },
-    contactOptions: '',
-    email: '',
-    fax: '',
     firstName: '',
-    houseNumber: '',
-    iDNum: '',
-    isClosed: false,
     lastName: '',
+    iDNum: '',
     mobile: '',
-    name: 'personalDetails',
-    next: '',
     phone: '',
-    postBox: '',
-    prev: '',
-    state: 'notValidated',
+    contactOptions: '1',
+    fax: '',
+    email: '',
+    city: { dataCode: -1, dataText: '' },
     street: '',
+    houseNumber: '',
+    appartment: '',
+    postBox: '',
     zipCode: '',
+    name: 'personalDetails',
+    state: 'completed',
+    next: '',
+    prev: '',
+    isClosed: true,
+  },
+  requestSubject: {
+    applySubject: { dataCode: '', dataText: '' },
+    applyType: { dataCode: '', dataText: '' },
+    name: 'requestSubject',
+    state: 'completed',
+    next: '',
+    prev: '',
+    isClosed: true,
   },
   requestDetails: {
+    taxi: { taxiType: '2' },
     busAndOther: {
-      addOrRemoveStation: '',
+      ravKav: true,
+      ravKavNumber: '',
+      reportdate: '',
+      reportTime: '',
       addingFrequencyReason: [],
+      operator: { dataCode: '', dataText: '' },
+      addOrRemoveStation: '2',
+      driverName: '',
+      licenseNum: '',
+      eventDate: '',
+      eventHour: '',
+      fromHour: '',
+      toHour: '',
+      fillByMakatOrAddress: '2',
+      makatStation: '',
+      lineNumberText: '',
+      lineNumberFromList: { dataText: '' },
+      direction: { dataText: '' },
+      raisingStation: { dataText: '' },
       applyContent: '',
       busDirectionFrom: '',
       busDirectionTo: '',
+      raisingStationCity: { dataText: '' },
+      destinationStationCity: { dataText: '' },
+      raisingStationAddress: '',
       cityId: '',
       cityName: '',
-      destinationCityCode: '',
-      destinationCityText: '',
-      destinationStationCity: {
-        dataText: '',
-      },
-      direction: {
-        dataText: '',
-      },
-      directionCode: '',
-      driverName: '',
-      eventDate: '',
-      eventHour: '',
-      fillByMakatOrAddress: '',
-      fromHour: '',
-      licenseNum: '',
-      lineCode: '',
-      lineNumberFromList: {
-        dataText: '',
-      },
-      lineNumberText: '',
-      makatStation: '',
-      operator: {
-        dataText: '',
-      },
       originCityCode: '',
       originCityName: '',
-      raisingStation: {
-        dataText: '',
-      },
-      raisingStationAddress: '',
-      raisingStationCity: {
-        dataText: '',
-      },
-      ravKav: true,
-      ravKavNumber: '',
-      reportTime: '',
-      reportdate: '',
+      destinationCityCode: '',
+      destinationCityText: '',
+      directionCode: '',
       stationName: '',
-      toHour: '',
+      lineCode: '',
     },
-    isClosed: true,
-    name: 'requestDetails',
-    next: '',
-    prev: '',
-    requestSubjectCode: '',
-    requestTypeCode: '',
-    state: 'notValidated',
-    taxi: {
-      taxiType: '',
-    },
-    title: '',
     train: {
-      applyContent: '',
-      destinationStation: {
-        dataText: '',
-      },
+      trainType: '1',
       eventDate: '',
       eventHour: '',
+      startStation: { dataText: '' },
+      destinationStation: { dataText: '' },
       number: '',
-      startStation: {
-        dataText: '',
-      },
-      trainType: '',
+      applyContent: '',
     },
-  },
-  requestSubject: {
-    applySubject: {
-      dataText: '',
-    },
-    applyType: {
-      dataText: '',
-    },
-    isClosed: true,
-    name: 'requestSubject',
+    requestSubjectCode: '',
+    requestTypeCode: '',
+    title: '',
+    name: 'requestDetails',
+    state: 'completed',
     next: '',
     prev: '',
+    isClosed: true,
+  },
+  documentAttachment: {
+    documentsList: [{ attacmentName: '' }],
+    name: 'documentAttachment',
+    state: 'completed',
+    next: '',
+    prev: '',
+    isClosed: true,
+  },
+  followStatus: {
+    contactIdList: [{ ticketNumber: '' }],
+    contactIdResultList: [],
+    name: 'followStatus',
     state: 'notValidated',
+    next: '',
+    prev: '',
+    isClosed: true,
+  },
+  containersViewModel: {
+    showPrintButton: true,
+    isTabsMode: true,
+    validatedStatus: true,
+  },
+  formInformation: {
+    referenceNumber: '',
+    stageStatus: 'UserToOffice',
+    // Set To Current time
+    loadingDate: '',
+    firstLoadingDate: '',
+    isMobile: false,
+    language: 'hebrew',
   },
 };
+Object.freeze(defualt);
 
 function fillTemplate(template, data = {}) {
   if (Array.isArray(template)) {
@@ -176,153 +146,55 @@ function fillTemplate(template, data = {}) {
 }
 
 export function templateBuilder(body) {
-  // Support new input structure: { debug?, data: FormDataModelSchema }
   if (!body.data) {
     throw new Error('Input must have data property');
   }
 
-  // Restructure the input to match the template structure
-  const restructuredData = {
-    personalDetails: {
-      ...dataModelTemplate.personalDetails,
-      ...body.data.personalDetails,
-      state: 'completed',
-      next: '',
-      prev: '',
-      isClosed: true,
-      name: 'personalDetails',
-    },
-    requestSubject: {
-      applySubject: body.data.personalDetails.applySubject,
-      applyType: body.data.personalDetails.applyType,
-      state: 'completed',
-      next: '',
-      prev: '',
-      isClosed: true,
-      name: 'requestSubject',
-    },
-    requestDetails: {
-      busAndOther: body.data.busAndOther || {
-        ravKav: true,
-        ravKavNumber: '',
-        reportdate: '',
-        reportTime: '',
-        addingFrequencyReason: [],
-        operator: { dataText: '' },
-        addOrRemoveStation: '',
-        driverName: '',
-        licenseNum: '',
-        eventDate: '',
-        eventHour: '',
-        fromHour: '',
-        toHour: '',
-        fillByMakatOrAddress: '2',
-        makatStation: '',
-        lineNumberText: '',
-        lineNumberFromList: { dataText: '' },
-        direction: { dataText: '' },
-        raisingStation: { dataText: '' },
-        applyContent: '',
-        busDirectionFrom: '',
-        busDirectionTo: '',
-        raisingStationCity: { dataText: '' },
-        destinationStationCity: { dataText: '' },
-        raisingStationAddress: '',
-        cityId: '',
-        cityName: '',
-        originCityCode: '',
-        originCityName: '',
-        destinationCityCode: '',
-        destinationCityText: '',
-        directionCode: '',
-        stationName: '',
-        lineCode: '',
-      },
-      taxi: body.data.taxi || {
-        taxiType: '',
-        eventDetails: '',
-        invoice: '',
-        evidence: '',
-        otherFactors: '',
-        licenseNum: '',
-        cap: '',
-        eventDate: '',
-        eventHour: '',
-        eventLocation: '',
-        firstDeclaration: false,
-        secondDeclaration: false,
-        applyContent: '',
-      },
-      train: body.data.train || {
-        trainType: '',
-        eventDate: '',
-        eventHour: '',
-        startStation: { dataText: '' },
-        destinationStation: { dataText: '' },
-        number: '',
-        applyContent: '',
-      },
-      requestSubjectCode: '',
-      requestTypeCode: '',
-      title: '',
-      name: 'requestDetails',
-      state: 'notValidated',
-      next: '',
-      prev: '',
-      isClosed: false,
-    },
-    documentAttachment: {
-      documentsList: body.data.documentsList || [],
-      name: 'documentAttachment',
-      state: 'notValidated',
-      next: '',
-      prev: '',
-      isClosed: true,
-    },
-    followStatus: {
-      contactIdList: [{ ticketNumber: '' }],
-      contactIdResultList: [],
-      name: 'followStatus',
-      state: 'notValidated',
-      next: '',
-      prev: '',
-      isClosed: true,
-    },
-    containersViewModel: {
-      showPrintButton: true,
-      isTabsMode: false,
-      validatedStatus: true,
-    },
-    formInformation: {
-      referenceNumber: '',
-      stageStatus: '',
-      loadingDate: '',
-      firstLoadingDate: '',
-      isMobile: false,
-      language: '',
-    },
-    contactType: {
-      isChosenType: true,
-      selectContactType: '1',
-    },
-  };
-
-  // Remove applySubject and applyType from personalDetails
-  delete restructuredData.personalDetails.applySubject;
-  delete restructuredData.personalDetails.applyType;
-
-  // Use the restructured data
-  const templateInput = {
-    dataModelSaver: restructuredData,
-  };
-
-  // Validate ID number from personal details
-  if (!idValidator(String(body.data.personalDetails?.iDNum))) {
+  if (!idValidator(body.data.personalDetails.iDNum)) {
     throw new Error('Invalid Id Number');
   }
 
-  const dataModelSaver = JSON.stringify(fillTemplate(dataModelTemplate, templateInput.dataModelSaver), null, 2);
-  const fields = {
+  const validatedMobile = mobileValidator(body.data.personalDetails.mobile);
+  if (!validatedMobile) {
+    throw new Error('Invalid Mobile Number');
+  }
+  body.data.personalDetails.mobile = validatedMobile;
+
+  const fillData = fillTemplate(defualt, body.data);
+
+  // Fill requestSubject from personalDetails
+  if (body.data.personalDetails.applySubject) {
+    fillData.requestSubject.applySubject = body.data.personalDetails.applySubject;
+  }
+  if (body.data.personalDetails.applyType) {
+    fillData.requestSubject.applyType = body.data.personalDetails.applyType;
+  }
+
+  // Fill busAndOther if present
+  if (body.data.busAndOther) {
+    fillData.requestDetails.busAndOther = fillTemplate(defualt.requestDetails.busAndOther, body.data.busAndOther);
+  }
+  // Fill Train if present
+  if (body.data.train) {
+    fillData.requestDetails.train = fillTemplate(defualt.requestDetails.train, body.data.train);
+  }
+
+  // Fill taxi if present
+  if (body.data.taxi) {
+    fillData.requestDetails.taxi = fillTemplate(defualt.requestDetails.taxi, body.data.taxi);
+  }
+
+  // Fill documentsList
+  if (body.data.documentsList) {
+    fillData.documentAttachment.documentsList = body.data.documentsList;
+  }
+
+  // loadingDate Format "28/10/2025"
+  fillData.loadingDate = new Date().toLocaleDateString('en-GB');
+
+  const dataModelSaver = JSON.stringify(fillData, null, 2);
+
+  const xml = {
     UserUImode: body.UserUImode || 'AGFrom2Html',
     BTSFormID: body.BTSFormID || null,
     BTSFormDesc: body.BTSFormDesc || null,
@@ -333,14 +205,14 @@ export function templateBuilder(body) {
     DeviceType: body.DeviceType || null,
     FirstLoadingDate: body.FirstLoadingDate || null,
     Date: body.Date || '',
-    contactType: templateInput.dataModelSaver.contactType || dataModelTemplate.contactType,
-    personalDetails: templateInput.dataModelSaver.personalDetails || dataModelTemplate.personalDetails,
-    requestSubject: templateInput.dataModelSaver.requestSubject || dataModelTemplate.requestSubject,
-    requestDetails: templateInput.dataModelSaver.requestDetails || dataModelTemplate.requestDetails,
-    documentAttachment: templateInput.dataModelSaver.documentAttachment || dataModelTemplate.documentAttachment,
-    followStatus: templateInput.dataModelSaver.followStatus || dataModelTemplate.followStatus,
-    containersViewModel: templateInput.dataModelSaver.containersViewModel || dataModelTemplate.containersViewModel,
-    formInformation: templateInput.dataModelSaver.formInformation || dataModelTemplate.formInformation,
+    contactType: fillData.contactType || defualt.contactType,
+    personalDetails: fillData.personalDetails || defualt.personalDetails,
+    requestSubject: fillData.requestSubject || defualt.requestSubject,
+    requestDetails: fillData.requestDetails || defualt.requestDetails,
+    documentAttachment: fillData.documentAttachment || defualt.documentAttachment,
+    followStatus: fillData.followStatus || defualt.followStatus,
+    containersViewModel: fillData.containersViewModel || defualt.containersViewModel,
+    formInformation: fillData.formInformation || defualt.formInformation,
     FirstName: body.FirstName || '',
     LastName: body.LastName || '',
     IDNum: body.IDNum || '',
@@ -432,109 +304,109 @@ export function templateBuilder(body) {
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" formId="PniotMot@mot.gov.il" formVersion="3.0.5" formCompileTime="22/02/2024"
   xmlns="http://AGForms/PniotMot@mot.gov.il">
   <form>
-    <UserUImode>${fields.UserUImode}</UserUImode>
+    <UserUImode>${xml.UserUImode}</UserUImode>
     ${nil('BTSFormID')}
     ${nil('BTSFormDesc')}
     ${nil('BTSProcessID')}
-    <ReferenceNumber>${fields.ReferenceNumber}</ReferenceNumber>
-    <StageStatus>${fields.StageStatus}</StageStatus>
+    <ReferenceNumber>${xml.ReferenceNumber}</ReferenceNumber>
+    <StageStatus>${xml.StageStatus}</StageStatus>
     <dataModelSaver>${dataModelSaver}</dataModelSaver>
-    <isMobile>${fields.isMobile}</isMobile>
+    <isMobile>${xml.isMobile}</isMobile>
     ${nil('DeviceType')}
     ${nil('FirstLoadingDate')}
-    <Date>${fields.Date}</Date>
-    <SelectContactType>${fields.contactType.selectContactType}</SelectContactType>
-    <FirstName>${fields.personalDetails.firstName}</FirstName>
-    <LastName>${fields.personalDetails.lastName}</LastName>
-    <IDNum>${fields.personalDetails.iDNum}</IDNum>
-    <Mobile>${fields.personalDetails.mobile}</Mobile>
-    <Phone>${fields.personalDetails.phone}</Phone>
-    <ContactDetails>${fields.personalDetails.contactOptions}</ContactDetails>
-    <Email>${fields.personalDetails.email}</Email>
-    <fax>${fields.personalDetails.fax}</fax>
-    <Settlement text="${fields.personalDetails?.city?.dataText}"></Settlement>
-    <street>${fields.personalDetails.street}</street>
-    <HouseNumber>${fields.personalDetails.houseNumber}</HouseNumber>
-    <Appartment>${fields.personalDetails.appartment}</Appartment>
-    <POB>${fields.personalDetails.postBox}</POB>
-    <ZipCode>${fields.personalDetails.zipCode}</ZipCode>
-    <ApplySubject text="${fields.requestSubject.applySubject.dataText}"></ApplySubject>
-    <TypeReq text="${fields.requestSubject.applyType.dataText}"></TypeReq>
-    <TrainType>${fields.requestDetails.train?.trainType}</TrainType>
-    <EventDate2>${fields.requestDetails.train?.eventDate}</EventDate2>
-    <EventHour2>${fields.requestDetails.train?.eventHour}</EventHour2>
-    <StartStation text="${fields.requestDetails.train?.startStation?.dataText}"></StartStation>
-    <DestStation text="${fields.requestDetails.train?.destinationStation?.dataText}"></DestStation>
-    <TrainNumber>${fields.requestDetails.train?.number}</TrainNumber>
-    <ApplyContent3>${fields.requestDetails.train?.applyContent}</ApplyContent3>
-     <FirstDeclaration>${fields.requestDetails.busAndOther.firstDeclaration || false}</FirstDeclaration>
-     <SecondDeclaration>${fields.requestDetails.busAndOther.secondDeclaration || false}</SecondDeclaration>
+    <Date>${xml.Date}</Date>
+    <SelectContactType>${xml.contactType.selectContactType}</SelectContactType>
+    <FirstName>${xml.personalDetails.firstName}</FirstName>
+    <LastName>${xml.personalDetails.lastName}</LastName>
+    <IDNum>${xml.personalDetails.iDNum}</IDNum>
+    <Mobile>${xml.personalDetails.mobile}</Mobile>
+    ${xml.personalDetails.phone ? `<Phone>${xml.personalDetails.phone}</Phone>` : nil('Phone')}
+    <ContactDetails>${xml.personalDetails.contactOptions}</ContactDetails>
+    <Email>${xml.personalDetails.email}</Email>
+    ${xml.personalDetails.fax ? `<fax>${xml.personalDetails.fax}</fax>` : nil('fax')}
+    <Settlement text="${xml.personalDetails?.city?.dataText}">${xml.personalDetails?.city?.dataCode}</Settlement>
+    ${xml.personalDetails.street ? `<street>${xml.personalDetails.street}</street>` : nil('street')}
+    <HouseNumber>${xml.personalDetails.houseNumber}</HouseNumber>
+    <Appartment>${xml.personalDetails.appartment}</Appartment>
+    <POB>${xml.personalDetails.postBox}</POB>
+    ${xml.personalDetails.zipCode ? `<ZipCode>${xml.personalDetails.zipCode}</ZipCode>` : nil('ZipCode')}
+    <ApplySubject text="${xml.requestSubject.applySubject.dataText}">${xml.requestSubject.applySubject.dataCode}</ApplySubject>
+    <TypeReq text="${xml.requestSubject.applyType.dataText}">${xml.requestSubject.applyType.dataCode}</TypeReq>
+    <TrainType>${xml.requestDetails.train?.trainType}</TrainType>
+    ${xml.requestDetails.train?.eventDate ? `<EventDate2>${xml.requestDetails.train?.eventDate}</EventDate2>` : nil('EventDate2')}
+    <EventHour2>${xml.requestDetails.train?.eventHour}</EventHour2>
+    <StartStation text="${xml.requestDetails.train?.startStation?.dataText}"></StartStation>
+    ${xml.requestDetails.train?.destinationStation?.dataText ? `<DestStation text="${xml.requestDetails.train?.destinationStation?.dataText}"></DestStation>` : nil('DestStation')}
+    <TrainNumber>${xml.requestDetails.train?.number}</TrainNumber>
+    <ApplyContent3>${xml.requestDetails.train?.applyContent}</ApplyContent3>
+     <FirstDeclaration>${xml.requestDetails.busAndOther.firstDeclaration || false}</FirstDeclaration>
+     <SecondDeclaration>${xml.requestDetails.busAndOther.secondDeclaration || false}</SecondDeclaration>
     <EventDetails></EventDetails>
     <Invoice></Invoice>
     <Evidence></Evidence>
     <OtherFactors></OtherFactors>
-    <ETaxiType>${fields.requestDetails.taxi?.taxiType}</ETaxiType>
-    <DrivingLicense2>${fields.requestDetails.busAndOther?.licenseNum}</DrivingLicense2>
+    <ETaxiType>${xml.requestDetails.taxi?.taxiType}</ETaxiType>
+    ${xml.requestDetails.busAndOther?.licenseNum ? `<DrivingLicense2>${xml.requestDetails.busAndOther?.licenseNum}</DrivingLicense2>` : nil('DrivingLicense2')}
     <TaxiCap></TaxiCap>
-    <TaxiDriverName>${fields.requestDetails.busAndOther?.driverName}</TaxiDriverName>
-    <TaxiEventDate>${fields.requestDetails.busAndOther?.eventDate}</TaxiEventDate>
-    <TaxiEventHour>${fields.requestDetails.busAndOther?.eventHour}</TaxiEventHour>
+    <TaxiDriverName>${xml.requestDetails.busAndOther?.driverName}</TaxiDriverName>
+    <TaxiEventDate>${xml.requestDetails.busAndOther?.eventDate}</TaxiEventDate>
+    ${xml.requestDetails.busAndOther?.eventHour ? `<TaxiEventHour>${xml.requestDetails.busAndOther?.eventHour}</TaxiEventHour>` : nil('TaxiEventHour')}
     <TaxiEventLocation></TaxiEventLocation>
-    <ApplyContent>${fields.requestDetails.busAndOther.applyContent}</ApplyContent>
-    <FinanceRavKav>${fields.requestDetails.busAndOther.ravKav}</FinanceRavKav>
-    <FinanceRavKavNumber>${fields.requestDetails.busAndOther.ravKavNumber}</FinanceRavKavNumber>
+    ${xml.requestDetails.busAndOther.applyContent ? `<ApplyContent>${xml.requestDetails.busAndOther.applyContent}</ApplyContent>` : nil('ApplyContent')}
+    <FinanceRavKav>${xml.requestDetails.busAndOther.ravKav}</FinanceRavKav>
+    <FinanceRavKavNumber>${xml.requestDetails.busAndOther.ravKavNumber}</FinanceRavKavNumber>
     <FinanceOther>false</FinanceOther>
      <SingleTrip>false</SingleTrip>
-     <LoadTopics>${fields.requestDetails.busAndOther.addFrequencyOverCrowd || false}</LoadTopics>
-     <LongWaiting>${fields.requestDetails.busAndOther.addFrequencyLongWait || false}</LongWaiting>
-     <ExtensionHours>${fields.requestDetails.busAndOther.addFrequencyExtendTime || false}</ExtensionHours>
-    <Operator text="${fields.requestDetails.busAndOther.operator.dataText}"></Operator>
-    <BusDriverName>${fields.requestDetails.busAndOther.driverName}</BusDriverName>
-    <BusLicenseNum>${fields.requestDetails.busAndOther.licenseNum}</BusLicenseNum>
-    <BusEventDate>${fields.requestDetails.busAndOther.eventDate}</BusEventDate>
-    <BusEventHour>${fields.requestDetails.busAndOther.eventHour}</BusEventHour>
-    <from>${fields.requestDetails.busAndOther.busDirectionFrom}</from>
-    <by>${fields.requestDetails.busAndOther.busDirectionTo}</by>
-    <Reportdate>${fields.requestDetails.busAndOther.reportdate}</Reportdate>
-    <ReportTime>${fields.requestDetails.busAndOther.reportTime}</ReportTime>
-    <Stationupdate>${fields.requestDetails.busAndOther.addOrRemoveStation}</Stationupdate>
-    <NumStation>${fields.requestDetails.busAndOther.addOrRemoveStation}</NumStation>
-    <LineNumberBoarding>${fields.requestDetails.busAndOther.lineNumberText}</LineNumberBoarding>
-    <Direction text="${fields.requestDetails.busAndOther?.direction?.dataText}"></Direction>
-    <BusStationBoard text="${fields.requestDetails.busAndOther?.raisingStation?.dataText}"></BusStationBoard>
-    <BoardingSettlement text="${fields.requestDetails.busAndOther?.raisingStationCity?.dataText}"></BoardingSettlement>
-    <DropStaionAppeal text="${fields.requestDetails.busAndOther?.destinationStationCity?.dataText}"></DropStaionAppeal>
-    <Risestationaddress>${fields.requestDetails.busAndOther?.raisingStationAddress}</Risestationaddress>
-    <MakatStation>${fields.requestDetails.busAndOther.makatStation}</MakatStation>
-    <LineNumber text="${fields.requestDetails.busAndOther?.lineNumberFromList?.dataText}"></LineNumber>
-    <BusDirectionFrom>${fields.requestDetails.busAndOther?.busDirectionFrom}</BusDirectionFrom>
-    <BusDirectionTo>${fields.requestDetails.busAndOther?.busDirectionTo}</BusDirectionTo>
+     <LoadTopics>${xml.requestDetails.busAndOther.addFrequencyOverCrowd || false}</LoadTopics>
+     <LongWaiting>${xml.requestDetails.busAndOther.addFrequencyLongWait || false}</LongWaiting>
+     <ExtensionHours>${xml.requestDetails.busAndOther.addFrequencyExtendTime || false}</ExtensionHours>
+    <Operator text="${xml.requestDetails.busAndOther.operator.dataText}">${xml.requestDetails.busAndOther.operator.dataCode || ''}</Operator>
+    ${xml.requestDetails.busAndOther.driverName ? `<BusDriverName>${xml.requestDetails.busAndOther.driverName}</BusDriverName>` : nil('BusDriverName')}
+    ${xml.requestDetails.busAndOther.licenseNum ? `<BusLicenseNum>${xml.requestDetails.busAndOther.licenseNum}</BusLicenseNum>` : nil('BusLicenseNum')}
+    <BusEventDate>${xml.requestDetails.busAndOther.eventDate}</BusEventDate>
+    <BusEventHour>${xml.requestDetails.busAndOther.eventHour}</BusEventHour>
+    ${xml.requestDetails.busAndOther.busDirectionFrom ? `<from>${xml.requestDetails.busAndOther.busDirectionFrom}</from>` : nil('from')}
+    <by>${xml.requestDetails.busAndOther.busDirectionTo}</by>
+    <Reportdate>${xml.requestDetails.busAndOther.reportdate}</Reportdate>
+    <ReportTime>${xml.requestDetails.busAndOther.reportTime}</ReportTime>
+    <Stationupdate>${xml.requestDetails.busAndOther.addOrRemoveStation}</Stationupdate>
+    <NumStation>${xml.requestDetails.busAndOther.addOrRemoveStation}</NumStation>
+    ${xml.requestDetails.busAndOther.lineNumberText ? `<LineNumberBoarding>${xml.requestDetails.busAndOther.lineNumberText}</LineNumberBoarding>` : nil('LineNumberBoarding')}
+    ${xml.requestDetails.busAndOther?.direction?.dataText ? `<Direction text="${xml.requestDetails.busAndOther?.direction?.dataText}">${xml.requestDetails.busAndOther?.direction?.dataCode}</Direction>` : nil('Direction')}
+    ${xml.requestDetails.busAndOther?.raisingStation?.dataText ? `<BusStationBoard text="${xml.requestDetails.busAndOther?.raisingStation?.dataText}">${xml.requestDetails.busAndOther?.raisingStation?.dataCode}</BusStationBoard>` : nil('BusStationBoard')}
+    <BoardingSettlement text="${xml.requestDetails.busAndOther?.raisingStationCity?.dataText}"></BoardingSettlement>
+    <DropStaionAppeal text="${xml.requestDetails.busAndOther?.destinationStationCity?.dataText}"></DropStaionAppeal>
+    <Risestationaddress>${xml.requestDetails.busAndOther?.raisingStationAddress}</Risestationaddress>
+    <MakatStation>${xml.requestDetails.busAndOther.makatStation}</MakatStation>
+    <LineNumber text="${xml.requestDetails.busAndOther?.lineNumberFromList?.dataText}"></LineNumber>
+    <BusDirectionFrom>${xml.requestDetails.busAndOther?.busDirectionFrom}</BusDirectionFrom>
+    ${xml.requestDetails.busAndOther?.busDirectionTo ? `<BusDirectionTo>${xml.requestDetails.busAndOther?.busDirectionTo}</BusDirectionTo>` : nil('BusDirectionTo')}
     <Testimony>false</Testimony>
     <Courttestimony>false</Courttestimony>
     <CaseEssence></CaseEssence>
-    <OriginCityCode>${fields.requestDetails.busAndOther?.originCityCode}</OriginCityCode>
-    <OriginCityName>${fields.requestDetails.busAndOther?.originCityName}</OriginCityName>
-    <LineCode>${fields.requestDetails.busAndOther?.lineCode}</LineCode>
-    <CityId>${fields.requestDetails.busAndOther?.cityId}</CityId>
-    <CityName>${fields.requestDetails.busAndOther?.cityName}</CityName>
-    <StationName>${fields.requestDetails.busAndOther?.stationName}</StationName>
-    <DirectionCode>${fields.requestDetails.busAndOther?.directionCode}</DirectionCode>
-    <DestinationCityCode>${fields.requestDetails.busAndOther?.destinationCityCode}</DestinationCityCode>
-    <DestinationCityText>${fields.requestDetails.busAndOther?.destinationCityText}</DestinationCityText>
-    <Title>${fields.requestDetails.title}</Title>
-    <RequestSubjectCode>${fields.requestDetails?.requestSubjectCode}</RequestSubjectCode>
-    <RequestTypeCode>${fields.requestDetails?.requestTypeCode}</RequestTypeCode>
+    <OriginCityCode>${xml.requestDetails.busAndOther?.originCityCode}</OriginCityCode>
+    <OriginCityName>${xml.requestDetails.busAndOther?.originCityName}</OriginCityName>
+    <LineCode>${xml.requestDetails.busAndOther?.lineCode}</LineCode>
+    <CityId>${xml.requestDetails.busAndOther?.cityId}</CityId>
+    ${xml.requestDetails.busAndOther?.cityName ? `<CityName>${xml.requestDetails.busAndOther?.cityName}</CityName>` : nil('CityName')}
+    <StationName>${xml.requestDetails.busAndOther?.stationName}</StationName>
+    <DirectionCode>${xml.requestDetails.busAndOther?.directionCode}</DirectionCode>
+    <DestinationCityCode>${xml.requestDetails.busAndOther?.destinationCityCode}</DestinationCityCode>
+    ${xml.requestDetails.busAndOther?.destinationCityText ? `<DestinationCityText>${xml.requestDetails.busAndOther?.destinationCityText}</DestinationCityText>` : nil('DestinationCityText')}
+    <Title>${xml.requestDetails.title}</Title>
+    <RequestSubjectCode>${xml.requestDetails?.requestSubjectCode}</RequestSubjectCode>
+    <RequestTypeCode>${xml.requestDetails?.requestTypeCode}</RequestTypeCode>
     <Attacment_Doc>
-      <AttachDocument fileName="${fields.documentAttachment.documentsList[0]?.attacmentName || ''}" />
+      <AttachDocument fileName="${xml.documentAttachment.documentsList[0]?.attacmentName || ''}" />
     </Attacment_Doc>
     <ContactID>
-      <ticketNumber>${fields.followStatus.contactIdList[0]?.ticketNumber || ''}</ticketNumber>
+      <ticketNumber>${xml.followStatus.contactIdList[0]?.ticketNumber || ''}</ticketNumber>
     </ContactID>
     <contactIdResult>
-      <ticketNumber>${fields.followStatus.contactIdResultList[0]?.ticketNumber || ''}</ticketNumber>
-      <dateReceived>${fields.followStatus.contactIdResultList[0]?.dateReceived || ''}</dateReceived>
-      <contactName>${fields.followStatus.contactIdResultList[0]?.contactName || ''}</contactName>
-      <incidentStatus>${fields.followStatus.contactIdResultList[0]?.incidentStatus || ''}</incidentStatus>
+      <ticketNumber>${xml.followStatus.contactIdResultList[0]?.ticketNumber || ''}</ticketNumber>
+      <dateReceived>${xml.followStatus.contactIdResultList[0]?.dateReceived || ''}</dateReceived>
+      <contactName>${xml.followStatus.contactIdResultList[0]?.contactName || ''}</contactName>
+      <incidentStatus>${xml.followStatus.contactIdResultList[0]?.incidentStatus || ''}</incidentStatus>
     </contactIdResult>
   </form>
 </root>`;

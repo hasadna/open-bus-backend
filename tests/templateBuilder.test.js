@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { idValidator, mobileValidator } from '../src/utils/complaintsValidator.js';
 import { templateBuilder } from '../src/utils/templateBuilder.js';
 
 describe('templateBuilder', () => {
@@ -31,9 +32,10 @@ describe('templateBuilder', () => {
 
   it('should support input structured as { data: FormDataModelSchema }', () => {
     const xml = templateBuilder({
+      debug: true,
       data: {
         personalDetails: {
-          iDNum: '212121214',
+          iDNum: '123456782',
           firstName: 'נעם',
           lastName: 'געש',
           email: 'noam.gaash@gmail.com',
@@ -49,11 +51,102 @@ describe('templateBuilder', () => {
 
     expect(xml).to.include('<FirstName>נעם</FirstName>');
     expect(xml).to.include('<LastName>געש</LastName>');
-    expect(xml).to.include('<IDNum>212121214</IDNum>');
+    expect(xml).to.include('<IDNum>123456782</IDNum>');
     expect(xml).to.include('<Email>noam.gaash@gmail.com</Email>');
-    expect(xml).to.include('<Mobile>0536218158</Mobile>');
+    expect(xml).to.include('<Mobile>053-6218158</Mobile>');
     expect(xml).to.include('<Operator text="5"></Operator>');
   });
+
+  const defaultPersonalDetails = {
+    firstName: '',
+    lastName: '',
+    iDNum: '',
+    email: '',
+    mobile: '',
+    applySubject: { dataCode: '', dataText: '' },
+    applyType: { dataCode: '', dataText: '' },
+  };
+
+  const defaultBusAndOther = {
+    ravKav: false,
+    ravKavNumber: '',
+    reportdate: '',
+    reportTime: '',
+    addingFrequencyReason: [],
+    operator: { dataCode: '', dataText: '' },
+    addOrRemoveStation: '',
+    driverName: '',
+    licenseNum: '',
+    eventDate: '',
+    eventHour: '',
+    fromHour: '',
+    toHour: '',
+    fillByMakatOrAddress: '',
+    makatStation: '',
+    lineNumberText: '',
+    lineNumberFromList: { dataCode: '', dataText: '' },
+    direction: { dataCode: '', dataText: '' },
+    raisingStation: { dataCode: '', dataText: '' },
+    applyContent: '',
+    busDirectionFrom: '',
+    busDirectionTo: '',
+    raisingStationCity: { dataCode: '', dataText: '' },
+    destinationStationCity: { dataCode: '', dataText: '' },
+    raisingStationAddress: '',
+    cityId: '',
+    cityName: '',
+    raisingStationCityCode: '',
+    raisingStationCityName: '',
+    destinationStationCityCode: '',
+    destinationStationCityText: '',
+    directionCode: '',
+    stationName: '',
+    lineCode: '',
+  };
+
+  const defaultTaxi = {
+    eventDetails: '',
+    invoice: '',
+    evidence: '',
+    otherFactors: '',
+    taxiType: '',
+    licenseNum: '',
+    cap: '',
+    eventDate: '',
+    eventHour: '',
+    eventLocation: '',
+    firstDeclaration: false,
+    secondDeclaration: false,
+    applyContent: '',
+  };
+
+  const defaultBusData = {
+    personalDetails: defaultPersonalDetails,
+    busAndOther: defaultBusAndOther,
+    documentsList: [],
+  };
+
+  const defaultTaxiData = {
+    personalDetails: defaultPersonalDetails,
+    taxi: defaultTaxi,
+    documentsList: [],
+  };
+
+  const defaultTrain = {
+    trainType: '1',
+    eventDate: '',
+    eventHour: '',
+    startStation: { dataText: '' },
+    destinationStation: { dataText: '' },
+    number: '',
+    applyContent: '',
+  };
+
+  const defaultTrainData = {
+    personalDetails: defaultPersonalDetails,
+    train: defaultTrain,
+    documentsList: [],
+  };
 
   const testData = {
     no_stop: {
@@ -61,7 +154,7 @@ describe('templateBuilder', () => {
         firstName: 'שם פרטי',
         lastName: 'משפחה',
         iDNum: '212121214',
-        mobile: '054-1234567',
+        mobile: '054-2234567',
         phone: '',
         email: 'email@gmail.com',
         applySubject: {
@@ -131,7 +224,7 @@ describe('templateBuilder', () => {
         firstName: 'שם פרטי',
         lastName: 'משפחה',
         iDNum: '212121214',
-        mobile: '054-1234567',
+        mobile: '054-2234567',
         phone: '',
         email: 'email@gmail.com',
         applySubject: {
@@ -199,7 +292,7 @@ describe('templateBuilder', () => {
         firstName: 'firstName',
         lastName: 'lastName',
         iDNum: '212121214',
-        mobile: '054-1234567',
+        mobile: '054-2234567',
         phone: '',
         email: 'email@gmail.com',
         applySubject: {
@@ -228,14 +321,50 @@ describe('templateBuilder', () => {
       },
       documentsList: [],
     },
+    train: {
+      personalDetails: {
+        firstName: 'שם פרטי',
+        lastName: 'משפחה',
+        iDNum: '123456782',
+        mobile: '054-2234567',
+        phone: '',
+        email: 'email@gmail.com',
+        applySubject: {
+          dataCode: '1',
+          dataText: 'רכבת',
+        },
+        applyType: {
+          dataCode: '20',
+          dataText: 'איחור',
+        },
+      },
+      train: {
+        trainType: '1',
+        eventDate: '28/10/2025',
+        eventHour: '08:00',
+        startStation: {
+          dataText: 'תל אביב',
+        },
+        destinationStation: {
+          dataText: 'ירושלים',
+        },
+        number: '123',
+        applyContent: 'תוכן פנייה',
+      },
+      documentsList: [],
+    },
   };
 
   Object.keys(testData).forEach((complaintType) => {
     it(`should generate correct XML for ${complaintType} complaint type`, () => {
-      const inputData = testData[complaintType];
+      let baseData = defaultBusData;
+      if (complaintType === 'train') baseData = defaultTrainData;
+      else if (complaintType === 'taxi') baseData = defaultTaxiData;
+
+      const inputData = { ...baseData, ...testData[complaintType] };
 
       // Generate XML using templateBuilder
-      const generatedXml = templateBuilder({ data: inputData });
+      const generatedXml = templateBuilder({ debug: true, data: inputData });
 
       // Basic XML structure validation
       expect(generatedXml).to.include('<form>');
@@ -280,8 +409,10 @@ describe('templateBuilder', () => {
       // Note: fillTemplate only keeps properties that exist in the template
       expect(parsedDataModelSaver.requestSubject).to.have.property('applySubject');
       expect(parsedDataModelSaver.requestSubject.applySubject).to.have.property('dataText', inputData.personalDetails.applySubject.dataText);
+      expect(parsedDataModelSaver.requestSubject.applySubject).to.have.property('dataCode', inputData.personalDetails.applySubject.dataCode);
       expect(parsedDataModelSaver.requestSubject).to.have.property('applyType');
       expect(parsedDataModelSaver.requestSubject.applyType).to.have.property('dataText', inputData.personalDetails.applyType.dataText);
+      expect(parsedDataModelSaver.requestSubject.applyType).to.have.property('dataCode', inputData.personalDetails.applyType.dataCode);
 
       // Validate requestDetails structure
       expect(parsedDataModelSaver.requestDetails).to.have.property('name', 'requestDetails');
@@ -294,6 +425,19 @@ describe('templateBuilder', () => {
       if (complaintType === 'taxi') {
         // Only taxiType exists in the template, other properties are not preserved by fillTemplate
         expect(parsedDataModelSaver.requestDetails.taxi).to.have.property('taxiType', inputData.taxi.taxiType);
+      } else if (complaintType === 'train') {
+        expect(parsedDataModelSaver.requestDetails.train).to.have.property('trainType', inputData.train.trainType);
+        expect(parsedDataModelSaver.requestDetails.train).to.have.property('eventDate', inputData.train.eventDate);
+        expect(parsedDataModelSaver.requestDetails.train).to.have.property('eventHour', inputData.train.eventHour);
+        expect(parsedDataModelSaver.requestDetails.train).to.have.property('startStation');
+        expect(parsedDataModelSaver.requestDetails.train.startStation).to.have.property('dataText', inputData.train.startStation.dataText);
+        expect(parsedDataModelSaver.requestDetails.train).to.have.property('destinationStation');
+        expect(parsedDataModelSaver.requestDetails.train.destinationStation).to.have.property(
+          'dataText',
+          inputData.train.destinationStation.dataText,
+        );
+        expect(parsedDataModelSaver.requestDetails.train).to.have.property('number', inputData.train.number);
+        expect(parsedDataModelSaver.requestDetails.train).to.have.property('applyContent', inputData.train.applyContent);
       } else {
         // For bus complaints (no_stop, delay)
         expect(parsedDataModelSaver.requestDetails.busAndOther).to.have.property('operator');
@@ -313,16 +457,22 @@ describe('templateBuilder', () => {
       expect(generatedXml).to.include(`<IDNum>${inputData.personalDetails.iDNum}</IDNum>`);
       expect(generatedXml).to.include(`<Email>${inputData.personalDetails.email}</Email>`);
       expect(generatedXml).to.include(`<Mobile>${inputData.personalDetails.mobile}</Mobile>`);
-      expect(generatedXml).to.include(`<Phone>${inputData.personalDetails.phone}</Phone>`);
+      expect(generatedXml).to.include('<Phone xsi:nil="true"></Phone>');
 
       // Request subject validation
-      expect(generatedXml).to.include(`<ApplySubject text="${inputData.personalDetails.applySubject.dataText}"></ApplySubject>`);
-      expect(generatedXml).to.include(`<TypeReq text="${inputData.personalDetails.applyType.dataText}"></TypeReq>`);
+      expect(generatedXml).to.include(
+        `<ApplySubject text="${inputData.personalDetails.applySubject.dataText}">${inputData.personalDetails.applySubject.dataCode}</ApplySubject>`,
+      );
+      expect(generatedXml).to.include(
+        `<TypeReq text="${inputData.personalDetails.applyType.dataText}">${inputData.personalDetails.applyType.dataCode}</TypeReq>`,
+      );
 
       // Complaint type specific validations
       if (complaintType === 'no_stop') {
         // Bus-specific validations for no_stop complaint
-        expect(generatedXml).to.include(`<Operator text="${inputData.busAndOther.operator.dataText}"></Operator>`);
+        expect(generatedXml).to.include(
+          `<Operator text="${inputData.busAndOther.operator.dataText}">${inputData.busAndOther.operator.dataCode}</Operator>`,
+        );
         expect(generatedXml).to.include(`<BusDriverName>${inputData.busAndOther.driverName}</BusDriverName>`);
         expect(generatedXml).to.include(`<BusLicenseNum>${inputData.busAndOther.licenseNum}</BusLicenseNum>`);
         expect(generatedXml).to.include(`<BusEventDate>${inputData.busAndOther.eventDate}</BusEventDate>`);
@@ -333,7 +483,11 @@ describe('templateBuilder', () => {
         expect(generatedXml).to.include(`<LineNumberBoarding>${inputData.busAndOther.lineNumberText}</LineNumberBoarding>`);
       } else if (complaintType === 'delay') {
         // Bus-specific validations for delay complaint
-        expect(generatedXml).to.include(`<Operator text="${inputData.busAndOther.operator.dataText}"></Operator>`);
+        expect(generatedXml).to.include(
+          `<Operator text="${inputData.busAndOther.operator.dataText}">${inputData.busAndOther.operator.dataCode}</Operator>`,
+        );
+        expect(generatedXml).to.include('<BusDriverName xsi:nil="true"></BusDriverName>');
+        expect(generatedXml).to.include('<BusLicenseNum xsi:nil="true"></BusLicenseNum>');
         expect(generatedXml).to.include(`<BusEventDate>${inputData.busAndOther.eventDate}</BusEventDate>`);
         expect(generatedXml).to.include(`<BusEventHour>${inputData.busAndOther.eventHour}</BusEventHour>`);
         expect(generatedXml).to.include(`<from>${inputData.busAndOther.busDirectionFrom}</from>`);
@@ -347,8 +501,17 @@ describe('templateBuilder', () => {
 
         // Note: Current template implementation uses busAndOther fields for some taxi elements
         // This appears to be a template issue, but we test what's actually generated
-        expect(generatedXml).to.include('<DrivingLicense2></DrivingLicense2>');
+        expect(generatedXml).to.include('<DrivingLicense2 xsi:nil="true"></DrivingLicense2>');
         expect(generatedXml).to.include('<TaxiCap></TaxiCap>');
+      } else if (complaintType === 'train') {
+        // Train-specific validations
+        expect(generatedXml).to.include(`<TrainType>${inputData.train.trainType}</TrainType>`);
+        expect(generatedXml).to.include(`<EventDate2>${inputData.train.eventDate}</EventDate2>`);
+        expect(generatedXml).to.include(`<EventHour2>${inputData.train.eventHour}</EventHour2>`);
+        expect(generatedXml).to.include(`<StartStation text="${inputData.train.startStation.dataText}"></StartStation>`);
+        expect(generatedXml).to.include(`<DestStation text="${inputData.train.destinationStation.dataText}"></DestStation>`);
+        expect(generatedXml).to.include(`<TrainNumber>${inputData.train.number}</TrainNumber>`);
+        expect(generatedXml).to.include(`<ApplyContent3>${inputData.train.applyContent}</ApplyContent3>`);
       }
 
       // Common validations for all complaint types
@@ -363,5 +526,43 @@ describe('templateBuilder', () => {
       expect(generatedXml).to.include('<Testimony>false</Testimony>');
       expect(generatedXml).to.include('<Courttestimony>false</Courttestimony>');
     });
+  });
+});
+
+describe('idValidator', () => {
+  it('should validate correct Israeli ID numbers', () => {
+    expect(idValidator('123456782')).to.be.true;
+    expect(idValidator('000000018')).to.be.true;
+    expect(idValidator('212121214')).to.be.true;
+  });
+
+  it('should return false for invalid ID numbers', () => {
+    expect(idValidator('123456789')).to.be.false;
+    expect(idValidator('12345678')).to.be.false;
+    expect(idValidator('1234567890')).to.be.false;
+    expect(idValidator('invalid')).to.be.false;
+    expect(idValidator('')).to.be.false;
+    expect(idValidator(null)).to.be.false;
+    expect(idValidator('000000000')).to.be.false;
+  });
+});
+
+describe('mobileValidator', () => {
+  it('should validate and format correct mobile numbers', () => {
+    expect(mobileValidator('0523234567')).to.equal('052-3234567');
+    expect(mobileValidator('052-3234567')).to.equal('052-3234567');
+    expect(mobileValidator('0536218158')).to.equal('053-6218158');
+    expect(mobileValidator('054-2234567')).to.equal('054-2234567');
+  });
+
+  it('should return false for invalid mobile numbers', () => {
+    expect(mobileValidator('0521234567')).to.be.false;
+    expect(mobileValidator('0511234567')).to.be.false;
+    expect(mobileValidator('0501234567')).to.be.false;
+    expect(mobileValidator('invalid')).to.be.false;
+    expect(mobileValidator('')).to.be.false;
+    expect(mobileValidator(null)).to.be.false;
+    expect(mobileValidator('052123456')).to.be.false;
+    expect(mobileValidator('05212345678')).to.be.false;
   });
 });
