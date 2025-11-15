@@ -17,7 +17,6 @@ const directions = () => S.number().description('Direction code (e.g., 1)').defa
 const stationTypeId = () => S.number().description('Station type ID (e.g., 7 for Israel Train)').default(7);
 
 // --- Common reusable Models ---
-export const cityModel = S.object().id('CityModel').prop('DataCode', S.number()).prop('DataText', S.string());
 
 export const lineModel = S.object()
   .id('LineModel')
@@ -27,8 +26,8 @@ export const lineModel = S.object()
   .prop('eventDate', S.string())
   .prop('directionCode', S.number())
   .prop('directionText', S.oneOf([S.string(), S.null()]))
-  .prop('destinationCity', S.ref('CityModel'))
-  .prop('originCity', S.ref('CityModel'))
+  .prop('destinationCity', S.ref('DataCodeModel'))
+  .prop('originCity', S.ref('DataCodeModel'))
   .prop('message', S.oneOf([S.string(), S.null()]));
 
 export const notRealNumberModel = S.object()
@@ -36,8 +35,6 @@ export const notRealNumberModel = S.object()
   .prop('RowNumber', S.string())
   .prop('Code', S.string())
   .prop('IdNum', S.string());
-
-export const operatorModel = S.object().id('OperatorModel').prop('DataCode', S.number()).prop('DataText', S.string());
 
 export const pniyaModel = S.object().id('PniyaModel').prop('RowNumber', S.string()).prop('code', S.string()).prop('pniya', S.string());
 
@@ -191,7 +188,7 @@ export const getCitiesSchema = {
   summary: 'Get cities',
   description: 'Retrieve list of cities',
   response: {
-    200: commonSuccessResponse(S.array().items(S.ref('CityModel'))),
+    200: commonSuccessResponse(S.array().items(S.ref('DataCodeModel'))),
     400: S.ref('ErrorResponseModel'),
     500: S.ref('ErrorResponseModel'),
   },
@@ -206,7 +203,7 @@ export const getOperatorsSchema = {
   summary: 'Get operators',
   description: 'Retrieve list of operators',
   response: {
-    200: commonSuccessResponse(S.array().items(S.ref('OperatorModel'))),
+    200: commonSuccessResponse(S.array().items(S.ref('DataCodeModel'))),
     500: S.ref('ErrorResponseModel'),
   },
 };
