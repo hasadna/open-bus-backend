@@ -22,6 +22,8 @@ export async function sendComplaint(request, reply) {
     if (isDebug) {
       request.log.info('Complaint submitted in debug mode');
       return reply.status(200).send({ success: true, debug: true, xml, referenceNumber });
+      // for test xml resepnse
+      //return reply.status(200).headers({ 'content-type': 'application/xml' }).send(xml);
     }
 
     const response = await axios.post(URL, xml, { headers: { 'Content-Type': 'application/xml' }, timeout: 30000 });

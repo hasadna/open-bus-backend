@@ -214,8 +214,7 @@ export function templateBuilder(body) {
 
   const dataModelSaver = JSON.stringify(fillData);
 
-  return `
-<?xml version="1.0" encoding="utf-8"?>
+  return `<?xml version="1.0" encoding="utf-8"?>
 <root xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" formId="PniotMot@mot.gov.il" formVersion="3.0.5" formCompileTime="22/02/2024" xmlns="http://AGForms/PniotMot@mot.gov.il">
   <form>
 		<UserUImode>AGFrom2Html</UserUImode>
@@ -323,5 +322,5 @@ export function templateBuilder(body) {
 			<incidentStatus xsi:nil="true"></incidentStatus>
 		</contactIdResult>
   </form>
-</root>`.replace(/[\t\n\r]*/gmu, '');
+</root>`.replace(/>[\t\n\r\s]*</gmu, '><');
 }
