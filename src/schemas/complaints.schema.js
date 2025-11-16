@@ -3,15 +3,11 @@ import { S } from './index.js';
 const numberOnly = /^[0-9]+$/u;
 const hebOnly = /^[א-ת-\s'"()]+/u;
 export const mobileOnly = /^05[0-689]-?[2-9][0-9]{6}$/u;
-const fileType = /.*\.[docx|jpeg|jpg|pdf|doc|gif|tiff|png]$/u;
+const fileType = /^.*\.(?<type>doc|docx|jpeg|jpg|pdf|gif|tiff|png)$/giu;
 
 const mobileSchema = () => S.string().pattern(mobileOnly);
 const dateStringSchema = () => S.string().format('date');
 const hourStringSchema = () => S.string().pattern(/[012][0-9]:[012][0-9]/u);
-const attachmentSchema = () =>
-  S.object()
-    .prop('attachmentName', S.string().pattern(fileType).examples(['file.png']))
-    .prop('data', S.string().maxLength(5120));
 
 export const personalDetailsSchema = S.object()
   .id('PersonalDetailsSchema')
@@ -90,24 +86,32 @@ export const taxiSchema = S.object()
   .prop('secondDeclaration', S.boolean())
   .prop('applyContent', S.string().minLength(10).maxLength(1000));
 
+export const documentsList = S.array()
+  .id('DocumentsList')
+  .items(
+    S.object()
+      .prop('attachmentName', S.string().pattern(fileType).examples(['file.png']))
+      .prop('data', S.string().maxLength(5120)),
+  );
+
 export const complaintFormSchema = S.id('ComplaintFormSchema').anyOf([
   S.object()
     .prop('personalDetails', S.ref('PersonalDetailsSchema'))
     .prop('requestSubject', S.ref('RequestSubjectSchema'))
     .prop('busAndOther', S.ref('BusAndOtherSchema'))
-    .prop('documentsList', S.array().items(attachmentSchema())),
+    .prop('documentsList', S.ref('DocumentsList')),
 
   S.object()
     .prop('personalDetails', S.ref('PersonalDetailsSchema'))
     .prop('requestSubject', S.ref('RequestSubjectSchema'))
     .prop('train', S.ref('TrainSchema'))
-    .prop('documentsList', S.array().items(attachmentSchema())),
+    .prop('documentsList', S.ref('DocumentsList')),
 
   S.object()
     .prop('personalDetails', S.ref('PersonalDetailsSchema'))
     .prop('requestSubject', S.ref('RequestSubjectSchema'))
     .prop('taxi', S.ref('TaxiSchema'))
-    .prop('documentsList', S.array().items(attachmentSchema())),
+    .prop('documentsList', S.ref('DocumentsList')),
 ]);
 
 /**

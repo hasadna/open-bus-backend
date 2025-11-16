@@ -1,4 +1,12 @@
-import { busAndOtherSchema, complaintFormSchema, personalDetailsSchema, requestSubjectSchema, taxiSchema, trainSchema } from './complaints.schema.js';
+import {
+  busAndOtherSchema,
+  complaintFormSchema,
+  documentsList,
+  personalDetailsSchema,
+  requestSubjectSchema,
+  taxiSchema,
+  trainSchema,
+} from './complaints.schema.js';
 import { lineModel, notRealNumberModel, pniyaModel, stationModel, subjectModel } from './gov.schema.js';
 import { commonErrorResponse, dataCodeModel } from './index.js';
 import { githubIssueModel } from './issues.schema.js';
@@ -16,6 +24,7 @@ export function loadModels(fastify) {
   fastify.addSchema(busAndOtherSchema);
   fastify.addSchema(taxiSchema);
   fastify.addSchema(trainSchema);
+  fastify.addSchema(documentsList);
   fastify.addSchema(complaintFormSchema);
 
   fastify.addSchema(lineModel);
