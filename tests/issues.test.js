@@ -183,4 +183,36 @@ describe('createIssue', () => {
       message: 'Unable to connect to GitHub API',
     });
   });
+
+  it('should mask the contact email in the issue body', async () => {
+    const mockResponse = createMockGitHubResponse(1, 'Test Issue');
+
+    post.resolves(mockResponse);
+
+    await createIssue(request, reply, axios);
+
+    const [, payload] = post.firstCall.args;
+
+    expect(payload.body).to.include('**Contact Email:** joh*@example.com');
+  });
+
+  it('should return fake data when debug is true', async () => {
+    request.body.debug = true;
+
+    await createIssue(request, reply, axios);
+
+    expect(reply.statusCalledWith).to.equal(200);
+    expect(reply.sendCalledWith.success).to.be.true;
+    expect(reply.sendCalledWith.data.number).to.equal(1347);
+    expect(reply.sendCalledWith.data.id).to.equal(123456);
+    expect(reply.sendCalledWith.data.title).to.equal('Test Issue');
+    expect(reply.sendCalledWith.data.body).to.equal('Fake issue body for debugging');
+    expect(reply.sendCalledWith.data.labels).to.deep.equal(['REPORTED-BY-USER']);
+    expect(reply.sendCalledWith.data.state).to.equal('open');
+    expect(reply.sendCalledWith.data.created_at).to.be.a('string');
+    expect(reply.sendCalledWith.data.url).to.equal('https://api.github.com/repos/octocat/Hello-World/issues/1347');
+    expect(reply.sendCalledWith.data.html_url).to.equal('https://github.com/octocat/Hello-World/issues/1347');
+    expect(post.called).to.be.false;
+    expect(request.log.info.calledWith('Debug mode: returning fake GitHub issue data')).to.be.true;
+  });
 });
