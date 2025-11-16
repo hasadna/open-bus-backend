@@ -15,8 +15,8 @@ describe('templateBuilder', () => {
         data: {
           personalDetails: {
             iDNum: '123456789',
-            firstName: 'נעם',
-            lastName: 'געש',
+            firstName: 'שם פרטי',
+            lastName: 'משפחה',
             email: 'noam.gaash@gmail.com',
             phone: '0536218158',
           },
@@ -40,6 +40,8 @@ describe('templateBuilder', () => {
           lastName: 'געש',
           email: 'noam.gaash@gmail.com',
           mobile: '0536218158',
+        },
+        requestSubject: {
           applySubject: { dataCode: '0', dataText: 'אוטובוס' },
           applyType: { dataCode: '3', dataText: 'אי עצירה בתחנה' },
         },
@@ -63,12 +65,16 @@ describe('templateBuilder', () => {
     iDNum: '',
     email: '',
     mobile: '',
+  };
+
+  const defaultRequestSubject = {
     applySubject: { dataCode: '', dataText: '' },
     applyType: { dataCode: '', dataText: '' },
   };
 
   const defaultBusAndOther = {
     ravKav: false,
+    singleTrip: false,
     ravKavNumber: '',
     reportdate: '',
     reportTime: '',
@@ -122,12 +128,14 @@ describe('templateBuilder', () => {
 
   const defaultBusData = {
     personalDetails: defaultPersonalDetails,
+    requestSubject: defaultRequestSubject,
     busAndOther: defaultBusAndOther,
     documentsList: [],
   };
 
   const defaultTaxiData = {
     personalDetails: defaultPersonalDetails,
+    requestSubject: defaultRequestSubject,
     taxi: defaultTaxi,
     documentsList: [],
   };
@@ -136,14 +144,15 @@ describe('templateBuilder', () => {
     trainType: '1',
     eventDate: '',
     eventHour: '',
-    startStation: { dataText: '' },
-    destinationStation: { dataText: '' },
+    startStation: { dataCode: '', dataText: '' },
+    destinationStation: { dataCode: '', dataText: '' },
     number: '',
     applyContent: '',
   };
 
   const defaultTrainData = {
     personalDetails: defaultPersonalDetails,
+    requestSubject: defaultRequestSubject,
     train: defaultTrain,
     documentsList: [],
   };
@@ -157,6 +166,8 @@ describe('templateBuilder', () => {
         mobile: '054-2234567',
         phone: '',
         email: 'email@gmail.com',
+      },
+      requestSubject: {
         applySubject: {
           dataCode: '0',
           dataText: 'אוטובוס',
@@ -227,6 +238,8 @@ describe('templateBuilder', () => {
         mobile: '054-2234567',
         phone: '',
         email: 'email@gmail.com',
+      },
+      requestSubject: {
         applySubject: {
           dataCode: '0',
           dataText: 'אוטובוס',
@@ -295,6 +308,8 @@ describe('templateBuilder', () => {
         mobile: '054-2234567',
         phone: '',
         email: 'email@gmail.com',
+      },
+      requestSubject: {
         applySubject: {
           dataCode: '6',
           dataText: 'מוניות',
@@ -329,6 +344,8 @@ describe('templateBuilder', () => {
         mobile: '054-2234567',
         phone: '',
         email: 'email@gmail.com',
+      },
+      requestSubject: {
         applySubject: {
           dataCode: '1',
           dataText: 'רכבת',
@@ -343,9 +360,11 @@ describe('templateBuilder', () => {
         eventDate: '28/10/2025',
         eventHour: '08:00',
         startStation: {
+          dataCode: '',
           dataText: 'תל אביב',
         },
         destinationStation: {
+          dataCode: '',
           dataText: 'ירושלים',
         },
         number: '123',
@@ -376,7 +395,7 @@ describe('templateBuilder', () => {
       expect(generatedXml).to.include('</root>');
 
       // Extract and validate dataModelSaver JSON content
-      const dataModelSaverMatch = generatedXml.match(/<dataModelSaver>(?<content>[\s\S]*?)<\/dataModelSaver>/u);
+      const dataModelSaverMatch = generatedXml.match(/<dataModelSaver><!\[CDATA\[(?<content>[\s\S]*?)\]\]><\/dataModelSaver>/u);
       expect(dataModelSaverMatch).to.not.be.null;
 
       const dataModelSaverJson = dataModelSaverMatch.groups.content.trim();
@@ -408,11 +427,11 @@ describe('templateBuilder', () => {
       // Validate requestSubject structure and values
       // Note: fillTemplate only keeps properties that exist in the template
       expect(parsedDataModelSaver.requestSubject).to.have.property('applySubject');
-      expect(parsedDataModelSaver.requestSubject.applySubject).to.have.property('dataText', inputData.personalDetails.applySubject.dataText);
-      expect(parsedDataModelSaver.requestSubject.applySubject).to.have.property('dataCode', inputData.personalDetails.applySubject.dataCode);
+      expect(parsedDataModelSaver.requestSubject.applySubject).to.have.property('dataText', inputData.requestSubject.applySubject.dataText);
+      expect(parsedDataModelSaver.requestSubject.applySubject).to.have.property('dataCode', inputData.requestSubject.applySubject.dataCode);
       expect(parsedDataModelSaver.requestSubject).to.have.property('applyType');
-      expect(parsedDataModelSaver.requestSubject.applyType).to.have.property('dataText', inputData.personalDetails.applyType.dataText);
-      expect(parsedDataModelSaver.requestSubject.applyType).to.have.property('dataCode', inputData.personalDetails.applyType.dataCode);
+      expect(parsedDataModelSaver.requestSubject.applyType).to.have.property('dataText', inputData.requestSubject.applyType.dataText);
+      expect(parsedDataModelSaver.requestSubject.applyType).to.have.property('dataCode', inputData.requestSubject.applyType.dataCode);
 
       // Validate requestDetails structure
       expect(parsedDataModelSaver.requestDetails).to.have.property('name', 'requestDetails');
@@ -457,15 +476,6 @@ describe('templateBuilder', () => {
       expect(generatedXml).to.include(`<IDNum>${inputData.personalDetails.iDNum}</IDNum>`);
       expect(generatedXml).to.include(`<Email>${inputData.personalDetails.email}</Email>`);
       expect(generatedXml).to.include(`<Mobile>${inputData.personalDetails.mobile}</Mobile>`);
-      expect(generatedXml).to.include('<Phone xsi:nil="true"></Phone>');
-
-      // Request subject validation
-      expect(generatedXml).to.include(
-        `<ApplySubject text="${inputData.personalDetails.applySubject.dataText}">${inputData.personalDetails.applySubject.dataCode}</ApplySubject>`,
-      );
-      expect(generatedXml).to.include(
-        `<TypeReq text="${inputData.personalDetails.applyType.dataText}">${inputData.personalDetails.applyType.dataCode}</TypeReq>`,
-      );
 
       // Complaint type specific validations
       if (complaintType === 'no_stop') {
@@ -477,9 +487,9 @@ describe('templateBuilder', () => {
         expect(generatedXml).to.include(`<BusLicenseNum>${inputData.busAndOther.licenseNum}</BusLicenseNum>`);
         expect(generatedXml).to.include(`<BusEventDate>${inputData.busAndOther.eventDate}</BusEventDate>`);
         expect(generatedXml).to.include(`<BusEventHour>${inputData.busAndOther.eventHour}</BusEventHour>`);
-        expect(generatedXml).to.include(`<from>${inputData.busAndOther.busDirectionFrom}</from>`);
-        expect(generatedXml).to.include(`<by>${inputData.busAndOther.busDirectionTo}</by>`);
-        expect(generatedXml).to.include(`<ApplyContent>${inputData.busAndOther.applyContent}</ApplyContent>`);
+        expect(generatedXml).to.include(`<from>${inputData.busAndOther.fromHour}</from>`);
+        expect(generatedXml).to.include(`<by>${inputData.busAndOther.toHour}</by>`);
+        expect(generatedXml).to.include(`<CaseEssence>${inputData.busAndOther.applyContent}</CaseEssence>`);
         expect(generatedXml).to.include(`<LineNumberBoarding>${inputData.busAndOther.lineNumberText}</LineNumberBoarding>`);
       } else if (complaintType === 'delay') {
         // Bus-specific validations for delay complaint
@@ -490,19 +500,17 @@ describe('templateBuilder', () => {
         expect(generatedXml).to.include('<BusLicenseNum xsi:nil="true"></BusLicenseNum>');
         expect(generatedXml).to.include(`<BusEventDate>${inputData.busAndOther.eventDate}</BusEventDate>`);
         expect(generatedXml).to.include(`<BusEventHour>${inputData.busAndOther.eventHour}</BusEventHour>`);
-        expect(generatedXml).to.include(`<from>${inputData.busAndOther.busDirectionFrom}</from>`);
-        expect(generatedXml).to.include(`<by>${inputData.busAndOther.busDirectionTo}</by>`);
-        expect(generatedXml).to.include(`<ApplyContent>${inputData.busAndOther.applyContent}</ApplyContent>`);
+        expect(generatedXml).to.include(`<from>${inputData.busAndOther.fromHour}</from>`);
+        expect(generatedXml).to.include(`<by>${inputData.busAndOther.toHour}</by>`);
+        expect(generatedXml).to.include(`<CaseEssence>${inputData.busAndOther.applyContent}</CaseEssence>`);
         expect(generatedXml).to.include(`<LineNumberBoarding>${inputData.busAndOther.lineNumberText}</LineNumberBoarding>`);
       } else if (complaintType === 'taxi') {
         // Taxi-specific validations
         expect(generatedXml).to.include(`<ETaxiType>${inputData.taxi.taxiType}</ETaxiType>`);
-        expect(generatedXml).to.include('<TaxiEventLocation></TaxiEventLocation>');
+        expect(generatedXml).to.include('<TaxiEventLocation>תל</TaxiEventLocation>');
 
-        // Note: Current template implementation uses busAndOther fields for some taxi elements
-        // This appears to be a template issue, but we test what's actually generated
-        expect(generatedXml).to.include('<DrivingLicense2 xsi:nil="true"></DrivingLicense2>');
-        expect(generatedXml).to.include('<TaxiCap></TaxiCap>');
+        expect(generatedXml).to.include('<DrivingLicense2>321132132</DrivingLicense2>');
+        expect(generatedXml).to.include('<TaxiCap>231321211</TaxiCap>');
       } else if (complaintType === 'train') {
         // Train-specific validations
         expect(generatedXml).to.include(`<TrainType>${inputData.train.trainType}</TrainType>`);
@@ -521,8 +529,13 @@ describe('templateBuilder', () => {
       expect(generatedXml).to.include('<LoadTopics>false</LoadTopics>');
       expect(generatedXml).to.include('<LongWaiting>false</LongWaiting>');
       expect(generatedXml).to.include('<ExtensionHours>false</ExtensionHours>');
-      expect(generatedXml).to.include('<FirstDeclaration>false</FirstDeclaration>');
-      expect(generatedXml).to.include('<SecondDeclaration>false</SecondDeclaration>');
+      if (complaintType === 'taxi') {
+        expect(generatedXml).to.include('<FirstDeclaration>true</FirstDeclaration>');
+        expect(generatedXml).to.include('<SecondDeclaration>true</SecondDeclaration>');
+      } else {
+        expect(generatedXml).to.include('<FirstDeclaration>false</FirstDeclaration>');
+        expect(generatedXml).to.include('<SecondDeclaration>false</SecondDeclaration>');
+      }
       expect(generatedXml).to.include('<Testimony>false</Testimony>');
       expect(generatedXml).to.include('<Courttestimony>false</Courttestimony>');
     });

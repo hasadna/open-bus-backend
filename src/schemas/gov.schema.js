@@ -17,7 +17,6 @@ const directions = () => S.number().description('Direction code (e.g., 1)').defa
 const stationTypeId = () => S.number().description('Station type ID (e.g., 7 for Israel Train)').default(7);
 
 // --- Common reusable Models ---
-
 export const lineModel = S.object()
   .id('LineModel')
   .prop('lineCode', S.number())

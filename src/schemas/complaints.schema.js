@@ -1,47 +1,54 @@
 import { S } from './index.js';
 
-const mobileSchema = () => S.string().pattern(/^05\d-?[2-9]\d{6}$/u);
+const numberOnly = /^[0-9]+$/u;
+const hebOnly = /^[א-ת-\s'"()]+/u;
+export const mobileOnly = /^05[0-689]-?[2-9][0-9]{6}$/u;
+const fileType = /.*\.[docx|jpeg|jpg|pdf|doc|gif|tiff|png]$/u;
+
+const mobileSchema = () => S.string().pattern(mobileOnly);
 const dateStringSchema = () => S.string().format('date');
-const hourStringSchema = () => S.string();
+const hourStringSchema = () => S.string().pattern(/[012][0-9]:[012][0-9]/u);
 const attachmentSchema = () =>
   S.object()
-    .prop('attachmentName', S.string().pattern(/.*\.[docx|jpeg|jpg|pdf|doc|gif|tiff|png]$/u))
+    .prop('attachmentName', S.string().pattern(fileType).examples(['file.png']))
     .prop('data', S.string().maxLength(5120));
 
 export const personalDetailsSchema = S.object()
   .id('PersonalDetailsSchema')
-  .prop('firstName', S.string().required())
-  .prop('lastName', S.string().required())
-  .prop('iDNum', S.string().required())
-  .prop('email', S.string().required())
-  .prop('mobile', mobileSchema().required())
+  .prop('firstName', S.string().pattern(hebOnly).minLength(1).maxLength(100).examples(['פרטי']))
+  .prop('lastName', S.string().pattern(hebOnly).minLength(1).maxLength(100).examples(['משפחה']))
+  .prop('iDNum', S.string().minLength(9).maxLength(9).pattern(numberOnly).examples(['123456782']))
+  .prop('email', S.string().format('email').examples(['email@gmail.com']))
+  .prop('mobile', mobileSchema().examples(['050-2345678']));
+
+export const requestSubjectSchema = S.object()
+  .id('RequestSubjectSchema')
   .prop('applySubject', S.ref('DataCodeModel'))
   .prop('applyType', S.ref('DataCodeModel'));
 
 export const busAndOtherSchema = S.object()
   .id('BusAndOtherSchema')
   .prop('ravKav', S.boolean())
-  .prop('ravKavNumber', S.string())
+  .prop('singleTrip', S.boolean())
+  .prop('ravKavNumber', S.string().minLength(9).maxLength(11).pattern(numberOnly).examples(['123456789']))
   .prop('reportdate', dateStringSchema())
   .prop('reportTime', hourStringSchema())
   .prop('addingFrequencyReason', S.array().items(S.string().enum(['LoadTopics', 'LongWaiting', 'ExtensionHours'])))
   .prop('operator', S.ref('DataCodeModel'))
-  // 1 = Remove, 2 = Add
-  .prop('addOrRemoveStation', S.string().enum(['1', '2']))
+  .prop('addOrRemoveStation', S.string().enum(['1', '2']).description('1 = Remove, 2 = Add'))
   .prop('driverName', S.string())
   .prop('licenseNum', S.string())
   .prop('eventDate', dateStringSchema())
-  .prop('eventHour', hourStringSchema())
-  .prop('fromHour', hourStringSchema())
-  .prop('toHour', hourStringSchema())
-  // 1 = Makat Station, 2 = Line Number
-  .prop('fillByMakatOrAddress', S.string().enum(['1', '2']))
+  .prop('eventHour', hourStringSchema().examples(['08:00']))
+  .prop('fromHour', hourStringSchema().examples(['07:00']))
+  .prop('toHour', hourStringSchema().examples(['09:00']))
+  .prop('fillByMakatOrAddress', S.string().enum(['1', '2']).description('1 = Makat Station, 2 = Line Number'))
   .prop('makatStation', S.string())
   .prop('lineNumberText', S.string())
   .prop('lineNumberFromList', S.ref('DataCodeModel'))
   .prop('direction', S.ref('DataCodeModel'))
   .prop('raisingStation', S.ref('DataCodeModel'))
-  .prop('applyContent', S.string())
+  .prop('applyContent', S.string().minLength(10).maxLength(1000))
   .prop('busDirectionFrom', S.string())
   .prop('busDirectionTo', S.string())
   .prop('raisingStationCity', S.ref('DataCodeModel'))
@@ -49,24 +56,23 @@ export const busAndOtherSchema = S.object()
   .prop('raisingStationAddress', S.string())
   .prop('cityId', S.string())
   .prop('cityName', S.string())
-  .prop('raisingStationCityCode', S.string())
-  .prop('raisingStationCityName', S.string())
-  .prop('destinationStationCityCode', S.string())
-  .prop('destinationStationCityText', S.string())
+  .prop('originCityCode', S.string())
+  .prop('originCityName', S.string())
+  .prop('destinationCityCode', S.string())
+  .prop('destinationCityText', S.string())
   .prop('directionCode', S.string())
   .prop('stationName', S.string())
   .prop('lineCode', S.string());
 
 export const trainSchema = S.object()
   .id('TrainSchema')
-  // 1 = Israel Train, 2 = Light Train
-  .prop('trainType', S.string().enum(['1', '2']))
+  .prop('trainType', S.string().enum(['1', '2']).description('1 = Israel Train, 2 = Light Train'))
   .prop('eventDate', dateStringSchema())
-  .prop('eventHour', hourStringSchema())
+  .prop('eventHour', hourStringSchema().examples(['08:00']))
   .prop('startStation', S.ref('DataCodeModel'))
   .prop('destinationStation', S.ref('DataCodeModel'))
   .prop('number', S.string())
-  .prop('applyContent', S.string());
+  .prop('applyContent', S.string().minLength(10).maxLength(1000));
 
 export const taxiSchema = S.object()
   .id('TaxiSchema')
@@ -74,30 +80,32 @@ export const taxiSchema = S.object()
   .prop('invoice', S.string())
   .prop('evidence', S.string())
   .prop('otherFactors', S.string())
-  // 1 = Taxi, 2 = Service Taxi
-  .prop('taxiType', S.string().enum(['1', '2']))
+  .prop('taxiType', S.string().enum(['1', '2']).description('1 = Taxi, 2 = Service Taxi'))
   .prop('licenseNum', S.string())
   .prop('cap', S.string())
   .prop('eventDate', dateStringSchema())
-  .prop('eventHour', hourStringSchema())
+  .prop('eventHour', hourStringSchema().examples(['08:00']))
   .prop('eventLocation', S.string())
   .prop('firstDeclaration', S.boolean())
   .prop('secondDeclaration', S.boolean())
-  .prop('applyContent', S.string());
+  .prop('applyContent', S.string().minLength(10).maxLength(1000));
 
 export const complaintFormSchema = S.id('ComplaintFormSchema').anyOf([
   S.object()
     .prop('personalDetails', S.ref('PersonalDetailsSchema'))
+    .prop('requestSubject', S.ref('RequestSubjectSchema'))
     .prop('busAndOther', S.ref('BusAndOtherSchema'))
     .prop('documentsList', S.array().items(attachmentSchema())),
 
   S.object()
     .prop('personalDetails', S.ref('PersonalDetailsSchema'))
+    .prop('requestSubject', S.ref('RequestSubjectSchema'))
     .prop('train', S.ref('TrainSchema'))
     .prop('documentsList', S.array().items(attachmentSchema())),
 
   S.object()
     .prop('personalDetails', S.ref('PersonalDetailsSchema'))
+    .prop('requestSubject', S.ref('RequestSubjectSchema'))
     .prop('taxi', S.ref('TaxiSchema'))
     .prop('documentsList', S.array().items(attachmentSchema())),
 ]);

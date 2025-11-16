@@ -9,7 +9,7 @@ export const commonErrorResponse = S.object()
 export const commonSuccessResponse = (itemsSchema) =>
   S.object().id('SuccessResponseModel').prop('success', S.boolean().default(true)).prop('data', itemsSchema);
 
-export const DataCodeModel = S.object()
+export const dataCodeModel = S.object()
   .id('DataCodeModel')
   .prop('dataCode', S.oneOf([S.string(), S.number()]).required())
   .prop('dataText', S.string().required());
