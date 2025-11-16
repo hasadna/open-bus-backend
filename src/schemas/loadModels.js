@@ -1,7 +1,7 @@
 import { busAndOtherSchema, complaintFormSchema, personalDetailsSchema, requestSubjectSchema, taxiSchema, trainSchema } from './complaints.schema.js';
 import { lineModel, notRealNumberModel, pniyaModel, stationModel, subjectModel } from './gov.schema.js';
 import { commonErrorResponse, dataCodeModel } from './index.js';
-import { githubIssueModel, githubMilestoneModel, githubUserModel } from './issues.schema.js';
+import { githubIssueModel } from './issues.schema.js';
 
 /**
  * Register all application routes
@@ -24,7 +24,5 @@ export function loadModels(fastify) {
   fastify.addSchema(stationModel);
   fastify.addSchema(subjectModel);
 
-  fastify.addSchema(githubUserModel);
-  fastify.addSchema(githubMilestoneModel);
   fastify.addSchema(githubIssueModel);
 }
