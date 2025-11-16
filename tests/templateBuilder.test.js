@@ -395,7 +395,7 @@ describe('templateBuilder', () => {
       expect(generatedXml).to.include('</root>');
 
       // Extract and validate dataModelSaver JSON content
-      const dataModelSaverMatch = generatedXml.match(/<dataModelSaver><!\[CDATA\[(?<content>[\s\S]*?)\]\]><\/dataModelSaver>/u);
+      const dataModelSaverMatch = generatedXml.match(/<dataModelSaver>(?<content>[\s\S]*?)<\/dataModelSaver>/u);
       expect(dataModelSaverMatch).to.not.be.null;
 
       const dataModelSaverJson = dataModelSaverMatch.groups.content.trim();
