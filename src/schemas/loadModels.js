@@ -8,7 +8,7 @@ import {
   trainSchema,
 } from './complaints.schema.js';
 import { lineModel, notRealNumberModel, pniyaModel, stationModel, subjectModel } from './gov.schema.js';
-import { commonErrorResponse, dataCodeModel } from './index.js';
+import { commonErrorResponse, dataCodeModel, toggle } from './index.js';
 import { githubIssueModel } from './issues.schema.js';
 
 /**
@@ -18,6 +18,7 @@ import { githubIssueModel } from './issues.schema.js';
 export function loadModels(fastify) {
   fastify.addSchema(commonErrorResponse);
   fastify.addSchema(dataCodeModel);
+  fastify.addSchema(toggle);
 
   fastify.addSchema(personalDetailsSchema);
   fastify.addSchema(requestSubjectSchema);

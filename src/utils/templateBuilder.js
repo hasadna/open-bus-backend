@@ -261,7 +261,7 @@ export function templateBuilder(body) {
     ${buildXmlElement('ETaxiType', fillData.requestDetails.taxi?.taxiType)}
     ${buildXmlElement('DrivingLicense2', fillData.requestDetails.taxi?.licenseNum)}
     ${buildXmlElement('TaxiCap', fillData.requestDetails.taxi?.cap)}
-		<TaxiDriverName xsi:nil="true"></TaxiDriverName>
+    ${buildXmlElement('TaxiDriverName', fillData.requestDetails.taxi?.driverName)}
     ${buildXmlElement('TaxiEventDate', fillData.requestDetails.taxi?.eventDate)}
     ${buildXmlElement('TaxiEventHour', fillData.requestDetails.taxi?.eventHour)}
     ${buildXmlElement('TaxiEventLocation', fillData.requestDetails.taxi?.eventLocation)}
@@ -294,8 +294,8 @@ export function templateBuilder(body) {
     ${buildXmlElement('LineNumber', fillData.requestDetails.busAndOther.lineNumberText)}
     ${buildXmlElement('BusDirectionFrom', fillData.requestDetails.busAndOther.busDirectionFrom)}
     ${buildXmlElement('BusDirectionTo', fillData.requestDetails.busAndOther.busDirectionTo)}
-		<Testimony>false</Testimony>
-		<Courttestimony>false</Courttestimony>
+    ${buildXmlElement('Testimony', fillData.requestDetails.busAndOther.firstDeclaration)}
+    ${buildXmlElement('Courttestimony', fillData.requestDetails.busAndOther.secondDeclaration)}
     ${buildXmlElement('CaseEssence', fillData.requestDetails.busAndOther.applyContent)}
     ${buildXmlElement('OriginCityCode', fillData.requestDetails.busAndOther.originCityCode)}
     ${buildXmlElement('OriginCityName', fillData.requestDetails.busAndOther.originCityName)}

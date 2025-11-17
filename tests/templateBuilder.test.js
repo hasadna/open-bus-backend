@@ -17,8 +17,8 @@ describe('templateBuilder', () => {
             iDNum: '123456789',
             firstName: 'שם פרטי',
             lastName: 'משפחה',
-            email: 'noam.gaash@gmail.com',
-            phone: '0536218158',
+            email: 'email@gmail.com',
+            phone: '0502345678',
           },
           requestDetails: {
             busAndOther: {
@@ -36,10 +36,10 @@ describe('templateBuilder', () => {
       data: {
         personalDetails: {
           iDNum: '123456782',
-          firstName: 'נעם',
-          lastName: 'געש',
-          email: 'noam.gaash@gmail.com',
-          mobile: '0536218158',
+          firstName: 'שם פרטי',
+          lastName: 'משפחה',
+          email: 'email@gmail.com',
+          mobile: '0502345678',
         },
         requestSubject: {
           applySubject: { dataCode: '0', dataText: 'אוטובוס' },
@@ -51,11 +51,11 @@ describe('templateBuilder', () => {
       },
     });
 
-    expect(xml).to.include('<FirstName>נעם</FirstName>');
-    expect(xml).to.include('<LastName>געש</LastName>');
+    expect(xml).to.include('<FirstName>שם פרטי</FirstName>');
+    expect(xml).to.include('<LastName>משפחה</LastName>');
     expect(xml).to.include('<IDNum>123456782</IDNum>');
-    expect(xml).to.include('<Email>noam.gaash@gmail.com</Email>');
-    expect(xml).to.include('<Mobile>053-6218158</Mobile>');
+    expect(xml).to.include('<Email>email@gmail.com</Email>');
+    expect(xml).to.include('<Mobile>050-2345678</Mobile>');
     expect(xml).to.include('<Operator text="5"></Operator>');
   });
 
@@ -564,7 +564,7 @@ describe('mobileValidator', () => {
   it('should validate and format correct mobile numbers', () => {
     expect(mobileValidator('0523234567')).to.equal('052-3234567');
     expect(mobileValidator('052-3234567')).to.equal('052-3234567');
-    expect(mobileValidator('0536218158')).to.equal('053-6218158');
+    expect(mobileValidator('0502345678')).to.equal('050-2345678');
     expect(mobileValidator('054-2234567')).to.equal('054-2234567');
   });
 

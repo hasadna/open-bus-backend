@@ -11,7 +11,9 @@ export const commonSuccessResponse = (itemsSchema) =>
 
 export const dataCodeModel = S.object()
   .id('DataCodeModel')
-  .prop('dataCode', S.oneOf([S.string(), S.number()]).required())
-  .prop('dataText', S.string().required());
+  .prop('DataCode', S.oneOf([S.string(), S.number()]).required())
+  .prop('DataText', S.string().required());
+
+export const toggle = S.string().id('ToggleModel').enum(['1', '2']);
 
 export { S };
