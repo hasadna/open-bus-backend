@@ -1,4 +1,4 @@
-import axios from 'axios';
+import ky from 'ky';
 
 // Base URL for government services
 const GOV_BASE_URL = 'https://esb.gov.il/govServiceList';
@@ -11,11 +11,11 @@ export const govRequest = {
   get(endpoint, options = {}) {
     const config = { ...this.globalOptions, ...options };
     const url = `${GOV_BASE_URL}${endpoint}`;
-    return axios.get(url, config);
+    return ky.get(url, config);
   },
   post(endpoint, data, options = {}) {
     const config = { ...this.globalOptions, ...options };
     const url = `${GOV_BASE_URL}${endpoint}`;
-    return axios.post(url, data, config);
+    return ky.post(url, data, config);
   },
 };
