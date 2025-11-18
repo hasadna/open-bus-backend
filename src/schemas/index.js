@@ -9,4 +9,11 @@ export const commonErrorResponse = S.object()
 export const commonSuccessResponse = (itemsSchema) =>
   S.object().id('SuccessResponseModel').prop('success', S.boolean().default(true)).prop('data', itemsSchema);
 
+export const dataCodeModel = S.object()
+  .id('DataCodeModel')
+  .prop('DataText', S.anyOf([S.string(), S.null()]))
+  .prop('DataCode', S.anyOf([S.string(), S.number(), S.null()]));
+
+export const toggle = S.string().id('ToggleModel').enum(['1', '2']);
+
 export { S };
