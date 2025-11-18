@@ -97,7 +97,7 @@ export const documentsList = S.array()
       .prop('data', S.string().maxLength(5120)),
   );
 
-export const complaintFormSchema = S.id('ComplaintFormSchema').oneOf([
+export const complaintFormSchema = S.id('ComplaintFormSchema').anyOf([
   S.object()
     .prop('personalDetails', S.ref('PersonalDetailsSchema'))
     .prop('requestSubject', S.ref('RequestSubjectSchema'))
