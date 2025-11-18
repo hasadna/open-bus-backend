@@ -11,17 +11,19 @@ const URL = 'https://forms.gov.il/globaldata/getsequence/setform.aspx?formtype=P
  */
 export async function sendComplaint(request, reply) {
   try {
-    const { debug, userData, databusData } = request.body;
+    const { debug, data } = request.body;
     const isDebug = Boolean(debug) || process.env.NODE_ENV === 'test' || process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
 
-    request.log.info('Complaint submission started', { debug: isDebug, userEmail: userData?.email, operator: databusData?.operator });
+    request.log.info('Complaint submission started', { debug: isDebug, email: data?.email, operator: data?.busOperator?.dataText });
 
     const referenceNumber = isDebug ? '1234567' : await getReferenceNumber();
     const xml = templateBuilder({ ...request.body, ReferenceNumber: referenceNumber });
 
     if (isDebug) {
       request.log.info('Complaint submitted in debug mode');
-      return reply.status(200).send({ success: true, debug: true, xml });
+      return reply.status(200).send({ success: true, debug: true, xml, referenceNumber });
+      // for test xml resepnse
+      //return reply.status(200).headers({ 'content-type': 'application/xml' }).send(xml);
     }
 
     const response = await axios.post(URL, xml, { headers: { 'Content-Type': 'application/xml' }, timeout: 30000 });

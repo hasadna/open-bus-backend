@@ -38,6 +38,25 @@ describe('sendComplaint', () => {
     expect(reply.sendCalledWith).to.have.property('error');
   });
 
+  it('should handle invalid id field', async () => {
+    // Create a fresh request with invalid ID
+    const invalidRequest = createMockRequest({
+      debug: true,
+      data: {
+        ...jsonData.data,
+        personalDetails: {
+          ...jsonData.data.personalDetails,
+          iDNum: '123456789',
+        },
+      },
+    });
+
+    await sendComplaint(invalidRequest, reply);
+
+    expect(reply.statusCalledWith).to.equal(500);
+    expect(reply.sendCalledWith).to.have.property('error');
+  });
+
   it('should log the complaint processing', async () => {
     await sendComplaint(request, reply);
 
