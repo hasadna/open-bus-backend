@@ -1,4 +1,4 @@
-import axios from 'axios';
+import ky from 'ky';
 
 import { getReferenceNumber, templateBuilder } from '../utils/index.js';
 
@@ -26,7 +26,7 @@ export async function sendComplaint(request, reply) {
       //return reply.status(200).headers({ 'content-type': 'application/xml' }).send(xml);
     }
 
-    const response = await axios.post(URL, xml, { headers: { 'Content-Type': 'application/xml' }, timeout: 30000 });
+    const response = await ky.post(URL, xml, { headers: { 'Content-Type': 'application/xml' }, timeout: 30000 });
 
     request.log.info('Complaint submitted successfully', { referenceNumber, status: response.status });
     return reply.status(200).send({ success: true, debug: false, data: response.data, referenceNumber });
@@ -38,7 +38,7 @@ export async function sendComplaint(request, reply) {
       return reply.status(400).send({ error: 'Validation failed', details: error.validation });
     }
 
-    // Handle axios errors
+    // Handle errors
     if (error.response) {
       return reply.status(500).send({ error: 'Government API error', message: `Status: ${error.response.status} - ${error.response.statusText}` });
     }

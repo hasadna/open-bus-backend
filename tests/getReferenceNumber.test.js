@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { expect } from 'chai';
+import ky from 'ky';
 import sinon from 'sinon';
 
 import { getReferenceNumber } from '../src/utils/getReferenceNumber.js';
@@ -9,7 +9,7 @@ describe('getReferenceNumber', () => {
   let get;
 
   beforeEach(() => {
-    get = sinon.stub(axios, 'get');
+    get = sinon.stub(ky, 'get');
   });
 
   afterEach(() => {
