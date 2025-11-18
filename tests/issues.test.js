@@ -1,5 +1,5 @@
+import axios from 'axios';
 import { expect } from 'chai';
-import ky from 'ky';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 
@@ -25,7 +25,7 @@ describe('createIssue', () => {
     });
 
     reply = createMockReply();
-    post = sinon.stub(ky, 'post');
+    post = sinon.stub(axios, 'post');
     setupGitHubEnv();
   });
 
@@ -38,7 +38,7 @@ describe('createIssue', () => {
 
     post.resolves(mockResponse);
 
-    await createIssue(request, reply);
+    await createIssue(request, reply, axios);
 
     expect(reply.sendCalledWith.success).to.equal(true);
     expect(reply.sendCalledWith.data).to.deep.equal(mockResponse.data);
@@ -52,7 +52,7 @@ describe('createIssue', () => {
     error.code = undefined;
     post.rejects(error);
 
-    await createIssue(request, reply);
+    await createIssue(request, reply, axios);
 
     expect(reply.statusCalledWith).to.equal(500);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -66,7 +66,7 @@ describe('createIssue', () => {
 
     post.rejects(error);
 
-    await createIssue(request, reply);
+    await createIssue(request, reply, axios);
 
     expect(reply.statusCalledWith).to.equal(401);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -80,7 +80,7 @@ describe('createIssue', () => {
 
     post.resolves(mockResponse);
 
-    await createIssue(request, reply);
+    await createIssue(request, reply, axios);
 
     expect(post.calledOnce).to.be.true;
 
@@ -105,7 +105,7 @@ describe('createIssue', () => {
 
     post.resolves(mockResponse);
 
-    await createIssue(request, reply);
+    await createIssue(request, reply, axios);
 
     expect(reply.sendCalledWith).to.have.property('success', true);
     expect(reply.sendCalledWith.data).to.have.property('id', 123);
@@ -118,7 +118,7 @@ describe('createIssue', () => {
       GITHUB_TOKEN: undefined,
     });
 
-    await createIssue(request, reply);
+    await createIssue(request, reply, axios);
 
     expect(reply.sendCalledWith).to.deep.equal({
       error: 'Configuration error',
@@ -131,7 +131,7 @@ describe('createIssue', () => {
 
     post.rejects(error);
 
-    await createIssue(request, reply);
+    await createIssue(request, reply, axios);
 
     expect(reply.statusCalledWith).to.equal(500);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -145,7 +145,7 @@ describe('createIssue', () => {
 
     post.rejects(error);
 
-    await createIssue(request, reply);
+    await createIssue(request, reply, axios);
 
     expect(reply.statusCalledWith).to.equal(400);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -160,7 +160,7 @@ describe('createIssue', () => {
     error.code = 'ECONNABORTED';
     post.rejects(error);
 
-    await createIssue(request, reply);
+    await createIssue(request, reply, axios);
 
     expect(reply.statusCalledWith).to.equal(500);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -175,7 +175,7 @@ describe('createIssue', () => {
     error.code = 'ENOTFOUND';
     post.rejects(error);
 
-    await createIssue(request, reply);
+    await createIssue(request, reply, axios);
 
     expect(reply.statusCalledWith).to.equal(500);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -189,7 +189,7 @@ describe('createIssue', () => {
 
     post.resolves(mockResponse);
 
-    await createIssue(request, reply);
+    await createIssue(request, reply, axios);
 
     const [, payload] = post.firstCall.args;
 
@@ -199,7 +199,7 @@ describe('createIssue', () => {
   it('should return fake data when debug is true', async () => {
     request.body.debug = true;
 
-    await createIssue(request, reply);
+    await createIssue(request, reply, axios);
 
     expect(reply.statusCalledWith).to.equal(200);
     expect(reply.sendCalledWith.success).to.be.true;

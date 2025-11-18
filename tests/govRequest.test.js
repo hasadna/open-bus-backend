@@ -1,5 +1,5 @@
+import axios from 'axios';
 import { expect } from 'chai';
-import ky from 'ky';
 import sinon from 'sinon';
 
 import { govRequest } from '../src/utils/govRequest.js';
@@ -10,8 +10,8 @@ describe('govRequest', () => {
   let postStub;
 
   beforeEach(() => {
-    getStub = sinon.stub(ky, 'get');
-    postStub = sinon.stub(ky, 'post');
+    getStub = sinon.stub(axios, 'get');
+    postStub = sinon.stub(axios, 'post');
   });
 
   afterEach(() => {
@@ -19,7 +19,7 @@ describe('govRequest', () => {
   });
 
   describe('get', () => {
-    it('should call ky.get with correct URL and options', async () => {
+    it('should call axios.get with correct URL and options', async () => {
       const endpoint = '/test-get';
       const options = { timeout: 10000 };
       const expectedUrl = 'https://esb.gov.il/govServiceList/test-get';
@@ -39,7 +39,7 @@ describe('govRequest', () => {
       expect(getStub.calledOnceWithExactly(expectedUrl, { timeout: 30000 })).to.be.true;
     });
 
-    it('should throw error if ky.get rejects', async () => {
+    it('should throw error if axios.get rejects', async () => {
       const endpoint = '/test-get';
       const error = new Error('Network error');
       getStub.rejects(error);
@@ -53,7 +53,7 @@ describe('govRequest', () => {
   });
 
   describe('post', () => {
-    it('should call ky.post with correct URL, data, and options', async () => {
+    it('should call axios.post with correct URL, data, and options', async () => {
       const endpoint = '/test-post';
       const data = { foo: 'bar' };
       const options = { timeout: 5000 };
@@ -75,7 +75,7 @@ describe('govRequest', () => {
       expect(postStub.calledOnceWithExactly(expectedUrl, data, { timeout: 30000 })).to.be.true;
     });
 
-    it('should throw error if ky.post rejects', async () => {
+    it('should throw error if axios.post rejects', async () => {
       const endpoint = '/test-post';
       const data = { foo: 'bar' };
       const error = new Error('Network error');

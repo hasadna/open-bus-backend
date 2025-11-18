@@ -1,4 +1,4 @@
-import ky from 'ky';
+import axios from 'axios';
 
 /**
  * Health check handler
@@ -17,7 +17,7 @@ export async function healthCheck(request, reply) {
     await Promise.all(
       Object.entries(govApiMap).map(async ([name, url]) => {
         try {
-          const res = await ky.get(url);
+          const res = await axios.get(url, { timeout: 3000 });
           govApiStatuses[name] = res.status === 200 ? 'alive' : `status_${res.status}`;
         } catch {
           govApiStatuses[name] = 'unreachable';
