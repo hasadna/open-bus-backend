@@ -7,10 +7,10 @@ export async function getReferenceNumber() {
   const { data: html } = await axios.get(URL);
   const dom = load(html);
   const el = dom('#ReferenceNumber');
-
-  if (!el.length) {
+  const guid = dom('#_form_guid');
+  if (!el.length || !guid?.val()) {
     return null;
   }
 
-  return el.text().trim();
+  return { ref: el.text().trim(), guid: guid.val() };
 }

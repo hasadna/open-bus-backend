@@ -214,18 +214,18 @@ export function templateBuilder(body) {
 
   const dataModelSaver = JSON.stringify(fillData);
 
-  return `<?xml version="1.0" encoding="utf-8"?>
-<root xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" formId="PniotMot@mot.gov.il" formVersion="3.0.5" formCompileTime="22/02/2024" xmlns="http://AGForms/PniotMot@mot.gov.il">
-  <form>
+  return `<?xml version='1.0' encoding='UTF-8'?>
+<root xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" formId="PniotMot@mot.gov.il" formVersion="3.0.5" formCompileTime="" xmlns="http://AGForms/PniotMot@mot.gov.il">
+    <form>
 		<UserUImode>AGFrom2Html</UserUImode>
-		<BTSFormID xsi:nil="true"></BTSFormID>
-		<BTSFormDesc xsi:nil="true"></BTSFormDesc>
+    <BTSFormID>PniotMot@mot.gov.il</BTSFormID>
+    <BTSFormDesc>פניות הציבור משרד התחבורה</BTSFormDesc>
 		<BTSProcessID xsi:nil="true"></BTSProcessID>
     ${buildXmlElement('ReferenceNumber', body.ReferenceNumber || '')}
 		<StageStatus>UserToOffice</StageStatus>
     <dataModelSaver>${dataModelSaver}</dataModelSaver>
 		<isMobile>false</isMobile>
-		<DeviceType xsi:nil="true"></DeviceType>
+	  <DeviceType>PC</DeviceType>
 		<FirstLoadingDate xsi:nil="true"></FirstLoadingDate>
     ${buildXmlElement('Date', body.Date || '')}
     ${buildXmlElement('SelectContactType', fillData.contactType.selectContactType)}
@@ -243,13 +243,13 @@ export function templateBuilder(body) {
 		<Appartment xsi:nil="true"></Appartment>
 		<POB xsi:nil="true"></POB>
 		<ZipCode xsi:nil="true"></ZipCode>
-    ${buildXmlElement('ApplySubject', fillData.requestSubject.applySubject.dataCode, { text: fillData.requestSubject.applySubject.dataText })}
-    ${buildXmlElement('TypeReq', fillData.requestSubject.applyType.dataCode, { text: fillData.requestSubject.applyType.dataText })}
+    ${buildXmlElement('ApplySubject', fillData.requestSubject.applySubject.dataText)}
+    ${buildXmlElement('TypeReq', fillData.requestSubject.applyType.dataText)}
     ${buildXmlElement('TrainType', fillData.requestDetails.train?.trainType)}
     ${buildXmlElement('EventDate2', fillData.requestDetails.train?.eventDate)}
     ${buildXmlElement('EventHour2', fillData.requestDetails.train?.eventHour)}
-    ${buildXmlElement('StartStation', fillData.requestDetails.train?.startStation?.dataCode, { text: fillData.requestDetails.train?.startStation?.dataText })}
-    ${buildXmlElement('DestStation', fillData.requestDetails.train?.destinationStation?.dataCode, { text: fillData.requestDetails.train?.destinationStation?.dataText })}
+    ${buildXmlElement('StartStation', fillData.requestDetails.train?.startStation?.dataText)}
+    ${buildXmlElement('DestStation', fillData.requestDetails.train?.destinationStation?.dataText)}
     ${buildXmlElement('TrainNumber', fillData.requestDetails.train?.number)}
     ${buildXmlElement('ApplyContent3', fillData.requestDetails.train?.applyContent)}
     ${buildXmlElement('FirstDeclaration', fillData.requestDetails.busAndOther?.firstDeclaration || fillData.requestDetails.taxi?.firstDeclaration || false)}
@@ -307,20 +307,14 @@ export function templateBuilder(body) {
     ${buildXmlElement('DestinationCityCode', fillData.requestDetails.busAndOther.destinationCityCode)}
     ${buildXmlElement('DestinationCityText', fillData.requestDetails.busAndOther.destinationCityText)}
 		<Title xsi:nil="true"></Title>
-		<RequestSubjectCode xsi:nil="true"></RequestSubjectCode>
-		<RequestTypeCode xsi:nil="true"></RequestTypeCode>
+		<RequestSubjectCode>0</RequestSubjectCode>
+		<RequestTypeCode>0</RequestTypeCode>
 		<Attacment_Doc>
-			<AttachDocument fileName="" />
+        ${buildXmlElement('AttachDocument', undefined, { fileName: '' })}
 		</Attacment_Doc>		
     <ContactID>
 			<ticketNumber xsi:nil="true"></ticketNumber>
 		</ContactID>
-		<contactIdResult>
-			<ticketNumber xsi:nil="true"></ticketNumber>
-			<dateReceived xsi:nil="true"></dateReceived>
-			<contactName xsi:nil="true"></contactName>
-			<incidentStatus xsi:nil="true"></incidentStatus>
-		</contactIdResult>
   </form>
 </root>`.replace(/>[\t\n\r\s]*</gmu, '><');
 }
