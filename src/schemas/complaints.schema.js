@@ -133,7 +133,7 @@ export const sendComplaintSchema = {
       .prop('success', S.boolean())
       .prop('debug', S.boolean())
       .prop('xml', S.string().description('Generated XML (only in debug mode)'))
-      .prop('data', S.object().description('Response data from the government forms system'))
+      .prop('data', S.anyOf([S.object(), S.string()]).description('Response data from the government forms system'))
       .prop('referenceNumber', S.string().description('Generated reference number')),
     400: S.ref('ErrorResponseModel'),
     500: S.ref('ErrorResponseModel'),
