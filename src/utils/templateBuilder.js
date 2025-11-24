@@ -243,8 +243,8 @@ export function templateBuilder(body) {
 		<Appartment xsi:nil="true"></Appartment>
 		<POB xsi:nil="true"></POB>
 		<ZipCode xsi:nil="true"></ZipCode>
-    ${buildXmlElement('ApplySubject', fillData.requestSubject.applySubject.dataText)}
-    ${buildXmlElement('TypeReq', fillData.requestSubject.applyType.dataText)}
+    ${buildXmlElement('ApplySubject', fillData.requestSubject.applySubject.DataText)}
+    ${buildXmlElement('TypeReq', fillData.requestSubject.applyType.DataText)}
     ${buildXmlElement('TrainType', fillData.requestDetails.train?.trainType)}
     ${buildXmlElement('EventDate2', fillData.requestDetails.train?.eventDate)}
     ${buildXmlElement('EventHour2', fillData.requestDetails.train?.eventHour)}
@@ -273,7 +273,7 @@ export function templateBuilder(body) {
     ${buildXmlElement('LoadTopics', fillData.requestDetails.busAndOther.addFrequencyOverCrowd || false)}
     ${buildXmlElement('LongWaiting', fillData.requestDetails.busAndOther.addFrequencyLongWait || false)}
     ${buildXmlElement('ExtensionHours', fillData.requestDetails.busAndOther.addFrequencyExtendTime || false)}
-    ${buildXmlElement('Operator', fillData.requestDetails.busAndOther.operator.dataCode, { text: fillData.requestDetails.busAndOther.operator.dataText })}
+    ${buildXmlElement('Operator', fillData.requestDetails.busAndOther.operator.DataText)}
     ${buildXmlElement('BusDriverName', fillData.requestDetails.busAndOther.driverName)}
     ${buildXmlElement('BusLicenseNum', fillData.requestDetails.busAndOther.licenseNum)}
     ${buildXmlElement('BusEventDate', fillData.requestDetails.busAndOther.eventDate)}
@@ -316,5 +316,5 @@ export function templateBuilder(body) {
 			<ticketNumber xsi:nil="true"></ticketNumber>
 		</ContactID>
   </form>
-</root>`.replace(/>[\t\n\r\s]*</gmu, '><');
+</root>`;
 }
