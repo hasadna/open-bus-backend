@@ -1,16 +1,19 @@
 import axios from 'axios';
+import { wrapper } from 'axios-cookiejar-support';
 import { load } from 'cheerio';
+import { CookieJar } from 'tough-cookie';
 
 const URL = 'https://forms.gov.il/globaldata/getsequence/getHtmlForm.aspx?formType=PniotMot%40mot.gov.il';
 
 export async function getReferenceNumber() {
-  const { data: html } = await axios.get(URL);
+  const jar = new CookieJar();
+  const client = wrapper(axios.create({ jar, withCredentials: true }));
+  const { data: html } = await client.get(URL);
   const dom = load(html);
-  const el = dom('#ReferenceNumber');
-  const guid = dom('#_form_guid');
-  if (!el.length || !guid?.val()) {
-    return null;
-  }
+  const ref = dom('#ReferenceNumber').text().trim();
+  const guid = dom('#_form_guid').val();
 
-  return { ref: el.text().trim(), guid: guid.val() };
+  if (!ref || !guid) return null;
+
+  return { ref, guid, client };
 }

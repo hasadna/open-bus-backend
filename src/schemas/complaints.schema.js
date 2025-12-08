@@ -6,7 +6,7 @@ export const mobileOnly = /^05[0-689]-?[2-9][0-9]{6}$/u;
 const fileType = /^.*\.(?<type>doc|docx|jpeg|jpg|pdf|gif|tiff|png)$/giu;
 
 const mobileSchema = () => S.string().pattern(mobileOnly);
-const dateStringSchema = () => S.string().format('date');
+const dateStringSchema = () => S.string().format('date-time');
 const hourStringSchema = () => S.string().pattern(/[012][0-9]:[012][0-9]/u);
 
 export const personalDetailsSchema = S.object()
