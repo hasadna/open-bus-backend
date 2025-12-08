@@ -28,7 +28,6 @@ export async function sendComplaint(request, reply) {
     form.append('_form_data', xml);
     form.append('_form_guid', guid);
     const boundary = crypto.randomBytes(16).toString('hex');
-    console.log(...form);
 
     if (isDebug) {
       request.log.info('Complaint submitted in debug mode');

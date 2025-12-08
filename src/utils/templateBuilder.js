@@ -126,6 +126,10 @@ const defualt = {
 };
 Object.freeze(defualt);
 
+function formatDateTime(dateTime) {
+  return new Date(dateTime).toLocaleDateString('en-GB');
+}
+
 function fillTemplate(template, data = {}) {
   if (Array.isArray(template)) {
     return template.map((item, idx) => fillTemplate(item, (data && data[idx]) || {}));
@@ -211,9 +215,17 @@ export function templateBuilder(body) {
   if (body.data.documentsList) {
     fillData.documentAttachment.documentsList = body.data.documentsList.map((doc) => ({ attacmentName: doc.attachmentName }));
   }
+  console.log(typeof fillData.requestDetails.busAndOther.eventDate);
+
+  if (fillData.requestDetails.train?.eventDat) fillData.requestDetails.train.eventDate = formatDateTime(fillData.requestDetails.train.eventDate);
+  if (fillData.requestDetails.taxi?.eventDate) fillData.requestDetails.taxi.eventDate = formatDateTime(fillData.requestDetails.taxi.eventDate);
+  if (fillData.requestDetails.busAndOther?.eventDate)
+    fillData.requestDetails.busAndOther.eventDate = formatDateTime(fillData.requestDetails.busAndOther.eventDate);
+  if (fillData.requestDetails.busAndOther.reportdate)
+    fillData.requestDetails.busAndOther.reportdate = formatDateTime(fillData.requestDetails.busAndOther.reportdate);
 
   const dataModelSaver = JSON.stringify(fillData).replace(/"/gu, '&quot;');
-  const title = '';
+
   return `<?xml version='1.0' encoding='UTF-8'?>
 <root xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" formId="PniotMot@mot.gov.il" formVersion="3.0.5" formCompileTime="" xmlns="http://AGForms/PniotMot@mot.gov.il" >
 <form>
@@ -306,7 +318,7 @@ ${buildXmlElement('StationName', fillData.requestDetails.busAndOther.stationName
 ${buildXmlElement('DirectionCode', fillData.requestDetails.busAndOther.directionCode)}
 ${buildXmlElement('DestinationCityCode', fillData.requestDetails.busAndOther.destinationCityCode)}
 ${buildXmlElement('DestinationCityText', fillData.requestDetails.busAndOther.destinationCityText)}
-${buildXmlElement('Title', title)}
+${buildXmlElement('Title', 'title')}
 <RequestSubjectCode>0</RequestSubjectCode>
 <RequestTypeCode>0</RequestTypeCode>
 <Attacment_Doc>
