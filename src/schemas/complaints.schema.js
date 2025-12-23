@@ -6,7 +6,7 @@ export const mobileOnly = /^05[0-689]-?[2-9][0-9]{6}$/u;
 const fileType = /^.*\.(?<type>doc|docx|jpeg|jpg|pdf|gif|tiff|png)$/giu;
 
 const mobileSchema = () => S.string().pattern(mobileOnly);
-const dateStringSchema = () => S.string().format('date');
+const dateStringSchema = () => S.string().format('date-time');
 const hourStringSchema = () => S.string().pattern(/[012][0-9]:[012][0-9]/u);
 
 export const personalDetailsSchema = S.object()
@@ -100,18 +100,21 @@ export const documentsList = S.array()
 export const complaintFormSchema = S.id('ComplaintFormSchema').anyOf([
   S.object()
     .prop('personalDetails', S.ref('PersonalDetailsSchema'))
+    .prop('title', S.string())
     .prop('requestSubject', S.ref('RequestSubjectSchema'))
     .prop('busAndOther', S.ref('BusAndOtherSchema'))
     .prop('documentsList', S.ref('DocumentsList')),
 
   S.object()
     .prop('personalDetails', S.ref('PersonalDetailsSchema'))
+    .prop('title', S.string())
     .prop('requestSubject', S.ref('RequestSubjectSchema'))
     .prop('train', S.ref('TrainSchema'))
     .prop('documentsList', S.ref('DocumentsList')),
 
   S.object()
     .prop('personalDetails', S.ref('PersonalDetailsSchema'))
+    .prop('title', S.string())
     .prop('requestSubject', S.ref('RequestSubjectSchema'))
     .prop('taxi', S.ref('TaxiSchema'))
     .prop('documentsList', S.ref('DocumentsList')),
@@ -133,7 +136,7 @@ export const sendComplaintSchema = {
       .prop('success', S.boolean())
       .prop('debug', S.boolean())
       .prop('xml', S.string().description('Generated XML (only in debug mode)'))
-      .prop('data', S.object().description('Response data from the government forms system'))
+      .prop('data', S.anyOf([S.object(), S.string()]).description('Response data from the government forms system'))
       .prop('referenceNumber', S.string().description('Generated reference number')),
     400: S.ref('ErrorResponseModel'),
     500: S.ref('ErrorResponseModel'),
