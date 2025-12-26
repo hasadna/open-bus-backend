@@ -1,10 +1,11 @@
 import axios from 'axios';
-import crypto from 'crypto';
 
 import { getReferenceNumber, templateBuilder } from '../utils/index.js';
 
+const DEBUG_ENV = process.env.NODE_ENV === 'test' || process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+
 const URL = 'https://forms.gov.il/globaldata/getsequence/setform.aspx?displang=he&formtype=PniotMot%40mot.gov.il';
-const ERROR = '"קיימת בעיה בנתוני הטופס, אנא פנו לתמיכה לקבלת סיוע בפתרון הבעיה בטלפון 1299"';
+const ERROR = 'קיימת בעיה בנתוני הטופס, אנא פנו לתמיכה לקבלת סיוע בפתרון הבעיה בטלפון 1299';
 /**
  * Send complaint handler
  * @param {import('fastify').FastifyRequest} request
@@ -12,44 +13,67 @@ const ERROR = '"קיימת בעיה בנתוני הטופס, אנא פנו לת�
  */
 export async function sendComplaint(request, reply) {
   try {
-    const { debug, data } = request.body;
-    const isDebug = Boolean(debug) || process.env.NODE_ENV === 'test' || process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+    const isDebug = Boolean(request.body.debug) || DEBUG_ENV;
 
-    request.log.info('Complaint submission started', { debug: isDebug, email: data?.email, operator: data?.busOperator?.dataText });
+    request.log.info('Complaint submission started');
 
     const clientData = isDebug ? { ref: '1234567', guid: 'test', client: axios } : await getReferenceNumber();
+
     if (clientData === null) return reply.status(500).send({ success: false, error: 'Failed to get reference number' });
-    const { ref, guid, client } = clientData;
 
-    const xml = templateBuilder({ ...request.body, ReferenceNumber: ref });
+    const xml = templateBuilder(request.body, clientData.ref);
 
-    const form = new FormData();
-    form.append('_form_GeneralAttributes', '<root><formId>PniotMot@mot.gov.il</formId><formVersion>3.0.5</formVersion></root>');
-    form.append('_form_data', xml);
-    form.append('_form_guid', guid);
-    const boundary = crypto.randomBytes(16).toString('hex');
+    // const form = new FormData();
+    // form.append('_form_GeneralAttributes', '<root><formId>PniotMot@mot.gov.il</formId><formVersion>3.0.5</formVersion></root>');
+    // form.append('_form_data', xml);
+    // form.append('_form_guid', guid);
+    // const boundary = crypto.randomBytes(16).toString('hex');
 
-    if (isDebug) {
-      request.log.info('Complaint submitted in debug mode');
-      return reply.status(200).send({ success: true, debug: true, xml, ref });
-      // for test xml resepnse
-      // return reply.status(200).headers({ 'content-type': 'application/xml' }).send(xml);
-    }
+    const boundary = `----WebKitFormBoundary${Math.random().toString(36).substring(2)}`;
 
-    const response = await client.post(URL, form, {
+    const generalAttributes = '<root><formId>PniotMot@mot.gov.il</formId><formVersion>3.0.5</formVersion></root>';
+    const formBody = [
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="_form_GeneralAttributes"',
+      '',
+      generalAttributes,
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="_form_data"',
+      '',
+      xml,
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="_form_guid"',
+      '',
+      clientData.guid,
+      `--${boundary}--`,
+    ].join('\r\n');
+
+    // if (isDebug) {
+    //  request.log.info('Complaint submitted in debug mode');
+    //  return reply.status(200).send({ success: true, debug: true, xml, ref: clientData.ref });
+    //  // for test xml resepnse
+    //  // return reply.status(200).headers({ 'content-type': 'application/xml' }).send(xml);
+    // }
+
+    const response = await clientData.client.post(URL, formBody, {
       headers: {
         Accept: '*/*',
-        'Content-Type': `multipart/form-data; boundary=----WebKitFormBoundary${boundary}`,
-        Host: 'forms.gov.il',
+
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
         Origin: 'https://forms.gov.il',
         Referer: 'https://forms.gov.il/globaldata/getsequence/getHtmlForm.aspx?formType=PniotMot%40mot.gov.il',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',
       },
       timeout: 30000,
     });
-    if (response.data === ERROR) throw Error(ERROR);
-    request.log.info('Complaint submitted successfully', { referenceNumber: ref, status: response.status });
-    return reply.status(200).send({ success: true, debug: false, data: response.data, referenceNumber: ref });
+
+    if (response.data === ERROR) {
+      return reply.status(500).send({ error: 'Government API error', message: response.data });
+    }
+
+    request.log.info('Complaint submitted successfully', { referenceNumber: clientData.ref, status: response.status });
+
+    return reply.status(200).send({ success: true, debug: false, data: response.data, referenceNumber: clientData.ref });
   } catch (error) {
     request.log.error('Complaint submission failed', { error: error.message, stack: error.stack, body: request.body });
     // Handle validation errors

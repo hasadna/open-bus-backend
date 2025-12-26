@@ -166,18 +166,14 @@ function fillTemplate(template, data = {}) {
  * @param {Object.<string, string>} attributes - XML attributes.
  * @returns {string} XML string.
  */
-export function buildXmlElement(tagName, value = undefined, attributes = {}) {
-  if (value === null || value === undefined || (value === '' && Object.keys(attributes).length === 0)) attributes['xsi:nil'] = 'true';
-
-  const attrs = Object.entries(attributes)
-    .map(([k, v]) => ` ${k}="${v}"`)
-    .join('');
+export function buildXmlElement(tagName, value = undefined) {
+  const attrs = value === null || value === undefined || value === '' ? ' xsi:nil="true" ' : '';
 
   const val = value === null || value === undefined ? '' : value;
-  return `<${tagName}${attrs} >${val}</${tagName}>`;
+  return `<${tagName}${attrs}>${val}</${tagName}>`;
 }
 
-export function templateBuilder(body) {
+export function templateBuilder(body, ref) {
   if (!body.data) {
     throw new Error('Input must have data property');
   }
@@ -193,6 +189,10 @@ export function templateBuilder(body) {
   body.data.personalDetails.mobile = validatedMobile;
 
   const fillData = fillTemplate(defualt, body.data);
+  fillData.formInformation.loadingDate = new Date().toLocaleDateString('en-us');
+  fillData.formInformation.referenceNumber = ref;
+  fillData.requestDetails.title = fillData.title;
+  delete fillData.title;
 
   // Fill busAndOther if present
   if (body.data.busAndOther) {
@@ -215,7 +215,6 @@ export function templateBuilder(body) {
   if (body.data.documentsList) {
     fillData.documentAttachment.documentsList = body.data.documentsList.map((doc) => ({ attacmentName: doc.attachmentName }));
   }
-  console.log(typeof fillData.requestDetails.busAndOther.eventDate);
 
   if (fillData.requestDetails.train?.eventDat) fillData.requestDetails.train.eventDate = formatDateTime(fillData.requestDetails.train.eventDate);
   if (fillData.requestDetails.taxi?.eventDate) fillData.requestDetails.taxi.eventDate = formatDateTime(fillData.requestDetails.taxi.eventDate);
@@ -233,13 +232,13 @@ export function templateBuilder(body) {
 <BTSFormID>PniotMot@mot.gov.il</BTSFormID>
 <BTSFormDesc>פניות הציבור משרד התחבורה</BTSFormDesc>
 <BTSProcessID xsi:nil="true" ></BTSProcessID>
-${buildXmlElement('ReferenceNumber', body.ReferenceNumber || '')}
+${buildXmlElement('ReferenceNumber', ref)}
 <StageStatus>UserToOffice</StageStatus>
 <dataModelSaver>${dataModelSaver}</dataModelSaver>
 <isMobile>false</isMobile>
 <DeviceType>PC</DeviceType>
 <FirstLoadingDate xsi:nil="true" ></FirstLoadingDate>
-${buildXmlElement('Date', body.Date || '')}
+${buildXmlElement('Date', fillData.formInformation.loadingDate)}
 ${buildXmlElement('SelectContactType', fillData.contactType.selectContactType)}
 ${buildXmlElement('FirstName', fillData.personalDetails.firstName)}
 ${buildXmlElement('LastName', fillData.personalDetails.lastName)}
@@ -255,8 +254,8 @@ ${buildXmlElement('Email', fillData.personalDetails.email)}
 <Appartment xsi:nil="true" ></Appartment>
 <POB xsi:nil="true" ></POB>
 <ZipCode xsi:nil="true" ></ZipCode>
-${buildXmlElement('ApplySubject', fillData.requestSubject.applySubject.DataText)}
-${buildXmlElement('TypeReq', fillData.requestSubject.applyType.DataText)}
+${buildXmlElement('ApplySubject', fillData.requestSubject.applySubject.dataText)}
+${buildXmlElement('TypeReq', fillData.requestSubject.applyType.dataText)}
 ${buildXmlElement('TrainType', fillData.requestDetails.train?.trainType)}
 ${buildXmlElement('EventDate2', fillData.requestDetails.train?.eventDate)}
 ${buildXmlElement('EventHour2', fillData.requestDetails.train?.eventHour)}
@@ -285,7 +284,7 @@ ${buildXmlElement('SingleTrip', fillData.requestDetails.busAndOther.singleTrip |
 ${buildXmlElement('LoadTopics', fillData.requestDetails.busAndOther.addFrequencyOverCrowd || false)}
 ${buildXmlElement('LongWaiting', fillData.requestDetails.busAndOther.addFrequencyLongWait || false)}
 ${buildXmlElement('ExtensionHours', fillData.requestDetails.busAndOther.addFrequencyExtendTime || false)}
-${buildXmlElement('Operator', fillData.requestDetails.busAndOther.operator.DataText)}
+${buildXmlElement('Operator', fillData.requestDetails.busAndOther.operator.dataText)}
 ${buildXmlElement('BusDriverName', fillData.requestDetails.busAndOther.driverName)}
 ${buildXmlElement('BusLicenseNum', fillData.requestDetails.busAndOther.licenseNum)}
 ${buildXmlElement('BusEventDate', fillData.requestDetails.busAndOther.eventDate)}
@@ -297,10 +296,10 @@ ${buildXmlElement('ReportTime', fillData.requestDetails.busAndOther.reportTime)}
 ${buildXmlElement('Stationupdate', fillData.requestDetails.busAndOther.addOrRemoveStation)}
 ${buildXmlElement('NumStation', fillData.requestDetails.busAndOther.addOrRemoveStation)}
 ${buildXmlElement('LineNumberBoarding', fillData.requestDetails.busAndOther.lineNumberText)}
-${buildXmlElement('Direction', fillData.requestDetails.busAndOther.direction.dataCode, { text: fillData.requestDetails.busAndOther.direction.dataText })}
-${buildXmlElement('BusStationBoard', fillData.requestDetails.busAndOther.raisingStation.dataCode, { text: fillData.requestDetails.busAndOther.raisingStation.dataText })}
-${buildXmlElement('BoardingSettlement', fillData.requestDetails.busAndOther.raisingStationCity.dataCode, { text: fillData.requestDetails.busAndOther.raisingStationCity.dataText })}
-${buildXmlElement('DropStaionAppeal', fillData.requestDetails.busAndOther.destinationStationCity.dataCode, { text: fillData.requestDetails.busAndOther.destinationStationCity.dataText })}
+${buildXmlElement('Direction', fillData.requestDetails.busAndOther.direction.dataText)}
+${buildXmlElement('BusStationBoard', fillData.requestDetails.busAndOther.raisingStation.dataText)}
+${buildXmlElement('BoardingSettlement', fillData.requestDetails.busAndOther.raisingStationCity.dataText)}
+${buildXmlElement('DropStaionAppeal', fillData.requestDetails.busAndOther.destinationStationCity.dataText)}
 ${buildXmlElement('Risestationaddress', fillData.requestDetails.busAndOther.raisingStationAddress)}
 ${buildXmlElement('MakatStation', fillData.requestDetails.busAndOther.makatStation)}
 ${buildXmlElement('LineNumber', fillData.requestDetails.busAndOther.lineNumberText)}
@@ -318,7 +317,7 @@ ${buildXmlElement('StationName', fillData.requestDetails.busAndOther.stationName
 ${buildXmlElement('DirectionCode', fillData.requestDetails.busAndOther.directionCode)}
 ${buildXmlElement('DestinationCityCode', fillData.requestDetails.busAndOther.destinationCityCode)}
 ${buildXmlElement('DestinationCityText', fillData.requestDetails.busAndOther.destinationCityText)}
-${buildXmlElement('Title', 'title')}
+${buildXmlElement('Title', fillData.requestDetails.title)}
 <RequestSubjectCode>0</RequestSubjectCode>
 <RequestTypeCode>0</RequestTypeCode>
 <Attacment_Doc>
