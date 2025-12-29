@@ -73,7 +73,12 @@ export async function sendComplaint(request, reply) {
 
     request.log.info('Complaint submitted successfully', { referenceNumber: clientData.ref, status: response.status });
 
-    return reply.status(200).send({ success: true, debug: false, data: response.data, referenceNumber: clientData.ref });
+    return reply.status(200).send({
+      success: true,
+      debug: false,
+      data: response.data,
+      referenceNumber: clientData.ref,
+    });
   } catch (error) {
     request.log.error('Complaint submission failed', { error: error.message, stack: error.stack, body: request.body });
     // Handle validation errors

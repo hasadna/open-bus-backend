@@ -1,4 +1,7 @@
 // External dependencies
+import fs from 'fs';
+import nock from 'nock';
+
 import { createServer } from './src/config/index.js';
 import { globalErrorHandler, notFoundHandler } from './src/middleware/index.js';
 import { registerRoutes } from './src/routes/index.js';
@@ -6,6 +9,24 @@ import { setupGracefulShutdown } from './src/utils/index.js';
 
 const HOST = process.env.HOST || '0.0.0.0';
 const PORT = process.env.PORT || 3001;
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Application specific logging, throwing an error, or other logic here
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+nock(/gov.il/u)
+  .post(/.*/u, (body) => {
+    console.log('Nock intercepted body:', body);
+    fs.writeFileSync('nock_body.txt', body);
+    return true;
+  })
+  .reply(200, { success: true, xml: 'NOAMNOAM' });
 
 // Start the server
 async function start() {
