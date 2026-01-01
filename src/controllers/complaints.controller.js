@@ -1,4 +1,5 @@
 import axios from 'axios';
+import crypto from 'crypto';
 
 import { getReferenceNumber, templateBuilder } from '../utils/index.js';
 
@@ -29,7 +30,7 @@ export async function sendComplaint(request, reply) {
     // form.append('_form_guid', guid);
     // const boundary = crypto.randomBytes(16).toString('hex');
 
-    const boundary = `----WebKitFormBoundary${Math.random().toString(36).substring(2)}`;
+    const boundary = `----WebKitFormBoundary${crypto.randomBytes(16).toString('hex')}`;
 
     const generalAttributes = '<root><formId>PniotMot@mot.gov.il</formId><formVersion>3.0.5</formVersion></root>';
     const formBody = [
@@ -48,22 +49,24 @@ export async function sendComplaint(request, reply) {
       `--${boundary}--`,
     ].join('\r\n');
 
-    // if (isDebug) {
-    //  request.log.info('Complaint submitted in debug mode');
-    //  return reply.status(200).send({ success: true, debug: true, xml, ref: clientData.ref });
-    //  // for test xml resepnse
-    //  // return reply.status(200).headers({ 'content-type': 'application/xml' }).send(xml);
-    // }
+    if (isDebug) {
+      request.log.info('Complaint submitted in debug mode');
+      //return reply.status(200).send({ success: true, debug: true, xml, ref: clientData.ref });
+      // for test xml resepnse
+      return reply.status(200).headers({ 'content-type': 'application/xml' }).send(xml);
+    }
 
     const response = await clientData.client.post(URL, formBody, {
       headers: {
         Accept: '*/*',
 
         'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        'Content-Length': Buffer.byteLength(formBody, 'utf8'),
         Origin: 'https://forms.gov.il',
         Referer: 'https://forms.gov.il/globaldata/getsequence/getHtmlForm.aspx?formType=PniotMot%40mot.gov.il',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',
       },
+      maxBodyLength: Infinity,
       timeout: 30000,
     });
 

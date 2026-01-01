@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js",
+    "dev": "nodemon --inspect --experimental-network-inspection index.js",
     "test": "npm run test:lint && npm run test:mocha && npm run test:coverage",
     "test:lint": "eslint . --max-warnings 0 && prettier . -c -u",
     "test:mocha": "mocha",
