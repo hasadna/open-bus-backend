@@ -17,9 +17,10 @@ describe('getReferenceNumber', () => {
   });
 
   it('should return the reference number', async () => {
-    get.resolves({ data: '<span id="ReferenceNumber">1234567</span>' });
+    get.resolves({ data: '<span id="ReferenceNumber">1234567</span><input id="_form_guid" value="test-guid">' });
     const result = await getReferenceNumber();
-    expect(result).to.equal('1234567');
+    expect(result.ref).to.equal('1234567');
+    expect(result.guid).to.equal('test-guid');
   });
 
   it('should return null if #ReferenceNumber not found', async () => {

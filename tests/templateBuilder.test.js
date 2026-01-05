@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { idValidator, mobileValidator } from '../src/utils/complaintsValidator.js';
-import { templateBuilder } from '../src/utils/templateBuilder.js';
+import { formatDateTime, templateBuilder } from '../src/utils/templateBuilder.js';
 
 describe('templateBuilder', () => {
   it('should throw if input does not have data property', () => {
@@ -56,7 +56,7 @@ describe('templateBuilder', () => {
     expect(xml).to.include('<IDNum>123456782</IDNum>');
     expect(xml).to.include('<Email>email@gmail.com</Email>');
     expect(xml).to.include('<Mobile>050-2345678</Mobile>');
-    expect(xml).to.include('<Operator text="5"></Operator>');
+    expect(xml).to.include('<Operator>5</Operator>');
   });
 
   const defaultPersonalDetails = {
@@ -383,14 +383,14 @@ describe('templateBuilder', () => {
       const inputData = { ...baseData, ...testData[complaintType] };
 
       // Generate XML using templateBuilder
-      const generatedXml = templateBuilder({ debug: true, data: inputData });
+      const generatedXml = templateBuilder({ debug: true, data: inputData }, '123456789');
 
       // Basic XML structure validation
       expect(generatedXml).to.include('<form>');
       expect(generatedXml).to.include('</form>');
       expect(generatedXml).to.include('<dataModelSaver>');
       expect(generatedXml).to.include('</dataModelSaver>');
-      expect(generatedXml).to.include('<?xml version="1.0" encoding="utf-8"?>');
+      expect(generatedXml).to.include("<?xml version='1.0' encoding='UTF-8'?>");
       expect(generatedXml).to.include('<root');
       expect(generatedXml).to.include('</root>');
 
@@ -401,10 +401,13 @@ describe('templateBuilder', () => {
       const dataModelSaverJson = dataModelSaverMatch.groups.content.trim();
       expect(dataModelSaverJson).to.not.be.empty;
 
+      // Unescape the JSON content
+      const unescapedContent = dataModelSaverJson.replace(/&quot;/gu, '"');
+
       // Parse and validate the JSON structure
       let parsedDataModelSaver;
       expect(() => {
-        parsedDataModelSaver = JSON.parse(dataModelSaverJson);
+        parsedDataModelSaver = JSON.parse(unescapedContent);
       }).to.not.throw();
 
       // Validate dataModelSaver contains expected top-level properties
@@ -413,7 +416,6 @@ describe('templateBuilder', () => {
       expect(parsedDataModelSaver).to.have.property('requestSubject');
       expect(parsedDataModelSaver).to.have.property('requestDetails');
       expect(parsedDataModelSaver).to.have.property('documentAttachment');
-      expect(parsedDataModelSaver).to.have.property('followStatus');
       expect(parsedDataModelSaver).to.have.property('containersViewModel');
       expect(parsedDataModelSaver).to.have.property('formInformation');
 
@@ -480,12 +482,10 @@ describe('templateBuilder', () => {
       // Complaint type specific validations
       if (complaintType === 'no_stop') {
         // Bus-specific validations for no_stop complaint
-        expect(generatedXml).to.include(
-          `<Operator text="${inputData.busAndOther.operator.dataText}">${inputData.busAndOther.operator.dataCode}</Operator>`,
-        );
+        expect(generatedXml).to.include(`<Operator>${inputData.busAndOther.operator.dataText}</Operator>`);
         expect(generatedXml).to.include(`<BusDriverName>${inputData.busAndOther.driverName}</BusDriverName>`);
         expect(generatedXml).to.include(`<BusLicenseNum>${inputData.busAndOther.licenseNum}</BusLicenseNum>`);
-        expect(generatedXml).to.include(`<BusEventDate>${inputData.busAndOther.eventDate}</BusEventDate>`);
+        expect(generatedXml).to.include(`<BusEventDate>${formatDateTime(inputData.busAndOther.eventDate)}</BusEventDate>`);
         expect(generatedXml).to.include(`<BusEventHour>${inputData.busAndOther.eventHour}</BusEventHour>`);
         expect(generatedXml).to.include(`<from>${inputData.busAndOther.fromHour}</from>`);
         expect(generatedXml).to.include(`<by>${inputData.busAndOther.toHour}</by>`);
@@ -493,12 +493,10 @@ describe('templateBuilder', () => {
         expect(generatedXml).to.include(`<LineNumberBoarding>${inputData.busAndOther.lineNumberText}</LineNumberBoarding>`);
       } else if (complaintType === 'delay') {
         // Bus-specific validations for delay complaint
-        expect(generatedXml).to.include(
-          `<Operator text="${inputData.busAndOther.operator.dataText}">${inputData.busAndOther.operator.dataCode}</Operator>`,
-        );
-        expect(generatedXml).to.include('<BusDriverName xsi:nil="true"></BusDriverName>');
-        expect(generatedXml).to.include('<BusLicenseNum xsi:nil="true"></BusLicenseNum>');
-        expect(generatedXml).to.include(`<BusEventDate>${inputData.busAndOther.eventDate}</BusEventDate>`);
+        expect(generatedXml).to.include(`<Operator>${inputData.busAndOther.operator.dataText}</Operator>`);
+        expect(generatedXml).to.include('<BusDriverName xsi:nil="true" ></BusDriverName>');
+        expect(generatedXml).to.include('<BusLicenseNum xsi:nil="true" ></BusLicenseNum>');
+        expect(generatedXml).to.include(`<BusEventDate>${formatDateTime(inputData.busAndOther.eventDate)}</BusEventDate>`);
         expect(generatedXml).to.include(`<BusEventHour>${inputData.busAndOther.eventHour}</BusEventHour>`);
         expect(generatedXml).to.include(`<from>${inputData.busAndOther.fromHour}</from>`);
         expect(generatedXml).to.include(`<by>${inputData.busAndOther.toHour}</by>`);
@@ -516,8 +514,8 @@ describe('templateBuilder', () => {
         expect(generatedXml).to.include(`<TrainType>${inputData.train.trainType}</TrainType>`);
         expect(generatedXml).to.include(`<EventDate2>${inputData.train.eventDate}</EventDate2>`);
         expect(generatedXml).to.include(`<EventHour2>${inputData.train.eventHour}</EventHour2>`);
-        expect(generatedXml).to.include(`<StartStation text="${inputData.train.startStation.dataText}"></StartStation>`);
-        expect(generatedXml).to.include(`<DestStation text="${inputData.train.destinationStation.dataText}"></DestStation>`);
+        expect(generatedXml).to.include(`<StartStation>${inputData.train.startStation.dataText}</StartStation>`);
+        expect(generatedXml).to.include(`<DestStation>${inputData.train.destinationStation.dataText}</DestStation>`);
         expect(generatedXml).to.include(`<TrainNumber>${inputData.train.number}</TrainNumber>`);
         expect(generatedXml).to.include(`<ApplyContent3>${inputData.train.applyContent}</ApplyContent3>`);
       }

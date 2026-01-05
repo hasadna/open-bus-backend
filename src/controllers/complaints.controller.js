@@ -45,9 +45,9 @@ export async function sendComplaint(request, reply) {
 
     if (isDebug) {
       request.log.info('Complaint submitted in debug mode');
-      //return reply.status(200).send({ success: true, debug: true, xml, ref: clientData.ref });
+      return reply.status(200).send({ success: true, debug: true, xml, ref: clientData.ref });
       // for test xml resepnse
-      return reply.status(200).headers({ 'content-type': 'application/xml' }).send(xml);
+      // return reply.status(200).headers({ 'content-type': 'application/xml' }).send(xml);
     }
 
     const controller = new AbortController();

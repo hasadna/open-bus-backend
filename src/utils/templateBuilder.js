@@ -118,7 +118,7 @@ const defualt = {
 };
 Object.freeze(defualt);
 
-function formatDateTime(dateTime) {
+export function formatDateTime(dateTime) {
   return new Date(dateTime).toLocaleDateString('en-GB');
 }
 
