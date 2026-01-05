@@ -1,4 +1,3 @@
-import axios from 'axios';
 import crypto from 'crypto';
 
 import { getReferenceNumber, templateBuilder } from '../utils/index.js';
@@ -19,7 +18,7 @@ export async function sendComplaint(request, reply) {
 
     request.log.info('Complaint submission started');
 
-    const clientData = isDebug ? { ref: '1234567', guid: 'test', client: axios } : await getReferenceNumber();
+    const clientData = isDebug ? { ref: '1234567', guid: 'test' } : await getReferenceNumber();
 
     if (clientData === null) return reply.status(500).send({ success: false, error: 'Failed to get reference number' });
 
