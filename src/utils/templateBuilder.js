@@ -238,7 +238,7 @@ export function templateBuilder(body, ref) {
 <BTSProcessID xsi:nil="true" ></BTSProcessID>
 ${buildXmlElement('ReferenceNumber', ref)}
 <StageStatus>UserToOffice</StageStatus>
-<dataModelSaver>${dataModelSaver}</dataModelSaver>
+${buildXmlElement('dataModelSaver', dataModelSaver)}
 <isMobile>false</isMobile>
 <DeviceType>PC</DeviceType>
 <FirstLoadingDate xsi:nil="true" ></FirstLoadingDate>
@@ -306,11 +306,11 @@ ${buildXmlElement('BoardingSettlement', fillData.requestDetails.busAndOther?.rai
 ${buildXmlElement('DropStaionAppeal', fillData.requestDetails.busAndOther?.destinationStationCity?.dataText)}
 ${buildXmlElement('Risestationaddress', fillData.requestDetails.busAndOther?.raisingStationAddress)}
 ${buildXmlElement('MakatStation', fillData.requestDetails.busAndOther?.makatStation)}
-${buildXmlElement('LineNumber', fillData.requestDetails.busAndOther?.lineNumberText)}
+${buildXmlElement('LineNumber', fillData.requestDetails.busAndOther?.lineNumberFromList?.dataCode)}
 ${buildXmlElement('BusDirectionFrom', fillData.requestDetails.busAndOther?.busDirectionFrom)}
 ${buildXmlElement('BusDirectionTo', fillData.requestDetails.busAndOther?.busDirectionTo)}
-${buildXmlElement('Testimony', fillData.requestDetails.busAndOther?.firstDeclaration)}
-${buildXmlElement('Courttestimony', fillData.requestDetails.busAndOther?.secondDeclaration)}
+${buildXmlElement('Testimony', fillData.requestDetails.busAndOther?.firstDeclaration || false)}
+${buildXmlElement('Courttestimony', fillData.requestDetails.busAndOther?.secondDeclaration || false)}
 ${buildXmlElement('CaseEssence', fillData.requestDetails.busAndOther?.applyContent)}
 ${buildXmlElement('OriginCityCode', fillData.requestDetails.busAndOther?.originCityCode)}
 ${buildXmlElement('OriginCityName', fillData.requestDetails.busAndOther?.originCityName)}
