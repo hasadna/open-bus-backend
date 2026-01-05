@@ -6,11 +6,10 @@ const URL = 'https://forms.gov.il/globaldata/getsequence/getHtmlForm.aspx?formTy
 export async function getReferenceNumber() {
   const { data: html } = await axios.get(URL);
   const dom = load(html);
-  const el = dom('#ReferenceNumber');
+  const ref = dom('#ReferenceNumber').text().trim();
+  const guid = dom('#_form_guid').val();
 
-  if (!el.length) {
-    return null;
-  }
+  if (!ref || !guid) return null;
 
-  return el.text().trim();
+  return { ref, guid };
 }
