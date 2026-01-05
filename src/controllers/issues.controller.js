@@ -1,4 +1,4 @@
-import axios from 'axios';
+import ky from 'ky';
 
 import { maskEmail } from '../utils/maskEmail.js';
 
@@ -47,25 +47,23 @@ export async function createIssue(request, reply) {
     const body = `## Contact Information\n**Contact Name:** ${contactName}\n**Contact Email:** ${maskedEmail}\n\n## Issue Details\n**Description:** \n${description}\n\n**Environment:** ${environment}\n\n**Expected Behavior:** \n${expectedBehavior}\n\n**Actual Behavior:** \n${actualBehavior}\n\n**Reproducibility:** ${reproducibility}\n\n${attachments && attachments.length > 0 ? `## Attachments\n${attachments.map((url) => `- ${url}`).join('\n')}` : ''}\n\n---\n*Issue created via API on ${new Date().toISOString()}*`;
     const labels = ['REPORTED-BY-USER'];
     // Create the GitHub issue
-    const response = await axios.post(
-      `https://api.github.com/repos/${repoOwner}/${repoName}/issues`,
-      { title, body, labels },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'User-Agent': 'OpenBus-Backend/1.0',
-        },
-        timeout: 30000,
+    const response = await ky.post(`https://api.github.com/repos/${repoOwner}/${repoName}/issues`, {
+      json: { title, body, labels },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'OpenBus-Backend/1.0',
       },
-    );
+      timeout: 30000,
+    });
+    const data = await response.json();
 
     request.log.info('GitHub issue created successfully', {
-      issueNumber: response.data.number,
-      issueId: response.data.id,
+      issueNumber: data.number,
+      issueId: data.id,
     });
 
-    return reply.status(200).send({ success: true, data: response.data });
+    return reply.status(200).send({ success: true, data });
   } catch (error) {
     request.log.error('GitHub issue creation failed', {
       error: error.message,
@@ -116,7 +114,7 @@ export async function createIssue(request, reply) {
     }
 
     // Handle timeout errors
-    if (error.code === 'ECONNABORTED') {
+    if (error.name === 'TimeoutError') {
       request?.log?.error?.('GitHub API request timeout');
       return reply.status(500).send({
         error: 'Request timeout',
@@ -125,8 +123,8 @@ export async function createIssue(request, reply) {
     }
 
     // Handle network errors
-    if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
-      request?.log?.error?.('GitHub API network error', { code: error.code });
+    if (error.name === 'TypeError') {
+      request?.log?.error?.('GitHub API network error', { name: error.name });
       return reply.status(500).send({
         error: 'Network error',
         message: 'Unable to connect to GitHub API',
