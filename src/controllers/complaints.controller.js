@@ -70,7 +70,7 @@ export async function sendComplaint(request, reply) {
     clearTimeout(timer);
 
     if (response.data === ERROR) {
-      return reply.status(500).send({ error: 'Government API error', message: response.data });
+      return reply.status(400).send({ error: 'Validation failed', message: 'Government API error' });
     }
 
     request.log.info('Complaint submitted successfully', { referenceNumber: clientData.ref, status: response.status });
