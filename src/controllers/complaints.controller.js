@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import ky from 'ky';
 
 import { getReferenceNumber, templateBuilder } from '../utils/index.js';
 
@@ -53,7 +54,7 @@ export async function sendComplaint(request, reply) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT);
 
-    const response = await fetch(URL, {
+    const response = await ky(URL, {
       body,
       method: 'POST',
       headers: {
@@ -64,17 +65,20 @@ export async function sendComplaint(request, reply) {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',
       },
       signal: controller.signal,
+      throwHttpErrors: false,
     });
 
     clearTimeout(timer);
 
-    if (response.data === ERROR) {
+    const text = await response.text();
+
+    if (text === ERROR) {
       return reply.status(400).send({ error: 'Validation failed', message: 'Government API error' });
     }
 
     request.log.info('Complaint submitted successfully', { referenceNumber: clientData.ref, status: response.status });
 
-    return reply.status(200).send({ success: true, debug: false, data: response.data, referenceNumber: clientData.ref });
+    return reply.status(200).send({ success: true, debug: false, data: text, referenceNumber: clientData.ref });
   } catch (error) {
     request.log.error('Complaint submission failed', { error: error.message, stack: error.stack, body: request.body });
     // Handle validation errors
@@ -82,13 +86,13 @@ export async function sendComplaint(request, reply) {
       return reply.status(400).send({ error: 'Validation failed', details: error.validation });
     }
 
-    // Handle axios errors
+    // Handle ky errors
     if (error.response) {
       return reply.status(500).send({ error: 'Government API error', message: `Status: ${error.response.status} - ${error.response.statusText}` });
     }
 
     // Handle timeout errors
-    if (error.code === 'ECONNABORTED') {
+    if (error.name === 'AbortError') {
       return reply.status(500).send({ error: 'Request timeout', message: 'The government API request timed out' });
     }
 

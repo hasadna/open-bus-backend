@@ -52,16 +52,18 @@ export function createMockRequest(body = {}, params = {}, query = {}) {
  * @param {string} state - Issue state
  */
 export function createMockGitHubResponse(id = 123, title = 'Test Issue', state = 'open') {
+  const data = {
+    created_at: new Date().toISOString(),
+    html_url: `https://github.com/test/repo/issues/${id}`,
+    id,
+    number: id,
+    state,
+    title,
+    updated_at: new Date().toISOString(),
+  };
   return {
-    data: {
-      created_at: new Date().toISOString(),
-      html_url: `https://github.com/test/repo/issues/${id}`,
-      id,
-      number: id,
-      state,
-      title,
-      updated_at: new Date().toISOString(),
-    },
+    data,
+    json: () => Promise.resolve(data),
   };
 }
 

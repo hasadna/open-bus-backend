@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { expect } from 'chai';
+import ky from 'ky';
 import sinon from 'sinon';
 
 import { getReferenceNumber } from '../src/utils/getReferenceNumber.js';
@@ -9,7 +9,7 @@ describe('getReferenceNumber', () => {
   let get;
 
   beforeEach(() => {
-    get = sinon.stub(axios, 'get');
+    get = sinon.stub(ky, 'get');
   });
 
   afterEach(() => {
@@ -17,14 +17,14 @@ describe('getReferenceNumber', () => {
   });
 
   it('should return the reference number', async () => {
-    get.resolves({ data: '<span id="ReferenceNumber">1234567</span><input id="_form_guid" value="test-guid">' });
+    get.resolves({ text: () => Promise.resolve('<span id="ReferenceNumber">1234567</span><input id="_form_guid" value="test-guid">') });
     const result = await getReferenceNumber();
     expect(result.ref).to.equal('1234567');
     expect(result.guid).to.equal('test-guid');
   });
 
   it('should return null if #ReferenceNumber not found', async () => {
-    get.resolves({ data: '<div>No ref</div>' });
+    get.resolves({ text: () => Promise.resolve('<div>No ref</div>') });
     const result = await getReferenceNumber();
     expect(result).to.be.null;
   });

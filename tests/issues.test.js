@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { expect } from 'chai';
+import ky from 'ky';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 
@@ -25,7 +25,7 @@ describe('createIssue', () => {
     });
 
     reply = createMockReply();
-    post = sinon.stub(axios, 'post');
+    post = sinon.stub(ky, 'post');
     setupGitHubEnv();
   });
 
@@ -38,7 +38,7 @@ describe('createIssue', () => {
 
     post.resolves(mockResponse);
 
-    await createIssue(request, reply, axios);
+    await createIssue(request, reply);
 
     expect(reply.sendCalledWith.success).to.equal(true);
     expect(reply.sendCalledWith.data).to.deep.equal(mockResponse.data);
@@ -52,7 +52,7 @@ describe('createIssue', () => {
     error.code = undefined;
     post.rejects(error);
 
-    await createIssue(request, reply, axios);
+    await createIssue(request, reply);
 
     expect(reply.statusCalledWith).to.equal(500);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -66,7 +66,7 @@ describe('createIssue', () => {
 
     post.rejects(error);
 
-    await createIssue(request, reply, axios);
+    await createIssue(request, reply);
 
     expect(reply.statusCalledWith).to.equal(401);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -80,18 +80,18 @@ describe('createIssue', () => {
 
     post.resolves(mockResponse);
 
-    await createIssue(request, reply, axios);
+    await createIssue(request, reply);
 
     expect(post.calledOnce).to.be.true;
 
-    const [url, payload, config] = post.firstCall.args;
+    const [url, options] = post.firstCall.args;
 
     expect(url).to.equal('https://api.github.com/repos/fake-owner/fake-repo/issues');
-    expect(payload.title).to.equal('Test Issue');
-    expect(payload.labels).to.deep.equal(['REPORTED-BY-USER']);
-    expect(payload.body).to.include('**Contact Name:** John Doe');
-    expect(config.headers.Authorization).to.equal('Bearer fake-token');
-    expect(config.headers['Content-Type']).to.equal('application/json');
+    expect(options.json.title).to.equal('Test Issue');
+    expect(options.json.labels).to.deep.equal(['REPORTED-BY-USER']);
+    expect(options.json.body).to.include('**Contact Name:** John Doe');
+    expect(options.headers.Authorization).to.equal('Bearer fake-token');
+    expect(options.headers['Content-Type']).to.equal('application/json');
   });
 
   it('should work with missing optional fields', async () => {
@@ -105,7 +105,7 @@ describe('createIssue', () => {
 
     post.resolves(mockResponse);
 
-    await createIssue(request, reply, axios);
+    await createIssue(request, reply);
 
     expect(reply.sendCalledWith).to.have.property('success', true);
     expect(reply.sendCalledWith.data).to.have.property('id', 123);
@@ -118,7 +118,7 @@ describe('createIssue', () => {
       GITHUB_TOKEN: undefined,
     });
 
-    await createIssue(request, reply, axios);
+    await createIssue(request, reply);
 
     expect(reply.sendCalledWith).to.deep.equal({
       error: 'Configuration error',
@@ -131,7 +131,7 @@ describe('createIssue', () => {
 
     post.rejects(error);
 
-    await createIssue(request, reply, axios);
+    await createIssue(request, reply);
 
     expect(reply.statusCalledWith).to.equal(500);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -145,7 +145,7 @@ describe('createIssue', () => {
 
     post.rejects(error);
 
-    await createIssue(request, reply, axios);
+    await createIssue(request, reply);
 
     expect(reply.statusCalledWith).to.equal(400);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -157,10 +157,10 @@ describe('createIssue', () => {
   it('should handle network timeout errors', async () => {
     const error = new Error('timeout of 30000ms exceeded');
 
-    error.code = 'ECONNABORTED';
+    error.name = 'TimeoutError';
     post.rejects(error);
 
-    await createIssue(request, reply, axios);
+    await createIssue(request, reply);
 
     expect(reply.statusCalledWith).to.equal(500);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -172,10 +172,10 @@ describe('createIssue', () => {
   it('should handle network connection errors', async () => {
     const error = new Error('getaddrinfo ENOTFOUND api.github.com');
 
-    error.code = 'ENOTFOUND';
+    error.name = 'TypeError';
     post.rejects(error);
 
-    await createIssue(request, reply, axios);
+    await createIssue(request, reply);
 
     expect(reply.statusCalledWith).to.equal(500);
     expect(reply.sendCalledWith).to.deep.equal({
@@ -189,17 +189,17 @@ describe('createIssue', () => {
 
     post.resolves(mockResponse);
 
-    await createIssue(request, reply, axios);
+    await createIssue(request, reply);
 
-    const [, payload] = post.firstCall.args;
+    const [, options] = post.firstCall.args;
 
-    expect(payload.body).to.include('**Contact Email:** joh*@example.com');
+    expect(options.json.body).to.include('**Contact Email:** joh*@example.com');
   });
 
   it('should return fake data when debug is true', async () => {
     request.body.debug = true;
 
-    await createIssue(request, reply, axios);
+    await createIssue(request, reply);
 
     expect(reply.statusCalledWith).to.equal(200);
     expect(reply.sendCalledWith.success).to.be.true;
