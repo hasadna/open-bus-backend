@@ -118,7 +118,7 @@ export const getSubjectsSchema = {
 export const getTrainStationsSchema = {
   tags: ['Government Transportation'],
   summary: 'Get train stations',
-  description: 'Retrieve train stations by station type\n7 - Israel Train\n4 - Kfir Light Train\n13 - Tevel Ligh Train',
+  description: 'Retrieve train stations by station type\n7 - Israel Train\n4 - Kfir Light Train\n18 - Tevel Ligh Train',
   body: S.object().prop('StationTypeId', stationTypeId()).required(['StationTypeId']),
   response: {
     200: commonSuccessResponse(S.array().items(S.ref('StationModel'))),
