@@ -1,4 +1,4 @@
-import { govRequest } from '../utils/govRequest.js';
+import { GovRequest } from '../utils/govRequest.js';
 
 /**
  * Formats a Date object into a string in the format 'DD/MM/YYYY'.
@@ -23,8 +23,8 @@ export async function getLinesByStation(request, reply) {
     const { EventDate, OperatorId, StationId } = request.body;
     const date = formatDate(new Date(EventDate));
     request.log.info('Getting lines by station', { EventDate: date, OperatorId, StationId });
-    const response = await govRequest.post('/trafficLicensing/GetLines', { EventDate: date, OperatorId, StationId });
-    return reply.status(200).send({ data: response.data.Data, success: true });
+    const response = await GovRequest.post('/trafficLicensing/GetLines', { EventDate: date, OperatorId, StationId });
+    return reply.status(200).send({ data: response.Data, success: true });
   } catch (error) {
     request.log.error('Error getting lines by station', { body: request.body, error: error.message });
     if (error.response) {
@@ -47,13 +47,13 @@ export async function getStationByLine(request, reply) {
     const { EventDate, OperatorId, OfficelineId, Directions } = request.body;
     const date = formatDate(new Date(EventDate));
     request.log.info('Getting stations by line', { EventDate: date, OfficelineId, OperatorId, Directions });
-    const response = await govRequest.post('/trafficLicensing/GetStationToLine', {
+    const response = await GovRequest.post('/trafficLicensing/GetStationToLine', {
       EventDate: date,
       OperatorId,
       OfficelineId,
       Directions: [Directions],
     });
-    return reply.status(200).send({ data: response.data.Data, success: true });
+    return reply.status(200).send({ data: response.Data, success: true });
   } catch (error) {
     request.log.error('Error getting stations by line', { body: request.body, error: error.message });
     if (error.response) {
@@ -74,8 +74,8 @@ export async function getStationByLine(request, reply) {
 export async function getSubjects(request, reply) {
   try {
     request.log.info('Getting subjects');
-    const response = await govRequest.post('/ListProvider/GetList', { listName: 'subject_type_vehicles' });
-    return reply.status(200).send({ data: response.data.Data.List, success: true });
+    const response = await GovRequest.post('/ListProvider/GetList', { listName: 'subject_type_vehicles' });
+    return reply.status(200).send({ data: response.Data.List, success: true });
   } catch (error) {
     request.log.error('Error getting subjects', { body: request.body, error: error.message });
     if (error.response) {
@@ -97,8 +97,8 @@ export async function getTrainStations(request, reply) {
   try {
     const { StationTypeId } = request.body;
     request.log.info('Getting train stations', { StationTypeId });
-    const response = await govRequest.post('/trafficLicensing/GetTrainStations', { StationTypeId });
-    return reply.status(200).send({ data: response.data.Data, success: true });
+    const response = await GovRequest.post('/trafficLicensing/GetTrainStations', { StationTypeId });
+    return reply.status(200).send({ data: response.Data, success: true });
   } catch (error) {
     request.log.error('Error getting train stations', { body: request.body, error: error.message });
     if (error.response) {
@@ -119,8 +119,8 @@ export async function getTrainStations(request, reply) {
 export async function getPniya(request, reply) {
   try {
     request.log.info('Getting pniya');
-    const response = await govRequest.post('/ListProvider/GetList', { listName: 'pniya' });
-    return reply.status(200).send({ data: response.data.Data.List, success: true });
+    const response = await GovRequest.post('/ListProvider/GetList', { listName: 'pniya' });
+    return reply.status(200).send({ data: response.Data.List, success: true });
   } catch (error) {
     request.log.error('Error getting pniya', { body: request.body, error: error.message });
     if (error.response) {
@@ -141,8 +141,8 @@ export async function getPniya(request, reply) {
 export async function getNotRealNumbers(request, reply) {
   try {
     request.log.info('Getting not real numbers');
-    const response = await govRequest.post('/ListProvider/GetList', { listName: 'notrealnumbers' });
-    return reply.status(200).send({ data: response.data.Data.List, success: true });
+    const response = await GovRequest.post('/ListProvider/GetList', { listName: 'notrealnumbers' });
+    return reply.status(200).send({ data: response.Data.List, success: true });
   } catch (error) {
     request.log.error('Error getting not real numbers', { body: request.body, error: error.message });
     if (error.response) {
@@ -165,8 +165,8 @@ export async function getLinesByLine(request, reply) {
     const { EventDate, OperatorId, OperatorLineId } = request.body;
     const date = formatDate(new Date(EventDate));
     request.log.info('Getting lines by line ID', { EventDate: date, OperatorId, OperatorLineId });
-    const response = await govRequest.post('/trafficLicensing/GetLines', { EventDate: date, OperatorId, OperatorLineId });
-    return reply.status(200).send({ data: response.data.Data, success: true });
+    const response = await GovRequest.post('/trafficLicensing/GetLines', { EventDate: date, OperatorId, OperatorLineId });
+    return reply.status(200).send({ data: response.Data, success: true });
   } catch (error) {
     request.log.error('Error getting lines by line ID', { body: request.body, error: error.message });
     if (error.response) {
@@ -187,8 +187,8 @@ export async function getLinesByLine(request, reply) {
 export async function getCities(request, reply) {
   try {
     request.log.info('Getting cities');
-    const response = await govRequest.post('/trafficLicensing/GetCities');
-    return reply.status(200).send({ data: response.data.Data, success: true });
+    const response = await GovRequest.post('/trafficLicensing/GetCities');
+    return reply.status(200).send({ data: response.Data, success: true });
   } catch (error) {
     request.log.error('Error getting cities', { error: error.message });
 
@@ -211,8 +211,8 @@ export async function getCities(request, reply) {
 export async function getOperators(request, reply) {
   try {
     request.log.info('Getting operators');
-    const response = await govRequest.post('/trafficLicensing/GetOperators');
-    return reply.status(200).send({ data: response.data.Data, success: true });
+    const response = await GovRequest.post('/trafficLicensing/GetOperators');
+    return reply.status(200).send({ data: response.Data, success: true });
   } catch (error) {
     request.log.error('Error getting operators', { error: error.message });
 
@@ -236,8 +236,8 @@ export async function getTime(request, reply) {
   try {
     request.log.info('Getting current time');
     const timestamp = Date.now();
-    const response = await govRequest.get(`/TSA/GetTime?_=${timestamp}`);
-    return reply.status(200).send({ data: { serverTime: response.data }, success: true });
+    const response = await GovRequest.get(`/TSA/GetTime?_=${timestamp}`);
+    return reply.status(200).send({ data: { serverTime: response }, success: true });
   } catch (error) {
     request.log.error('Error getting current time', { error: error.message });
     if (error.response) {
