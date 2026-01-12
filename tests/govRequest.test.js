@@ -2,10 +2,10 @@ import { expect } from 'chai';
 import ky from 'ky';
 import sinon from 'sinon';
 
-import { govRequest } from '../src/utils/govRequest.js';
+import { GovRequest } from '../src/utils/govRequest.js';
 import { cleanup } from './test.utils.js';
 
-describe('govRequest', () => {
+describe('GovRequest', () => {
   let getStub;
   let postStub;
 
@@ -26,25 +26,25 @@ describe('govRequest', () => {
       const responseData = { foo: 'bar' };
       getStub.resolves({ json: () => Promise.resolve(responseData) });
 
-      const result = await govRequest.get(endpoint, options);
+      const result = await GovRequest.get(endpoint, options);
       expect(getStub.calledOnceWithExactly(expectedUrl, { timeout: 10000 })).to.be.true;
-      expect(await result.json()).to.deep.equal(responseData);
+      expect(result).to.deep.equal(responseData);
     });
 
     it('should use globalOptions if no options provided', async () => {
       const endpoint = '/test-get';
       const expectedUrl = 'https://esb.gov.il/govServiceList/test-get';
       getStub.resolves({ json: () => Promise.resolve('ok') });
-      await govRequest.get(endpoint);
+      await GovRequest.get(endpoint);
       expect(getStub.calledOnceWithExactly(expectedUrl, { timeout: 30000 })).to.be.true;
     });
 
-    it('should throw error if axios.get rejects', async () => {
+    it('should throw error if ky.get rejects', async () => {
       const endpoint = '/test-get';
       const error = new Error('Network error');
       getStub.rejects(error);
       try {
-        await govRequest.get(endpoint);
+        await GovRequest.get(endpoint);
         throw new Error('Should have thrown');
       } catch (err) {
         expect(err).to.equal(error);
@@ -61,9 +61,9 @@ describe('govRequest', () => {
       const responseData = { baz: 'qux' };
       postStub.resolves({ json: () => Promise.resolve(responseData) });
 
-      const result = await govRequest.post(endpoint, data, options);
+      const result = await GovRequest.post(endpoint, data, options);
       expect(postStub.calledOnceWithExactly(expectedUrl, { json: data, timeout: 5000 })).to.be.true;
-      expect(await result.json()).to.deep.equal(responseData);
+      expect(result).to.deep.equal(responseData);
     });
 
     it('should use globalOptions if no options provided', async () => {
@@ -71,17 +71,17 @@ describe('govRequest', () => {
       const data = { foo: 'bar' };
       const expectedUrl = 'https://esb.gov.il/govServiceList/test-post';
       postStub.resolves({ json: () => Promise.resolve('ok') });
-      await govRequest.post(endpoint, data);
+      await GovRequest.post(endpoint, data);
       expect(postStub.calledOnceWithExactly(expectedUrl, { json: data, timeout: 30000 })).to.be.true;
     });
 
-    it('should throw error if axios.post rejects', async () => {
+    it('should throw error if ky.post rejects', async () => {
       const endpoint = '/test-post';
       const data = { foo: 'bar' };
       const error = new Error('Network error');
       postStub.rejects(error);
       try {
-        await govRequest.post(endpoint, data);
+        await GovRequest.post(endpoint, data);
         throw new Error('Should have thrown');
       } catch (err) {
         expect(err).to.equal(error);
