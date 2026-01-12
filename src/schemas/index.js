@@ -12,7 +12,7 @@ export const commonSuccessResponse = (itemsSchema) =>
 export const dataCodeModel = S.object()
   .id('DataCodeModel')
   .prop('dataText', S.anyOf([S.string(), S.null()]))
-  .prop('dataCode', S.anyOf([S.string(), S.number(), S.null()]));
+  .prop('dataCode', S.anyOf([S.number(), S.null()]));
 
 export const toggle = S.string().id('ToggleModel').enum(['1', '2']);
 
