@@ -53,7 +53,6 @@ export async function sendComplaint(request, reply) {
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT);
-
     const response = await ky(URL, {
       body,
       method: 'POST',

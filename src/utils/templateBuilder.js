@@ -237,7 +237,7 @@ export function templateBuilder(body, ref) {
 <BTSProcessID xsi:nil="true" ></BTSProcessID>
 ${buildXmlElement('ReferenceNumber', ref)}
 <StageStatus>UserToOffice</StageStatus>
-${buildXmlElement('dataModelSaver', escapeXml(fillData))}
+ ${buildXmlElement('dataModelSaver', escapeXml(JSON.stringify(fillData)))}
 <isMobile>false</isMobile>
 <DeviceType>PC</DeviceType>
 <FirstLoadingDate xsi:nil="true" ></FirstLoadingDate>
