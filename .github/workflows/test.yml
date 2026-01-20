@@ -82,7 +82,7 @@ jobs:
   comment-pr:
     name: Comment on PR
     needs: mocha-test
-    if: ${{ ! cancelled() }}
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - name: Comment on PR
