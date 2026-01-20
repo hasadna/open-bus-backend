@@ -82,6 +82,7 @@ jobs:
   comment-pr:
     name: Comment on PR
     needs: mocha-test
+    if: needs.mocha-test.result != 'cancelled'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
