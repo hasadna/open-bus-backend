@@ -75,8 +75,9 @@ jobs:
         with:
           artifact: test-results
           name: Mocha Tests
-          path: 'test-results.json'
+          path: 'reports/test-results.json'
           reporter: mocha-json
+          comment-on: always
 
   coverage-test:
     name: Test Whit Coverage
