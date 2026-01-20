@@ -82,7 +82,7 @@ jobs:
   comment-pr:
     name: Comment on PR
     needs: mocha-test
-    if: always() && needs.mocha-test.result != 'cancelled' && github.event.repository.fork == false && github.actor != 'dependabot[bot]'
+    if: ${{ (success() || failure()) && github.event.repository.fork == false && github.actor != 'dependabot[bot]'}}
     runs-on: ubuntu-latest
     steps:
       - name: Comment on PR
