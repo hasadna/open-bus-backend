@@ -82,7 +82,7 @@ jobs:
   comment-pr:
     name: Comment on PR
     needs: mocha-test
-    if: needs.mocha-test.result != 'cancelled'
+    if: ${{ ! cancelled() }}
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -93,8 +93,7 @@ jobs:
           token: ${{ github.token }}
           header: test-results
           message: |
-            **Test Results**
-            [Open run](https://github.com/hasadna/open-bus-backend/actions/runs/${{ github.run_id }})
+            **Test Results: ** [Open Results!](https://github.com/hasadna/open-bus-backend/actions/runs/${{ github.run_id }})
 
   coverage-test:
     name: Test Whit Coverage
