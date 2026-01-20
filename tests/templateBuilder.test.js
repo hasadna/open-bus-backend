@@ -327,7 +327,7 @@ describe('templateBuilder', () => {
         taxiType: '2',
         licenseNum: '321132132',
         cap: '231321211',
-        eventDate: '2025-10-23',
+        eventDate: '2025-10-28',
         eventHour: '03:33',
         eventLocation: 'תל',
         firstDeclaration: true,
@@ -546,8 +546,8 @@ describe('formatDateTime', () => {
   });
 
   it('should format valid ISO date to DD/MM/YYYY', () => {
-    expect(formatDateTime('2025-10-23')).to.equal('23/10/2025');
-    expect(formatDateTime('2025-10-23T23:00:00Z')).to.equal('24/10/2025');
+    expect(formatDateTime('2025-10-28')).to.equal('28/10/2025');
+    expect(formatDateTime('2025-10-27T23:00:00Z')).to.equal('28/10/2025');
   });
 });
 
