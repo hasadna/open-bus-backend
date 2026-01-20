@@ -10,6 +10,7 @@ permissions:
   contents: read
   actions: write
   checks: write
+  pull-requests: write
 
 jobs:
   lint-test:
@@ -71,11 +72,26 @@ jobs:
           path: 'reports/test-results.json'
 
       - uses: dorny/test-reporter@v2
+        if: always()
         with:
           artifact: test-results
           name: Mocha Tests
           path: 'test-results.json'
           reporter: mocha-json
+
+  comment-pr:
+    name: Comment on PR
+    needs: mocha-test
+    if: ${{ (success() || failure()) && github.event.pull_request.head.repo.full_name == github.repository}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment on PR
+        uses: marocchino/sticky-pull-request-comment@v2.9.4
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+          header: test-results
+          message: |
+            **Test Results: ** [Open Results!](https://github.com/hasadna/open-bus-backend/actions/runs/${{ github.run_id }})
 
   coverage-test:
     name: Test Whit Coverage
