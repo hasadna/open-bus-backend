@@ -118,14 +118,20 @@ const defaultTemplate = {
 };
 Object.freeze(defaultTemplate);
 
+const formatted = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Asia/Jerusalem',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
 export function formatDateTime(dateTime) {
   const date = new Date(dateTime);
   if (isNaN(date.getTime())) {
     throw new Error(`Invalid date: ${dateTime}`);
   }
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year = date.getFullYear();
+  const format = formatted.format(date);
+  const [month, day, year] = format.split('/');
   return `${day}/${month}/${year}`;
 }
 
