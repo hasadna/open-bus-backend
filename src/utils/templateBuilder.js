@@ -119,7 +119,14 @@ const defaultTemplate = {
 Object.freeze(defaultTemplate);
 
 export function formatDateTime(dateTime) {
-  return new Date(dateTime).toLocaleDateString('en-GB');
+  const date = new Date(dateTime);
+  if (isNaN(date.getTime())) {
+    throw new Error(`Invalid date: ${dateTime}`);
+  }
+  const day = date.getUTCDate().toString().padStart(2, '0');
+  const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+  const year = date.getUTCFullYear();
+  return `${day}/${month}/${year}`;
 }
 
 function fillTemplate(template, data = {}) {

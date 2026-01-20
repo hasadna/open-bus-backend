@@ -190,7 +190,7 @@ describe('templateBuilder', () => {
         addOrRemoveStation: '2',
         driverName: 'שם נהג',
         licenseNum: '11111111',
-        eventDate: '28/10/2025',
+        eventDate: '2025-10-28',
         eventHour: '08:00',
         fromHour: '07:00',
         toHour: '09:00',
@@ -260,7 +260,7 @@ describe('templateBuilder', () => {
           dataText: 'אגד',
         },
         addOrRemoveStation: '2',
-        eventDate: '28/10/2025',
+        eventDate: '2025-10-28',
         eventHour: '08:00',
         fromHour: '07:00',
         toHour: '09:00',
@@ -327,7 +327,7 @@ describe('templateBuilder', () => {
         taxiType: '2',
         licenseNum: '321132132',
         cap: '231321211',
-        eventDate: '23/10/2025',
+        eventDate: '2025-10-23',
         eventHour: '03:33',
         eventLocation: 'תל',
         firstDeclaration: true,
@@ -357,7 +357,7 @@ describe('templateBuilder', () => {
       },
       train: {
         trainType: '1',
-        eventDate: '28/10/2025',
+        eventDate: '2025-10-28',
         eventHour: '08:00',
         startStation: {
           dataCode: '',
@@ -448,7 +448,7 @@ describe('templateBuilder', () => {
         expect(parsedDataModelSaver.requestDetails.taxi).to.have.property('taxiType', inputData.taxi.taxiType);
       } else if (complaintType === 'train') {
         expect(parsedDataModelSaver.requestDetails.train).to.have.property('trainType', inputData.train.trainType);
-        expect(parsedDataModelSaver.requestDetails.train).to.have.property('eventDate', inputData.train.eventDate);
+        expect(parsedDataModelSaver.requestDetails.train).to.have.property('eventDate', formatDateTime(inputData.train.eventDate));
         expect(parsedDataModelSaver.requestDetails.train).to.have.property('eventHour', inputData.train.eventHour);
         expect(parsedDataModelSaver.requestDetails.train).to.have.property('startStation');
         expect(parsedDataModelSaver.requestDetails.train.startStation).to.have.property('dataText', inputData.train.startStation.dataText);
@@ -512,7 +512,7 @@ describe('templateBuilder', () => {
       } else if (complaintType === 'train') {
         // Train-specific validations
         expect(generatedXml).to.include(`<TrainType>${inputData.train.trainType}</TrainType>`);
-        expect(generatedXml).to.include(`<EventDate2>${inputData.train.eventDate}</EventDate2>`);
+        expect(generatedXml).to.include(`<EventDate2>${formatDateTime(inputData.train.eventDate)}</EventDate2>`);
         expect(generatedXml).to.include(`<EventHour2>${inputData.train.eventHour}</EventHour2>`);
         expect(generatedXml).to.include(`<StartStation>${inputData.train.startStation.dataText}</StartStation>`);
         expect(generatedXml).to.include(`<DestStation>${inputData.train.destinationStation.dataText}</DestStation>`);
@@ -537,6 +537,17 @@ describe('templateBuilder', () => {
       expect(generatedXml).to.include('<Testimony>false</Testimony>');
       expect(generatedXml).to.include('<Courttestimony>false</Courttestimony>');
     });
+  });
+});
+
+describe('formatDateTime', () => {
+  it('should throw on invalid date', () => {
+    expect(() => formatDateTime('invalid')).to.throw('Invalid date: invalid');
+  });
+
+  it('should format valid ISO date to DD/MM/YYYY', () => {
+    expect(formatDateTime('2025-10-23')).to.equal('23/10/2025');
+    expect(formatDateTime('2025-10-23T23:00:00Z')).to.equal('23/10/2025');
   });
 });
 
