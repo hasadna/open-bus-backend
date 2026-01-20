@@ -91,7 +91,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           header: test-results
           message: |
-            **Test Results:** [Open Results!](https://github.com/hasadna/open-bus-backend/actions/runs/${{ github.run_id }})#user-content-r0
+            **Test Results:** [Open Results!](https://github.com/hasadna/open-bus-backend/actions/runs/${{ github.run_id }}#user-content-r0)
 
   coverage-test:
     name: Test Whit Coverage
