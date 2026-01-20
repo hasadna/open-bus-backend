@@ -19,7 +19,7 @@ describe('getReferenceNumber', () => {
   it('should return the reference number', async () => {
     get.resolves({ text: () => Promise.resolve('<span id="ReferenceNumber">1234567</span><input id="_form_guid" value="test-guid">') });
     const result = await getReferenceNumber();
-    expect(result.ref).to.equal('123456711');
+    expect(result.ref).to.equal('1234567');
     expect(result.guid).to.equal('test-guid');
   });
 
