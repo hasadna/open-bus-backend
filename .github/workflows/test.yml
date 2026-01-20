@@ -1,15 +1,15 @@
 name: Tests
 
 on:
-  push:
+  pull_request_target:
     branches: [main]
-  pull_request:
-    branches: [main]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
   actions: write
   checks: write
+  pull-requests: write
 
 jobs:
   lint-test:
@@ -84,8 +84,6 @@ jobs:
     needs: mocha-test
     if: ${{ ! cancelled() }}
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
     steps:
       - name: Comment on PR
         uses: marocchino/sticky-pull-request-comment@v2.9.4
