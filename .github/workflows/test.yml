@@ -75,7 +75,7 @@ jobs:
         with:
           artifact: test-results
           name: Mocha Tests
-          path: 'reports/test-results.json'
+          path: 'test-results.json'
           reporter: mocha-json
 
   coverage-test:
