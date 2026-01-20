@@ -70,14 +70,30 @@ jobs:
         with:
           name: test-results
           path: 'reports/test-results.json'
-      - uses: dorny/test-reporter@v2
+
+      - uses: dorny/test-reporter@v2.5.0
         if: always()
         with:
           artifact: test-results
           name: Mocha Tests
-          path: 'reports/test-results.json'
+          path: 'test-results.json'
           reporter: mocha-json
-          comment-on: always
+
+  comment-pr:
+    name: Comment on PR
+    needs: mocha-test
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Comment on PR
+        uses: marocchino/sticky-pull-request-comment@v2.9.4
+        with:
+          token: ${{ github.token }}
+          header: test-results
+          message: |
+            **Test Results**
+            [Open run](https://github.com/hasadna/open-bus-backend/actions/runs/${{ github.run_id }})
 
   coverage-test:
     name: Test Whit Coverage
