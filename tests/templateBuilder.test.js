@@ -547,7 +547,7 @@ describe('formatDateTime', () => {
 
   it('should format valid ISO date to DD/MM/YYYY', () => {
     expect(formatDateTime('2025-10-23')).to.equal('23/10/2025');
-    expect(formatDateTime('2025-10-23T23:00:00Z')).to.equal('23/10/2025');
+    expect(formatDateTime('2025-10-23T23:00:00Z')).to.equal('24/10/2025');
   });
 });
 

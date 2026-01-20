@@ -123,9 +123,9 @@ export function formatDateTime(dateTime) {
   if (isNaN(date.getTime())) {
     throw new Error(`Invalid date: ${dateTime}`);
   }
-  const day = date.getUTCDate().toString().padStart(2, '0');
-  const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
-  const year = date.getUTCFullYear();
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
   return `${day}/${month}/${year}`;
 }
 
