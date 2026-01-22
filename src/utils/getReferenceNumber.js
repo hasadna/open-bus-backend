@@ -1,16 +1,30 @@
-import { load } from 'cheerio';
 import ky from 'ky';
 
-const URL = 'https://forms.gov.il/globaldata/getsequence/getHtmlForm.aspx?formType=PniotMot%40mot.gov.il';
-
+/**
+ * Fetches a reference number and GUID from the API.
+ * @returns {Promise<{ref: string, guid: string}>} Promise resolving to an object with ref and guid.
+ * @throws {Error} If credentials are missing, HTTP request fails, or JSON parsing fails.
+ */
 export async function getReferenceNumber() {
-  const response = await ky.get(URL);
-  const html = await response.text();
-  const dom = load(html);
-  const ref = dom('#ReferenceNumber').text().trim();
-  const guid = dom('#_form_guid').val();
+  if (!process.env.AWS_API_KEY || !process.env.AWS_APP_ID) {
+    throw new Error('Missing AWS credentials');
+  }
 
-  if (!ref || !guid) return null;
-
-  return { ref, guid };
+  try {
+    const url = `https://${process.env.AWS_APP_ID}.execute-api.us-east-1.amazonaws.com/prod/hello`;
+    const response = await ky.get(url, {
+      headers: { 'x-api-key': process.env.AWS_API_KEY },
+      timeout: 30000,
+    });
+    if (!response.ok) {
+      throw new Error('Failed to get Reference Number');
+    }
+    const data = await response.json();
+    if (!data.ref || !data.guid) {
+      return null;
+    }
+    return data;
+  } catch (error) {
+    throw new Error('Failed to get Reference Number', { cause: error });
+  }
 }

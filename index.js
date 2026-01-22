@@ -1,4 +1,6 @@
 // External dependencies
+import 'dotenv/config';
+
 import { createServer } from './src/config/index.js';
 import { globalErrorHandler, notFoundHandler } from './src/middleware/index.js';
 import { registerRoutes } from './src/routes/index.js';
