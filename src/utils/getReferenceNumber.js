@@ -11,7 +11,7 @@ export async function getReferenceNumber() {
   }
 
   try {
-    const url = `https://${process.env.AWS_APP_ID}.execute-api.us-east-1.amazonaws.com/prod/hello`;
+    const url = `https://${process.env.AWS_APP_ID}.execute-api.us-east-1.amazonaws.com/prod`;
     const response = await ky.get(url, {
       headers: { 'x-api-key': process.env.AWS_API_KEY },
       timeout: 30000,
