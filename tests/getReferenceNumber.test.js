@@ -12,12 +12,14 @@ describe('getReferenceNumber', () => {
     getStub = sinon.stub(ky, 'get');
     process.env.AWS_API_KEY = 'test-key';
     process.env.AWS_APP_ID = 'test-app';
+    process.env.AWS_REGION = 'test-region';
   });
 
   afterEach(() => {
     cleanup();
     delete process.env.AWS_API_KEY;
     delete process.env.AWS_APP_ID;
+    delete process.env.AWS_REGION;
   });
 
   it('should return the reference number', async () => {
