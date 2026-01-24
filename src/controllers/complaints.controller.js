@@ -21,8 +21,6 @@ export async function sendComplaint(request, reply) {
 
     const clientData = isDebug ? { ref: '1234567', guid: 'test' } : await getReferenceNumber();
 
-    if (clientData === null) return reply.status(500).send({ success: false, error: 'Failed to get reference number' });
-
     const xml = templateBuilder(request.body, clientData.ref);
 
     const boundary = `----WebKitFormBoundary${crypto.randomBytes(16).toString('hex')}`;
