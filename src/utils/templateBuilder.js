@@ -1,6 +1,6 @@
 import { idValidator, mobileValidator } from './complaintsValidator.js';
 
-const defualt = {
+const defaultTemplate = {
   contactType: {
     selectContactType: '1',
     isChosenType: true,
@@ -116,10 +116,23 @@ const defualt = {
     language: 'hebrew',
   },
 };
-Object.freeze(defualt);
+Object.freeze(defaultTemplate);
+
+const formatted = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Asia/Jerusalem',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
 
 export function formatDateTime(dateTime) {
-  return new Date(dateTime).toLocaleDateString('en-GB');
+  const date = new Date(dateTime);
+  if (isNaN(date.getTime())) {
+    throw new Error(`Invalid date: ${dateTime}`);
+  }
+  const format = formatted.format(date);
+  const [month, day, year] = format.split('/');
+  return `${day}/${month}/${year}`;
 }
 
 function fillTemplate(template, data = {}) {
@@ -150,18 +163,37 @@ function fillTemplate(template, data = {}) {
   return data === undefined ? template : data;
 }
 
-/**
- * Build an XML element.
- *
- * @param {string} tagName - Name of the XML tag.
- * @param {string|undefined} value - Optional string value.
- * @param {Object.<string, string>} attributes - XML attributes.
- * @returns {string} XML string.
- */
+function processTransportSection(fillData, bodyData, sectionName) {
+  if (bodyData[sectionName]) {
+    fillData.requestDetails[sectionName] = fillTemplate(defaultTemplate.requestDetails[sectionName], bodyData[sectionName]);
+    delete fillData[sectionName];
+  }
+
+  Object.keys(fillData.requestDetails[sectionName]).forEach((key) => {
+    if (fillData.requestDetails[sectionName][key] === false) {
+      delete fillData.requestDetails[sectionName][key];
+    }
+    if (typeof fillData.requestDetails[sectionName][key]?.dataCode === 'string' && fillData.requestDetails[sectionName][key]?.dataCode !== '') {
+      fillData.requestDetails[sectionName][key].dataCode = Number(fillData.requestDetails[sectionName][key].dataCode);
+    }
+  });
+}
+
+const xmlEscapes = {
+  '<': '&lt;',
+  '>': '&gt;',
+  '&': '&amp;',
+  "'": '&#39;',
+  '"': '&quot;',
+};
+
+function escapeXml(str) {
+  return str.replace(/[<>&'"]/gu, (char) => xmlEscapes[char] ?? char);
+}
+
 export function buildXmlElement(tagName, value = undefined) {
   const attrs = value === null || value === undefined || value === '' ? ' xsi:nil="true" ' : '';
-
-  const val = value === null || value === undefined ? '' : value;
+  const val = value === null || value === undefined ? '' : String(value);
   return `<${tagName}${attrs}>${val}</${tagName}>`;
 }
 
@@ -180,39 +212,20 @@ export function templateBuilder(body, ref) {
   }
   body.data.personalDetails.mobile = validatedMobile;
 
-  const fillData = fillTemplate(defualt, body.data);
+  const fillData = fillTemplate(defaultTemplate, body.data);
   fillData.formInformation.loadingDate = new Date().toLocaleDateString('en-us');
   fillData.formInformation.referenceNumber = ref;
   fillData.requestDetails.title = fillData.title;
   delete fillData.title;
 
   // Fill busAndOther if present
-  if (body.data.busAndOther) {
-    fillData.requestDetails.busAndOther = fillTemplate(defualt.requestDetails.busAndOther, body.data.busAndOther);
-    fillData.requestDetails.busAndOther.addFrequencyOverCrowd = fillData.requestDetails.busAndOther.addingFrequencyReason.includes('LoadTopics');
-    fillData.requestDetails.busAndOther.addFrequencyLongWait = fillData.requestDetails.busAndOther.addingFrequencyReason.includes('LongWaiting');
-    fillData.requestDetails.busAndOther.addFrequencyExtendTime = fillData.requestDetails.busAndOther.addingFrequencyReason.includes('ExtensionHours');
-    delete fillData.busAndOther;
-    Object.keys(fillData.requestDetails.busAndOther).forEach((key) => {
-      if (fillData.requestDetails.busAndOther[key] === false) {
-        delete fillData.requestDetails.busAndOther[key];
-      }
-      if (typeof fillData.requestDetails.busAndOther[key]?.dataCode === 'string' && fillData.requestDetails.busAndOther[key]?.dataCode !== '') {
-        fillData.requestDetails.busAndOther[key].dataCode = Number(fillData.requestDetails.busAndOther[key].dataCode);
-      }
-    });
-  }
+  processTransportSection(fillData, body.data, 'busAndOther');
+
   // Fill Train if present
-  if (body.data.train) {
-    fillData.requestDetails.train = fillTemplate(defualt.requestDetails.train, body.data.train);
-    delete fillData.train;
-  }
+  processTransportSection(fillData, body.data, 'train');
 
   // Fill taxi if present
-  if (body.data.taxi) {
-    fillData.requestDetails.taxi = fillTemplate(defualt.requestDetails.taxi, body.data.taxi);
-    delete fillData.taxi;
-  }
+  processTransportSection(fillData, body.data, 'taxi');
 
   // Fill documentsList
   if (body.data.documentsList) {
@@ -220,14 +233,19 @@ export function templateBuilder(body, ref) {
     delete fillData.documentsList;
   }
 
-  if (fillData.requestDetails.train?.eventDat) fillData.requestDetails.train.eventDate = formatDateTime(fillData.requestDetails.train.eventDate);
-  if (fillData.requestDetails.taxi?.eventDate) fillData.requestDetails.taxi.eventDate = formatDateTime(fillData.requestDetails.taxi.eventDate);
-  if (fillData.requestDetails.busAndOther?.eventDate)
+  // Format Dates
+  if (fillData.requestDetails?.train?.eventDate) {
+    fillData.requestDetails.train.eventDate = formatDateTime(fillData.requestDetails?.train.eventDate);
+  }
+  if (fillData.requestDetails?.taxi?.eventDate) {
+    fillData.requestDetails.taxi.eventDate = formatDateTime(fillData.requestDetails?.taxi.eventDate);
+  }
+  if (fillData.requestDetails?.busAndOther?.eventDate) {
     fillData.requestDetails.busAndOther.eventDate = formatDateTime(fillData.requestDetails.busAndOther.eventDate);
-  if (fillData.requestDetails.busAndOther.reportdate)
+  }
+  if (fillData.requestDetails?.busAndOther?.reportdate) {
     fillData.requestDetails.busAndOther.reportdate = formatDateTime(fillData.requestDetails.busAndOther.reportdate);
-
-  const dataModelSaver = JSON.stringify(fillData).replace(/"/gu, '&quot;');
+  }
 
   return `<?xml version='1.0' encoding='UTF-8'?>
 <root xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" formId="PniotMot@mot.gov.il" formVersion="3.0.5" formCompileTime="" xmlns="http://AGForms/PniotMot@mot.gov.il" >
@@ -238,7 +256,7 @@ export function templateBuilder(body, ref) {
 <BTSProcessID xsi:nil="true" ></BTSProcessID>
 ${buildXmlElement('ReferenceNumber', ref)}
 <StageStatus>UserToOffice</StageStatus>
-${buildXmlElement('dataModelSaver', dataModelSaver)}
+ ${buildXmlElement('dataModelSaver', escapeXml(JSON.stringify(fillData)))}
 <isMobile>false</isMobile>
 <DeviceType>PC</DeviceType>
 <FirstLoadingDate xsi:nil="true" ></FirstLoadingDate>
@@ -260,67 +278,67 @@ ${buildXmlElement('Email', fillData.personalDetails.email)}
 <ZipCode xsi:nil="true" ></ZipCode>
 ${buildXmlElement('ApplySubject', fillData.requestSubject.applySubject?.dataText)}
 ${buildXmlElement('TypeReq', fillData.requestSubject.applyType?.dataText)}
-${buildXmlElement('TrainType', fillData.requestDetails.train?.trainType)}
-${buildXmlElement('EventDate2', fillData.requestDetails.train?.eventDate)}
-${buildXmlElement('EventHour2', fillData.requestDetails.train?.eventHour)}
-${buildXmlElement('StartStation', fillData.requestDetails.train?.startStation?.dataText)}
-${buildXmlElement('DestStation', fillData.requestDetails.train?.destinationStation?.dataText)}
-${buildXmlElement('TrainNumber', fillData.requestDetails.train?.number)}
-${buildXmlElement('ApplyContent3', fillData.requestDetails.train?.applyContent)}
-${buildXmlElement('FirstDeclaration', fillData.requestDetails.busAndOther?.firstDeclaration || fillData.requestDetails.taxi?.firstDeclaration || false)}
-${buildXmlElement('SecondDeclaration', fillData.requestDetails.busAndOther?.secondDeclaration || fillData.requestDetails.taxi?.secondDeclaration || false)}
-${buildXmlElement('EventDetails', fillData.requestDetails.taxi?.eventDetails)}
-${buildXmlElement('Invoice', fillData.requestDetails.taxi?.invoice)}
-${buildXmlElement('Evidence', fillData.requestDetails.taxi?.evidence)}
-${buildXmlElement('OtherFactors', fillData.requestDetails.taxi?.otherFactors)}
-${buildXmlElement('ETaxiType', fillData.requestDetails.taxi?.taxiType)}
-${buildXmlElement('DrivingLicense2', fillData.requestDetails.taxi?.licenseNum)}
-${buildXmlElement('TaxiCap', fillData.requestDetails.taxi?.cap)}
-${buildXmlElement('TaxiDriverName', fillData.requestDetails.taxi?.driverName)}
-${buildXmlElement('TaxiEventDate', fillData.requestDetails.taxi?.eventDate)}
-${buildXmlElement('TaxiEventHour', fillData.requestDetails.taxi?.eventHour)}
-${buildXmlElement('TaxiEventLocation', fillData.requestDetails.taxi?.eventLocation)}
+${buildXmlElement('TrainType', fillData.requestDetails?.train?.trainType)}
+${buildXmlElement('EventDate2', fillData.requestDetails?.train?.eventDate)}
+${buildXmlElement('EventHour2', fillData.requestDetails?.train?.eventHour)}
+${buildXmlElement('StartStation', fillData.requestDetails?.train?.startStation?.dataText)}
+${buildXmlElement('DestStation', fillData.requestDetails?.train?.destinationStation?.dataText)}
+${buildXmlElement('TrainNumber', fillData.requestDetails?.train?.number)}
+${buildXmlElement('ApplyContent3', fillData.requestDetails?.train?.applyContent)}
+${buildXmlElement('FirstDeclaration', fillData.requestDetails?.taxi?.firstDeclaration || false)}
+${buildXmlElement('SecondDeclaration', fillData.requestDetails?.taxi?.secondDeclaration || false)}
+${buildXmlElement('EventDetails', fillData.requestDetails?.taxi?.eventDetails)}
+${buildXmlElement('Invoice', fillData.requestDetails?.taxi?.invoice)}
+${buildXmlElement('Evidence', fillData.requestDetails?.taxi?.evidence)}
+${buildXmlElement('OtherFactors', fillData.requestDetails?.taxi?.otherFactors)}
+${buildXmlElement('ETaxiType', fillData.requestDetails?.taxi?.taxiType)}
+${buildXmlElement('DrivingLicense2', fillData.requestDetails?.taxi?.licenseNum)}
+${buildXmlElement('TaxiCap', fillData.requestDetails?.taxi?.cap)}
+${buildXmlElement('TaxiDriverName', fillData.requestDetails?.taxi?.driverName)}
+${buildXmlElement('TaxiEventDate', fillData.requestDetails?.taxi?.eventDate)}
+${buildXmlElement('TaxiEventHour', fillData.requestDetails?.taxi?.eventHour)}
+${buildXmlElement('TaxiEventLocation', fillData.requestDetails?.taxi?.eventLocation)}
 <ApplyContent xsi:nil="true" ></ApplyContent>
-${buildXmlElement('FinanceRavKav', fillData.requestDetails.busAndOther?.ravKav)}
-${buildXmlElement('FinanceRavKavNumber', fillData.requestDetails.busAndOther?.ravKavNumber)}
+${buildXmlElement('FinanceRavKav', fillData.requestDetails?.busAndOther?.ravKav)}
+${buildXmlElement('FinanceRavKavNumber', fillData.requestDetails?.busAndOther?.ravKavNumber)}
 <FinanceOther>false</FinanceOther>
-${buildXmlElement('SingleTrip', fillData.requestDetails.busAndOther?.singleTrip || false)}
-${buildXmlElement('LoadTopics', fillData.requestDetails.busAndOther?.addFrequencyOverCrowd || false)}
-${buildXmlElement('LongWaiting', fillData.requestDetails.busAndOther?.addFrequencyLongWait || false)}
-${buildXmlElement('ExtensionHours', fillData.requestDetails.busAndOther?.addFrequencyExtendTime || false)}
-${buildXmlElement('Operator', fillData.requestDetails.busAndOther?.operator?.dataText)}
-${buildXmlElement('BusDriverName', fillData.requestDetails.busAndOther?.driverName)}
-${buildXmlElement('BusLicenseNum', fillData.requestDetails.busAndOther?.licenseNum)}
-${buildXmlElement('BusEventDate', fillData.requestDetails.busAndOther?.eventDate)}
-${buildXmlElement('BusEventHour', fillData.requestDetails.busAndOther?.eventHour)}
-${buildXmlElement('from', fillData.requestDetails.busAndOther?.fromHour)}
-${buildXmlElement('by', fillData.requestDetails.busAndOther?.toHour)}
-${buildXmlElement('Reportdate', fillData.requestDetails.busAndOther?.reportdate)}
-${buildXmlElement('ReportTime', fillData.requestDetails.busAndOther?.reportTime)}
-${buildXmlElement('Stationupdate', fillData.requestDetails.busAndOther?.addOrRemoveStation)}
-${buildXmlElement('NumStation', fillData.requestDetails.busAndOther?.addOrRemoveStation)}
-${buildXmlElement('LineNumberBoarding', fillData.requestDetails.busAndOther?.lineNumberText)}
-${buildXmlElement('Direction', fillData.requestDetails.busAndOther?.direction?.dataText)}
-${buildXmlElement('BusStationBoard', fillData.requestDetails.busAndOther?.raisingStation?.dataText)}
-${buildXmlElement('BoardingSettlement', fillData.requestDetails.busAndOther?.raisingStationCity?.dataText)}
-${buildXmlElement('DropStaionAppeal', fillData.requestDetails.busAndOther?.destinationStationCity?.dataText)}
-${buildXmlElement('Risestationaddress', fillData.requestDetails.busAndOther?.raisingStationAddress)}
-${buildXmlElement('MakatStation', fillData.requestDetails.busAndOther?.makatStation)}
-${buildXmlElement('LineNumber', fillData.requestDetails.busAndOther?.lineNumberFromList?.dataCode)}
-${buildXmlElement('BusDirectionFrom', fillData.requestDetails.busAndOther?.busDirectionFrom)}
-${buildXmlElement('BusDirectionTo', fillData.requestDetails.busAndOther?.busDirectionTo)}
-${buildXmlElement('Testimony', fillData.requestDetails.busAndOther?.firstDeclaration || false)}
-${buildXmlElement('Courttestimony', fillData.requestDetails.busAndOther?.secondDeclaration || false)}
-${buildXmlElement('CaseEssence', fillData.requestDetails.busAndOther?.applyContent)}
-${buildXmlElement('OriginCityCode', fillData.requestDetails.busAndOther?.originCityCode)}
-${buildXmlElement('OriginCityName', fillData.requestDetails.busAndOther?.originCityName)}
-${buildXmlElement('LineCode', fillData.requestDetails.busAndOther?.lineCode)}
-${buildXmlElement('CityId', fillData.requestDetails.busAndOther?.cityId)}
-${buildXmlElement('CityName', fillData.requestDetails.busAndOther?.cityName)}
-${buildXmlElement('StationName', fillData.requestDetails.busAndOther?.stationName)}
-${buildXmlElement('DirectionCode', fillData.requestDetails.busAndOther?.directionCode)}
-${buildXmlElement('DestinationCityCode', fillData.requestDetails.busAndOther?.destinationCityCode)}
-${buildXmlElement('DestinationCityText', fillData.requestDetails.busAndOther?.destinationCityText)}
+${buildXmlElement('SingleTrip', fillData.requestDetails?.busAndOther?.singleTrip || false)}
+${buildXmlElement('LoadTopics', fillData.requestDetails?.busAndOther?.addingFrequencyReason.includes('LoadTopics') || false)}
+${buildXmlElement('LongWaiting', fillData.requestDetails?.busAndOther?.addingFrequencyReason.includes('LongWaiting') || false)}
+${buildXmlElement('ExtensionHours', fillData.requestDetails?.busAndOther?.addingFrequencyReason.includes('ExtensionHours') || false)}
+${buildXmlElement('Operator', fillData.requestDetails?.busAndOther?.operator?.dataText)}
+${buildXmlElement('BusDriverName', fillData.requestDetails?.busAndOther?.driverName)}
+${buildXmlElement('BusLicenseNum', fillData.requestDetails?.busAndOther?.licenseNum)}
+${buildXmlElement('BusEventDate', fillData.requestDetails?.busAndOther?.eventDate)}
+${buildXmlElement('BusEventHour', fillData.requestDetails?.busAndOther?.eventHour)}
+${buildXmlElement('from', fillData.requestDetails?.busAndOther?.fromHour)}
+${buildXmlElement('by', fillData.requestDetails?.busAndOther?.toHour)}
+${buildXmlElement('Reportdate', fillData.requestDetails?.busAndOther?.reportdate)}
+${buildXmlElement('ReportTime', fillData.requestDetails?.busAndOther?.reportTime)}
+${buildXmlElement('Stationupdate', fillData.requestDetails?.busAndOther?.addOrRemoveStation)}
+${buildXmlElement('NumStation', fillData.requestDetails?.busAndOther?.addOrRemoveStation)}
+${buildXmlElement('LineNumberBoarding', fillData.requestDetails?.busAndOther?.lineNumberText)}
+${buildXmlElement('Direction', fillData.requestDetails?.busAndOther?.direction?.dataText)}
+${buildXmlElement('BusStationBoard', fillData.requestDetails?.busAndOther?.raisingStation?.dataText)}
+${buildXmlElement('BoardingSettlement', fillData.requestDetails?.busAndOther?.raisingStationCity?.dataText)}
+${buildXmlElement('DropStaionAppeal', fillData.requestDetails?.busAndOther?.destinationStationCity?.dataText)}
+${buildXmlElement('Risestationaddress', fillData.requestDetails?.busAndOther?.raisingStationAddress)}
+${buildXmlElement('MakatStation', fillData.requestDetails?.busAndOther?.makatStation)}
+${buildXmlElement('LineNumber', fillData.requestDetails?.busAndOther?.lineNumberFromList?.dataCode)}
+${buildXmlElement('BusDirectionFrom', fillData.requestDetails?.busAndOther?.busDirectionFrom)}
+${buildXmlElement('BusDirectionTo', fillData.requestDetails?.busAndOther?.busDirectionTo)}
+${buildXmlElement('Testimony', fillData.requestDetails?.busAndOther?.firstDeclaration || false)}
+${buildXmlElement('Courttestimony', fillData.requestDetails?.busAndOther?.secondDeclaration || false)}
+${buildXmlElement('CaseEssence', fillData.requestDetails?.busAndOther?.applyContent)}
+${buildXmlElement('OriginCityCode', fillData.requestDetails?.busAndOther?.originCityCode)}
+${buildXmlElement('OriginCityName', fillData.requestDetails?.busAndOther?.originCityName)}
+${buildXmlElement('LineCode', fillData.requestDetails?.busAndOther?.lineCode)}
+${buildXmlElement('CityId', fillData.requestDetails?.busAndOther?.cityId)}
+${buildXmlElement('CityName', fillData.requestDetails?.busAndOther?.cityName)}
+${buildXmlElement('StationName', fillData.requestDetails?.busAndOther?.stationName)}
+${buildXmlElement('DirectionCode', fillData.requestDetails?.busAndOther?.directionCode)}
+${buildXmlElement('DestinationCityCode', fillData.requestDetails?.busAndOther?.destinationCityCode)}
+${buildXmlElement('DestinationCityText', fillData.requestDetails?.busAndOther?.destinationCityText)}
 ${buildXmlElement('Title', fillData.requestDetails?.title)}
 <RequestSubjectCode>0</RequestSubjectCode>
 <RequestTypeCode>0</RequestTypeCode>
