@@ -6,22 +6,20 @@ import ky from 'ky';
  * @throws {Error} If credentials are missing, HTTP request fails, or JSON parsing fails.
  */
 export async function getReferenceNumber() {
-  if (!process.env.AWS_API_KEY || !process.env.AWS_APP_ID) {
+  if (!process.env.AWS_API_KEY || !process.env.AWS_APP_ID || !process.env.AWS_REGION) {
     throw new Error('Missing AWS credentials');
   }
 
   try {
-    const url = `https://${process.env.AWS_APP_ID}.execute-api.us-east-1.amazonaws.com/prod`;
+    const url = `https://${process.env.AWS_APP_ID}.execute-api.${process.env.AWS_REGION}.amazonaws.com/prod`;
     const response = await ky.get(url, {
       headers: { 'x-api-key': process.env.AWS_API_KEY },
       timeout: 30000,
     });
-    if (!response.ok) {
-      throw new Error('Failed to get Reference Number');
-    }
+
     const data = await response.json();
     if (!data.ref || !data.guid) {
-      return null;
+      throw new Error('Failed to get Reference Number');
     }
     return data;
   } catch (error) {

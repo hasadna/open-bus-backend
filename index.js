@@ -1,4 +1,3 @@
-// External dependencies
 import 'dotenv/config';
 
 import { createServer } from './src/config/index.js';
