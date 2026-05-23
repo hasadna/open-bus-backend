@@ -16,14 +16,25 @@ describe('getReferenceNumber', () => {
     cleanup();
   });
 
-  it('should return the reference number', async () => {
-    get.resolves({ text: () => Promise.resolve('<span id="ReferenceNumber">1234567</span><input id="_form_guid" value="test-guid">') });
+  it('should return the reference number and request id from formParams', async () => {
+    get.resolves({
+      text: () =>
+        Promise.resolve(`<script type="text/javascript" id="govFormsScript"> var formParams = {
+  "process": {
+    "formUniqueID": "UJdQLbqX3BF1jDydDZJ0fQ",
+    "requestID": "ff9869f2-aeec-4f37-a673-aa9ba23406b1",
+    "referenceNumber": 143098
+  }
+}</script>`),
+    });
     const result = await getReferenceNumber();
-    expect(result.ref).to.equal('1234567');
-    expect(result.guid).to.equal('test-guid');
+    expect(result).to.deep.equal({
+      referenceNumber: '143098',
+      requestID: 'ff9869f2-aeec-4f37-a673-aa9ba23406b1',
+    });
   });
 
-  it('should return null if #ReferenceNumber not found', async () => {
+  it('should return null if formParams process identifiers are not found', async () => {
     get.resolves({ text: () => Promise.resolve('<div>No ref</div>') });
     const result = await getReferenceNumber();
     expect(result).to.be.null;
