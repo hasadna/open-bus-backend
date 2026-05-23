@@ -19,11 +19,11 @@ export async function sendComplaint(request, reply) {
 
     request.log.info('Complaint submission started');
 
-    const clientData = isDebug ? { ref: '1234567', guid: 'test' } : await getReferenceNumber();
+    const clientData = isDebug ? { referenceNumber: '1234567', requestID: 'test' } : await getReferenceNumber();
 
     if (clientData === null) return reply.status(500).send({ success: false, error: 'Failed to get reference number' });
 
-    const xml = templateBuilder(request.body, clientData.ref);
+    const xml = templateBuilder(request.body, clientData.referenceNumber);
 
     const boundary = `----WebKitFormBoundary${crypto.randomBytes(16).toString('hex')}`;
 
@@ -39,14 +39,14 @@ export async function sendComplaint(request, reply) {
       `--${boundary}`,
       'Content-Disposition: form-data; name="_form_guid"',
       '',
-      clientData.guid,
+      clientData.requestID,
       `--${boundary}--`,
       '',
     ].join('\r\n');
 
     if (isDebug) {
       request.log.info('Complaint submitted in debug mode');
-      return reply.status(200).send({ success: true, debug: true, xml, ref: clientData.ref });
+      return reply.status(200).send({ success: true, debug: true, xml, ref: clientData.referenceNumber });
       // for test xml resepnse
       // return reply.status(200).headers({ 'content-type': 'application/xml' }).send(xml);
     }
@@ -76,9 +76,9 @@ export async function sendComplaint(request, reply) {
       return reply.status(400).send({ error: 'Validation failed', message: 'Government API error' });
     }
 
-    request.log.info('Complaint submitted successfully', { referenceNumber: clientData.ref, status: response.status });
+    request.log.info('Complaint submitted successfully', { referenceNumber: clientData.referenceNumber, status: response.status });
 
-    return reply.status(200).send({ success: true, debug: false, data: text, referenceNumber: clientData.ref });
+    return reply.status(200).send({ success: true, debug: false, data: text, referenceNumber: clientData.referenceNumber });
   } catch (error) {
     request.log.error('Complaint submission failed', { error: error.message, stack: error.stack, body: request.body });
     // Handle validation errors
