@@ -29,6 +29,7 @@ describe('getReferenceNumber', () => {
     });
     const result = await getReferenceNumber();
     expect(result).to.deep.equal({
+      formUniqueID: 'UJdQLbqX3BF1jDydDZJ0fQ',
       referenceNumber: '143098',
       requestID: 'ff9869f2-aeec-4f37-a673-aa9ba23406b1',
     });
