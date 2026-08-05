@@ -1,70 +1,246 @@
 {
-  "debug": true,
-  "data": {
-    "personalDetails": {
-      "firstName": "נעם",
-      "lastName": "געש",
-      "iDNum": "212121214",
-      "email": "emainh@gmail.com",
-      "mobile": "0536218158",
-      "applySubject": {
-        "dataCode": "0",
-        "dataText": "אוטובוס"
-      },
-      "applyType": {
-        "dataCode": "3",
-        "dataText": "אי עצירה בתחנה"
-      }
+    "requestID": "{{requestID}}",
+    "processID": null,
+    "formData": {
+        "requestDetails": {
+            "requestDetaiText": "",
+            "eventDate": "",
+            "eventHour2": "",
+            "eventLocation": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "direction": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "transportMeanss1": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "trainBoardingStation1": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "trainDdestinationStation1": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "lineNumber1": -1,
+            "linesList1": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "cityBusLineOutput": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "streetsBusLineOutput": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "houseBusLineOutput": "",
+            "cityBusLinedestination": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "destinationStreetsBusLineOutput": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "houseBusLinedestination": "",
+            "frequencyADDDAY": [],
+            "frequencyADDHour": "",
+            "transferStation": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "transportMeanss2": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "lineNumber2": "",
+            "linesList2": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "transferStation2": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "trainBoardingStation2": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "trainDdestinationStation2": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "frequencyADDDAY2": [],
+            "frequencyADDHour2": "",
+            "eventCity": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "stationEvent": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "trainType": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "cabEventLocation": "",
+            "mOTTestimonyConfirmation": false,
+            "courtTestimonyConfirmation": false,
+            "eventDocumentation": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "invoicing": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "eventWitness": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "additionalFactors": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "witnessLocation": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "cabTupe": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "publicRightNumber": "",
+            "waitingTimeHour": "",
+            "waitingTimeUpHour": "",
+            "validationHour": "",
+            "boardingStation": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "destinationStation": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "stationEvent2": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "trainNumber2": "",
+            "requisitionNumber": "",
+            "validationHour2": "",
+            "validationHour3": "",
+            "paymentMeans": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "ravKavNO": "",
+            "cardholderName": "",
+            "paymentApplication": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "paymentApplicationPhoneNumber": "",
+            "cityCabOutput": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "cityCabdestination": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "busNumber": 0,
+            "busDriverName": "",
+            "waitingTimeHour2": "",
+            "waitingTimeUpHour2": "",
+            "frequencyADDDAY3": [],
+            "frequencyADDHour3": "",
+            "referenceDetails": "",
+            "attachmentsList": [
+                {
+                    "attachment1": {
+                        "uploadState": "",
+                        "name": "",
+                        "size": "",
+                        "type": "",
+                        "guid": ""
+                    }
+                }
+            ],
+            "cityId5": "",
+            "cityId6": "",
+            "cityId": "",
+            "cityId2": "",
+            "cityId3": "",
+            "cityId4": "",
+            "lineDetailRecordId": "",
+            "originStationID": "",
+            "originStationName": "",
+            "originCityID": "",
+            "targetStationID": "",
+            "targetStationName": "",
+            "lineAlternative": "",
+            "officeLineId": "",
+            "targetCityID": "",
+            "operatorName": "",
+            "operatorId": "",
+            "clusterName": "",
+            "clusterId": "",
+            "districtName": "",
+            "districtId": ""
+        },
+        "personalDetails": {
+            "clientID": "",
+            "clientLastName": "",
+            "clientName": "",
+            "clientGender": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "clientPhone": {
+                "value": "",
+                "verificationId": ""
+            },
+            "clientAdditionalPhone": "",
+            "clientEmail": "",
+            "clientValidationEmail": "",
+            "clientContact": false,
+            "clientContact2": true,
+            "clientCity": {
+                "dataCode": "",
+                "dataText": ""
+            }
+        },
+        "serviceLogin": {
+            "requestedOption": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "transportMeans": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "requestSubjectTran": {
+                "dataCode": "",
+                "dataText": ""
+            },
+            "requestComplaintAppealTran": {
+                "dataCode": "",
+                "dataText": ""
+            }
+        }
     },
-    "busAndOther": {
-      "ravKav": true,
-      "ravKavNumber": "",
-      "reportdate": "",
-      "reportTime": "",
-      "addingFrequencyReason": [],
-      "operator": {
-        "dataCode": 5,
-        "dataText": "אגד"
-      },
-      "addOrRemoveStation": "2",
-      "driverName": "",
-      "licenseNum": "",
-      "eventDate": "",
-      "eventHour": "",
-      "fromHour": "",
-      "toHour": "",
-      "fillByMakatOrAddress": "2",
-      "makatStation": "",
-      "lineNumberText": "",
-      "lineNumberFromList": {
-        "dataText": ""
-      },
-      "direction": {
-        "dataText": ""
-      },
-      "raisingStation": {
-        "dataText": ""
-      },
-      "applyContent": "the bus didn't stop, despite I was in the station and waved really hard :(",
-      "busDirectionFrom": "",
-      "busDirectionTo": "",
-      "raisingStationCity": {
-        "dataText": ""
-      },
-      "destinationStationCity": {
-        "dataText": ""
-      },
-      "raisingStationAddress": "",
-      "cityId": "",
-      "cityName": "",
-      "raisingStationCityCode": "",
-      "raisingStationCityName": "",
-      "destinationStationCityCode": "",
-      "destinationStationCityText": "",
-      "directionCode": "",
-      "stationName": "",
-      "lineCode": ""
+    "language": "",
+    "attachments": [],
+    "formMetaData": {
+        "language": ""
     },
-    "documentsList": []
-  }
+    "reCaptchaToken": ""
 }
