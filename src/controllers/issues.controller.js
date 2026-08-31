@@ -9,8 +9,19 @@ import { maskEmail } from '../utils/maskEmail.js';
  */
 export async function createIssue(request, reply) {
   try {
-    const { title, contactName, contactEmail, description, environment, expectedBehavior, actualBehavior, reproducibility, attachments, debug } =
-      request.body;
+    const {
+      title,
+      contactName,
+      contactEmail,
+      description,
+      environment,
+      debugContext,
+      expectedBehavior,
+      actualBehavior,
+      reproducibility,
+      attachments,
+      debug,
+    } = request.body;
 
     if (debug === true) {
       request.log.info('Debug mode: returning fake GitHub issue data');
@@ -44,7 +55,7 @@ export async function createIssue(request, reply) {
     }
 
     // Create the body for the GitHub issue
-    const body = `## Contact Information\n**Contact Name:** ${contactName}\n**Contact Email:** ${maskedEmail}\n\n## Issue Details\n**Description:** \n${description}\n\n**Environment:** ${environment}\n\n**Expected Behavior:** \n${expectedBehavior}\n\n**Actual Behavior:** \n${actualBehavior}\n\n**Reproducibility:** ${reproducibility}\n\n${attachments && attachments.length > 0 ? `## Attachments\n${attachments.map((url) => `- ${url}`).join('\n')}` : ''}\n\n---\n*Issue created via API on ${new Date().toISOString()}*`;
+    const body = `## Contact Information\n**Contact Name:** ${contactName}\n**Contact Email:** ${maskedEmail}\n\n## Issue Details\n**Description:** \n${description}\n\n**Environment:** ${environment}\n\n**Expected Behavior:** \n${expectedBehavior}\n\n**Actual Behavior:** \n${actualBehavior}\n\n**Reproducibility:** ${reproducibility}\n${debugContext ? `\n\n**Debug Context:** ${debugContext}` : ''}\n\n${attachments && attachments.length > 0 ? `## Attachments\n${attachments.map((url) => `- ${url}`).join('\n')}` : ''}\n\n---\n*Issue created via API on ${new Date().toISOString()}*`;
     const labels = ['REPORTED-BY-USER'];
     // Create the GitHub issue
     const response = await ky.post(`https://api.github.com/repos/${repoOwner}/${repoName}/issues`, {
