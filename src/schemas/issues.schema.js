@@ -7,7 +7,23 @@ export const githubIssueModel = S.object()
   .prop('number', S.integer())
   .prop('title', S.string())
   .prop('body', S.anyOf([S.null(), S.string()]))
-  .prop('labels', S.array().items(S.string()))
+  .prop(
+    'labels',
+    S.array().items(
+      S.anyOf([
+        S.string(),
+        S.object()
+          .prop('id', S.integer())
+          .prop('node_id', S.string())
+          .prop('url', S.string().format('uri'))
+          .prop('name', S.string())
+          .prop('description', S.anyOf([S.null(), S.string()]))
+          .prop('color', S.anyOf([S.null(), S.string()]))
+          .prop('default', S.boolean())
+          .additionalProperties(true),
+      ]),
+    ),
+  )
   .prop('state', S.string().enum(['open', 'closed']))
   .prop('created_at', S.string().format('date-time'))
   .prop('url', S.string().format('uri'))
