@@ -7,7 +7,23 @@ export const githubIssueModel = S.object()
   .prop('number', S.integer())
   .prop('title', S.string())
   .prop('body', S.anyOf([S.null(), S.string()]))
-  .prop('labels', S.array().items(S.string()))
+  .prop(
+    'labels',
+    S.array().items(
+      S.anyOf([
+        S.string(),
+        S.object()
+          .prop('id', S.integer())
+          .prop('node_id', S.string())
+          .prop('url', S.string().format('uri'))
+          .prop('name', S.string())
+          .prop('description', S.anyOf([S.null(), S.string()]))
+          .prop('color', S.anyOf([S.null(), S.string()]))
+          .prop('default', S.boolean())
+          .additionalProperties(true),
+      ]),
+    ),
+  )
   .prop('state', S.string().enum(['open', 'closed']))
   .prop('created_at', S.string().format('date-time'))
   .prop('url', S.string().format('uri'))
@@ -29,6 +45,7 @@ export const createIssueSchema = {
     .prop('contactEmail', S.string().format('email').description('Email of the person reporting the issue'))
     .prop('description', S.string().minLength(10).maxLength(5000).description('Detailed description of the issue'))
     .prop('environment', S.string().minLength(1).maxLength(200).description('Environment where the issue occurred'))
+    .prop('debugContext', S.string().maxLength(2000).description('Optional debug context URL, e.g. the page the user was on when reporting'))
     .prop('expectedBehavior', S.string().minLength(5).maxLength(1000).description('What was expected to happen'))
     .prop('actualBehavior', S.string().minLength(5).maxLength(1000).description('What actually happened'))
     .prop('reproducibility', S.string().enum(['always', 'sometimes', 'rarely', 'once']).description('How often the issue can be reproduced'))

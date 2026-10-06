@@ -94,9 +94,24 @@ describe('createIssue', () => {
     expect(options.headers['Content-Type']).to.equal('application/json');
   });
 
+  it('should include debug context in the GitHub issue body when provided', async () => {
+    request.body.debugContext = 'https://example.com/some-page';
+
+    const mockResponse = createMockGitHubResponse(1, 'Test Issue');
+
+    post.resolves(mockResponse);
+
+    await createIssue(request, reply);
+
+    const [, options] = post.firstCall.args;
+
+    expect(options.json.body).to.include('**Debug Context:** https://example.com/some-page');
+  });
+
   it('should work with missing optional fields', async () => {
     request.body.attachments = undefined;
     request.body.environment = undefined;
+    request.body.debugContext = undefined;
     request.body.expectedBehavior = undefined;
     request.body.actualBehavior = undefined;
     request.body.reproducibility = undefined;
