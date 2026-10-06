@@ -1,19 +1,23 @@
-import S from 'fluent-json-schema';
+import { Type } from 'typebox';
 
-export const commonErrorResponse = S.object()
-  .id('ErrorResponseModel')
-  .prop('error', S.string())
-  .prop('message', S.string())
-  .prop('details', S.object());
+export const optionalObject = (properties, options = {}) => Type.Partial(Type.Object(properties), options);
+
+export const commonErrorResponse = optionalObject(
+  { error: Type.String(), message: Type.String(), details: Type.Object({}) },
+  { $id: 'ErrorResponseModel' },
+);
 
 export const commonSuccessResponse = (itemsSchema) =>
-  S.object().id('SuccessResponseModel').prop('success', S.boolean().default(true)).prop('data', itemsSchema);
+  optionalObject({ success: Type.Boolean({ default: true }), data: itemsSchema }, { $id: 'SuccessResponseModel' });
 
-export const dataCodeModel = S.object()
-  .id('DataCodeModel')
-  .prop('dataText', S.anyOf([S.string(), S.null()]))
-  .prop('dataCode', S.anyOf([S.string(), S.number(), S.null()]));
+export const dataCodeModel = optionalObject(
+  {
+    dataText: Type.Union([Type.String(), Type.Null()]),
+    dataCode: Type.Union([Type.String(), Type.Number(), Type.Null()]),
+  },
+  { $id: 'DataCodeModel' },
+);
 
-export const toggle = S.string().id('ToggleModel').enum(['1', '2']);
+export const toggle = Type.String({ $id: 'ToggleModel', enum: ['1', '2'] });
 
-export { S };
+export { Type };

@@ -1,19 +1,17 @@
-import { S } from './index.js';
+import { optionalObject, Type } from './index.js';
 
-/**
- * Health check endpoint schema
- * @type {import('fastify').FastifySchema}
- */
+/** @type {import('fastify').FastifySchema} */
 export const healthCheckSchema = {
   tags: ['Health'],
   summary: 'Health check endpoint',
   description: 'Returns the health status of the API',
   response: {
-    200: S.object()
-      .prop('status', S.string().examples(['alive']))
-      .prop('timestamp', S.string().format('date-time').examples(['2025-07-01T13:09:05.570Z']))
-      .prop('uptime', S.number().examples([23.1655282]))
-      .prop('version', S.string().examples(['2.0.0'])),
-    500: S.object().prop('error', S.string()).prop('status', S.string()),
+    200: optionalObject({
+      status: Type.String({ examples: ['alive'] }),
+      timestamp: Type.String({ format: 'date-time', examples: ['2025-07-01T13:09:05.570Z'] }),
+      uptime: Type.Number({ examples: [23.1655282] }),
+      version: Type.String({ examples: ['2.0.0'] }),
+    }),
+    500: optionalObject({ error: Type.String(), status: Type.String() }),
   },
 };

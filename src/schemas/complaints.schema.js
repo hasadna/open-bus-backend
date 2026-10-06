@@ -1,124 +1,126 @@
-import { S } from './index.js';
+import { optionalObject, Type } from './index.js';
 
 const numberOnly = /^[0-9]+$/u;
 const hebOnly = /^[א-ת-\s'"()]+/u;
 export const mobileOnly = /^05[0-689]-?[2-9][0-9]{6}$/u;
 const fileType = /^.*\.(?<type>doc|docx|jpeg|jpg|pdf|gif|tiff|png)$/giu;
 
-const mobileSchema = () => S.string().pattern(mobileOnly);
-const dateStringSchema = () => S.string().format('date-time');
-const hourStringSchema = () => S.string().pattern(/[012][0-9]:[012][0-9]/u);
+const mobileSchema = () => Type.String({ pattern: mobileOnly.source });
+const dateStringSchema = () => Type.String({ format: 'date-time' });
+const hourStringSchema = (examples) => Type.String({ pattern: '[012][0-9]:[012][0-9]', ...(examples && { examples }) });
 
-export const personalDetailsSchema = S.object()
-  .id('PersonalDetailsSchema')
-  .prop('firstName', S.string().pattern(hebOnly).minLength(1).maxLength(100).examples(['פרטי']))
-  .prop('lastName', S.string().pattern(hebOnly).minLength(1).maxLength(100).examples(['משפחה']))
-  .prop('iDNum', S.string().minLength(9).maxLength(9).pattern(numberOnly).examples(['123456782']))
-  .prop('email', S.string().format('email').examples(['email@gmail.com']))
-  .prop('mobile', mobileSchema().examples(['050-2345678']));
+export const personalDetailsSchema = optionalObject(
+  {
+    firstName: Type.String({ pattern: hebOnly.source, minLength: 1, maxLength: 100, examples: ['פרטי'] }),
+    lastName: Type.String({ pattern: hebOnly.source, minLength: 1, maxLength: 100, examples: ['משפחה'] }),
+    iDNum: Type.String({ minLength: 9, maxLength: 9, pattern: numberOnly.source, examples: ['123456782'] }),
+    email: Type.String({ format: 'email', examples: ['email@gmail.com'] }),
+    mobile: Type.String({ ...mobileSchema(), examples: ['050-2345678'] }),
+  },
+  { $id: 'PersonalDetailsSchema' },
+);
 
-export const requestSubjectSchema = S.object()
-  .id('RequestSubjectSchema')
-  .prop('applySubject', S.ref('DataCodeModel'))
-  .prop('applyType', S.ref('DataCodeModel'));
+export const requestSubjectSchema = optionalObject(
+  { applySubject: Type.Ref('DataCodeModel'), applyType: Type.Ref('DataCodeModel') },
+  { $id: 'RequestSubjectSchema' },
+);
 
-export const busAndOtherSchema = S.object()
-  .id('BusAndOtherSchema')
-  .prop('ravKav', S.boolean())
-  .prop('singleTrip', S.boolean())
-  .prop('ravKavNumber', S.string().minLength(9).maxLength(11).pattern(numberOnly).examples(['123456789']))
-  .prop('reportdate', dateStringSchema())
-  .prop('reportTime', hourStringSchema())
-  .prop('addingFrequencyReason', S.array().items(S.string().enum(['LoadTopics', 'LongWaiting', 'ExtensionHours'])))
-  .prop('operator', S.ref('DataCodeModel'))
-  .prop('addOrRemoveStation', S.ref('ToggleModel').description('1 = Remove, 2 = Add'))
-  .prop('driverName', S.string())
-  .prop('licenseNum', S.string())
-  .prop('eventDate', dateStringSchema())
-  .prop('eventHour', hourStringSchema().examples(['08:00']))
-  .prop('fromHour', hourStringSchema().examples(['07:00']))
-  .prop('toHour', hourStringSchema().examples(['09:00']))
-  .prop('fillByMakatOrAddress', S.ref('ToggleModel').description('1 = Makat Station, 2 = Line Number'))
-  .prop('makatStation', S.string())
-  .prop('lineNumberText', S.string())
-  .prop('lineNumberFromList', S.ref('DataCodeModel'))
-  .prop('direction', S.ref('DataCodeModel'))
-  .prop('raisingStation', S.ref('DataCodeModel'))
-  .prop('applyContent', S.string().minLength(10).maxLength(1000))
-  .prop('busDirectionFrom', S.string())
-  .prop('busDirectionTo', S.string())
-  .prop('raisingStationCity', S.ref('DataCodeModel'))
-  .prop('destinationStationCity', S.ref('DataCodeModel'))
-  .prop('raisingStationAddress', S.string())
-  .prop('cityId', S.string())
-  .prop('cityName', S.string())
-  .prop('originCityCode', S.string())
-  .prop('originCityName', S.string())
-  .prop('destinationCityCode', S.string())
-  .prop('destinationCityText', S.string())
-  .prop('directionCode', S.string())
-  .prop('stationName', S.string())
-  .prop('lineCode', S.string())
-  .prop('firstDeclaration', S.boolean())
-  .prop('secondDeclaration', S.boolean());
+export const busAndOtherSchema = optionalObject(
+  {
+    ravKav: Type.Boolean(),
+    singleTrip: Type.Boolean(),
+    ravKavNumber: Type.String({ minLength: 9, maxLength: 11, pattern: numberOnly.source, examples: ['123456789'] }),
+    reportdate: dateStringSchema(),
+    reportTime: hourStringSchema(),
+    addingFrequencyReason: Type.Array(Type.String({ enum: ['LoadTopics', 'LongWaiting', 'ExtensionHours'] })),
+    operator: Type.Ref('DataCodeModel'),
+    addOrRemoveStation: Type.Ref('ToggleModel', { description: '1 = Remove, 2 = Add' }),
+    driverName: Type.String(),
+    licenseNum: Type.String(),
+    eventDate: dateStringSchema(),
+    eventHour: hourStringSchema(['08:00']),
+    fromHour: hourStringSchema(['07:00']),
+    toHour: hourStringSchema(['09:00']),
+    fillByMakatOrAddress: Type.Ref('ToggleModel', { description: '1 = Makat Station, 2 = Line Number' }),
+    makatStation: Type.String(),
+    lineNumberText: Type.String(),
+    lineNumberFromList: Type.Ref('DataCodeModel'),
+    direction: Type.Ref('DataCodeModel'),
+    raisingStation: Type.Ref('DataCodeModel'),
+    applyContent: Type.String({ minLength: 10, maxLength: 1000 }),
+    busDirectionFrom: Type.String(),
+    busDirectionTo: Type.String(),
+    raisingStationCity: Type.Ref('DataCodeModel'),
+    destinationStationCity: Type.Ref('DataCodeModel'),
+    raisingStationAddress: Type.String(),
+    cityId: Type.String(),
+    cityName: Type.String(),
+    originCityCode: Type.String(),
+    originCityName: Type.String(),
+    destinationCityCode: Type.String(),
+    destinationCityText: Type.String(),
+    directionCode: Type.String(),
+    stationName: Type.String(),
+    lineCode: Type.String(),
+    firstDeclaration: Type.Boolean(),
+    secondDeclaration: Type.Boolean(),
+  },
+  { $id: 'BusAndOtherSchema' },
+);
 
-export const trainSchema = S.object()
-  .id('TrainSchema')
-  .prop('trainType', S.ref('ToggleModel').description('1 = Israel Train, 2 = Light Train'))
-  .prop('eventDate', dateStringSchema())
-  .prop('eventHour', hourStringSchema().examples(['08:00']))
-  .prop('startStation', S.ref('DataCodeModel'))
-  .prop('destinationStation', S.ref('DataCodeModel'))
-  .prop('number', S.string())
-  .prop('applyContent', S.string().minLength(10).maxLength(1000));
+export const trainSchema = optionalObject(
+  {
+    trainType: Type.Ref('ToggleModel', { description: '1 = Israel Train, 2 = Light Train' }),
+    eventDate: dateStringSchema(),
+    eventHour: hourStringSchema(['08:00']),
+    startStation: Type.Ref('DataCodeModel'),
+    destinationStation: Type.Ref('DataCodeModel'),
+    number: Type.String(),
+    applyContent: Type.String({ minLength: 10, maxLength: 1000 }),
+  },
+  { $id: 'TrainSchema' },
+);
 
-export const taxiSchema = S.object()
-  .id('TaxiSchema')
-  .prop('eventDetails', S.string())
-  .prop('invoice', S.string())
-  .prop('evidence', S.string())
-  .prop('otherFactors', S.string())
-  .prop('taxiType', S.ref('ToggleModel').description('1 = Taxi, 2 = Service Taxi'))
-  .prop('driverName', S.string())
-  .prop('licenseNum', S.string())
-  .prop('cap', S.string())
-  .prop('eventDate', dateStringSchema())
-  .prop('eventHour', hourStringSchema().examples(['08:00']))
-  .prop('eventLocation', S.string())
-  .prop('firstDeclaration', S.boolean())
-  .prop('secondDeclaration', S.boolean())
-  .prop('applyContent', S.string().minLength(10).maxLength(1000));
+export const taxiSchema = optionalObject(
+  {
+    eventDetails: Type.String(),
+    invoice: Type.String(),
+    evidence: Type.String(),
+    otherFactors: Type.String(),
+    taxiType: Type.Ref('ToggleModel', { description: '1 = Taxi, 2 = Service Taxi' }),
+    driverName: Type.String(),
+    licenseNum: Type.String(),
+    cap: Type.String(),
+    eventDate: dateStringSchema(),
+    eventHour: hourStringSchema(['08:00']),
+    eventLocation: Type.String(),
+    firstDeclaration: Type.Boolean(),
+    secondDeclaration: Type.Boolean(),
+    applyContent: Type.String({ minLength: 10, maxLength: 1000 }),
+  },
+  { $id: 'TaxiSchema' },
+);
 
-export const documentsList = S.array()
-  .id('DocumentsList')
-  .items(
-    S.object()
-      .prop('attachmentName', S.string().pattern(fileType).examples(['file.png']))
-      .prop('data', S.string().maxLength(5120)),
-  );
+export const documentsList = Type.Array(
+  optionalObject({
+    attachmentName: Type.String({ pattern: fileType.source, examples: ['file.png'] }),
+    data: Type.String({ maxLength: 5120 }),
+  }),
+  { $id: 'DocumentsList' },
+);
 
-export const complaintFormSchema = S.id('ComplaintFormSchema').anyOf([
-  S.object()
-    .prop('personalDetails', S.ref('PersonalDetailsSchema'))
-    .prop('title', S.string())
-    .prop('requestSubject', S.ref('RequestSubjectSchema'))
-    .prop('busAndOther', S.ref('BusAndOtherSchema'))
-    .prop('documentsList', S.ref('DocumentsList')),
+const complaintVariant = (transport) =>
+  optionalObject({
+    personalDetails: Type.Ref('PersonalDetailsSchema'),
+    title: Type.String(),
+    requestSubject: Type.Ref('RequestSubjectSchema'),
+    [transport]: Type.Ref(`${transport[0].toUpperCase()}${transport.slice(1)}Schema`),
+    documentsList: Type.Ref('DocumentsList'),
+  });
 
-  S.object()
-    .prop('personalDetails', S.ref('PersonalDetailsSchema'))
-    .prop('title', S.string())
-    .prop('requestSubject', S.ref('RequestSubjectSchema'))
-    .prop('train', S.ref('TrainSchema'))
-    .prop('documentsList', S.ref('DocumentsList')),
-
-  S.object()
-    .prop('personalDetails', S.ref('PersonalDetailsSchema'))
-    .prop('title', S.string())
-    .prop('requestSubject', S.ref('RequestSubjectSchema'))
-    .prop('taxi', S.ref('TaxiSchema'))
-    .prop('documentsList', S.ref('DocumentsList')),
-]);
+export const complaintFormSchema = Type.Union([complaintVariant('busAndOther'), complaintVariant('train'), complaintVariant('taxi')], {
+  $id: 'ComplaintFormSchema',
+});
 
 /**
  * Send complaint endpoint schema
@@ -128,9 +130,9 @@ export const sendComplaintSchema = {
   tags: ['Complaints'],
   summary: 'Send a complaint',
   description: 'Complaint submission is not available yet',
-  body: S.object().prop('data', S.ref('ComplaintFormSchema')),
+  body: optionalObject({ data: Type.Ref('ComplaintFormSchema') }),
   response: {
-    400: S.ref('ErrorResponseModel'),
-    501: S.ref('ErrorResponseModel'),
+    400: Type.Ref('ErrorResponseModel'),
+    501: Type.Ref('ErrorResponseModel'),
   },
 };
