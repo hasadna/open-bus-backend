@@ -1,34 +1,39 @@
-import { commonSuccessResponse, S } from './index.js';
+import { commonSuccessResponse, optionalObject, Type } from './index.js';
 
-export const githubIssueModel = S.object()
-  .id('GithubIssueModel')
-  .description('A GitHub issue, which may represent a task, enhancement, bug, or pull request.')
-  .prop('id', S.integer())
-  .prop('number', S.integer())
-  .prop('title', S.string())
-  .prop('body', S.anyOf([S.null(), S.string()]))
-  .prop(
-    'labels',
-    S.array().items(
-      S.anyOf([
-        S.string(),
-        S.object()
-          .prop('id', S.integer())
-          .prop('node_id', S.string())
-          .prop('url', S.string().format('uri'))
-          .prop('name', S.string())
-          .prop('description', S.anyOf([S.null(), S.string()]))
-          .prop('color', S.anyOf([S.null(), S.string()]))
-          .prop('default', S.boolean())
-          .additionalProperties(true),
+export const githubIssueModel = optionalObject(
+  {
+    id: Type.Integer(),
+    number: Type.Integer(),
+    title: Type.String(),
+    body: Type.Union([Type.Null(), Type.String()]),
+    labels: Type.Array(
+      Type.Union([
+        Type.String(),
+        optionalObject(
+          {
+            id: Type.Integer(),
+            node_id: Type.String(),
+            url: Type.String({ format: 'uri' }),
+            name: Type.String(),
+            description: Type.Union([Type.Null(), Type.String()]),
+            color: Type.Union([Type.Null(), Type.String()]),
+            default: Type.Boolean(),
+          },
+          { additionalProperties: true },
+        ),
       ]),
     ),
-  )
-  .prop('state', S.string().enum(['open', 'closed']))
-  .prop('created_at', S.string().format('date-time'))
-  .prop('url', S.string().format('uri'))
-  .prop('html_url', S.string().format('uri'))
-  .additionalProperties(true);
+    state: Type.String({ enum: ['open', 'closed'] }),
+    created_at: Type.String({ format: 'date-time' }),
+    url: Type.String({ format: 'uri' }),
+    html_url: Type.String({ format: 'uri' }),
+  },
+  {
+    $id: 'GithubIssueModel',
+    description: 'A GitHub issue, which may represent a task, enhancement, bug, or pull request.',
+    additionalProperties: true,
+  },
+);
 
 /**
  * Create issue endpoint schema
@@ -38,35 +43,26 @@ export const createIssueSchema = {
   tags: ['Issues'],
   summary: 'Create a GitHub issue',
   description: 'Creates a new GitHub issue with the provided information',
-  body: S.object()
-    .prop('type', S.string().enum(['bug', 'feature', 'other']).description('Type of the issue'))
-    .prop('title', S.string().minLength(5).maxLength(200).description('Title of the issue'))
-    .prop('contactName', S.string().minLength(1).maxLength(100).description('Name of the person reporting the issue'))
-    .prop('contactEmail', S.string().format('email').description('Email of the person reporting the issue'))
-    .prop('description', S.string().minLength(10).maxLength(5000).description('Detailed description of the issue'))
-    .prop('environment', S.string().minLength(1).maxLength(200).description('Environment where the issue occurred'))
-    .prop('debugContext', S.string().maxLength(2000).description('Optional debug context URL, e.g. the page the user was on when reporting'))
-    .prop('expectedBehavior', S.string().minLength(5).maxLength(1000).description('What was expected to happen'))
-    .prop('actualBehavior', S.string().minLength(5).maxLength(1000).description('What actually happened'))
-    .prop('reproducibility', S.string().enum(['always', 'sometimes', 'rarely', 'once']).description('How often the issue can be reproduced'))
-    .prop('debug', S.boolean().default(false).examples([true]))
-    // .prop('attachments', S.array().items(S.object()))
-    .required([
-      'type',
-      'title',
-      'contactName',
-      'contactEmail',
-      'description',
-      'environment',
-      'expectedBehavior',
-      'actualBehavior',
-      'reproducibility',
-    ]),
+  body: Type.Object({
+    type: Type.String({ enum: ['bug', 'feature', 'other'], description: 'Type of the issue' }),
+    title: Type.String({ minLength: 5, maxLength: 200, description: 'Title of the issue' }),
+    contactName: Type.String({ minLength: 1, maxLength: 100, description: 'Name of the person reporting the issue' }),
+    contactEmail: Type.String({ format: 'email', description: 'Email of the person reporting the issue' }),
+    description: Type.String({ minLength: 10, maxLength: 5000, description: 'Detailed description of the issue' }),
+    environment: Type.String({ minLength: 1, maxLength: 200, description: 'Environment where the issue occurred' }),
+    debugContext: Type.Optional(
+      Type.String({ maxLength: 2000, description: 'Optional debug context URL, e.g. the page the user was on when reporting' }),
+    ),
+    expectedBehavior: Type.String({ minLength: 5, maxLength: 1000, description: 'What was expected to happen' }),
+    actualBehavior: Type.String({ minLength: 5, maxLength: 1000, description: 'What actually happened' }),
+    reproducibility: Type.String({ enum: ['always', 'sometimes', 'rarely', 'once'], description: 'How often the issue can be reproduced' }),
+    debug: Type.Optional(Type.Boolean({ default: false, examples: [true] })),
+  }),
   response: {
-    200: commonSuccessResponse(S.ref('GithubIssueModel')),
-    400: S.ref('ErrorResponseModel'),
-    401: S.ref('ErrorResponseModel'),
-    500: S.ref('ErrorResponseModel'),
+    200: commonSuccessResponse(Type.Ref('GithubIssueModel')),
+    400: Type.Ref('ErrorResponseModel'),
+    401: Type.Ref('ErrorResponseModel'),
+    500: Type.Ref('ErrorResponseModel'),
   },
 };
 

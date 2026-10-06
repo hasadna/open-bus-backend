@@ -36,6 +36,7 @@ export default defineConfig([
       'one-var': ['error', 'never'],
       'sort-imports': 'off',
       'sort-keys': 'off',
+      'new-cap': 'off',
 
       // Prettier
       'prettier/prettier': 'error',
