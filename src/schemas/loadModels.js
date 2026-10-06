@@ -7,7 +7,6 @@ import {
   taxiSchema,
   trainSchema,
 } from './complaints.schema.js';
-import { lineModel, notRealNumberModel, pniyaModel, stationModel, subjectModel } from './gov.schema.js';
 import { commonErrorResponse, dataCodeModel, toggle } from './index.js';
 import { githubIssueModel } from './issues.schema.js';
 
@@ -27,12 +26,6 @@ export function loadModels(fastify) {
   fastify.addSchema(trainSchema);
   fastify.addSchema(documentsList);
   fastify.addSchema(complaintFormSchema);
-
-  fastify.addSchema(lineModel);
-  fastify.addSchema(notRealNumberModel);
-  fastify.addSchema(pniyaModel);
-  fastify.addSchema(stationModel);
-  fastify.addSchema(subjectModel);
 
   fastify.addSchema(githubIssueModel);
 }
