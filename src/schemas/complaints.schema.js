@@ -127,18 +127,10 @@ export const complaintFormSchema = S.id('ComplaintFormSchema').anyOf([
 export const sendComplaintSchema = {
   tags: ['Complaints'],
   summary: 'Send a complaint',
-  description: 'Submits a complaint to the government forms system',
-  body: S.object()
-    .prop('debug', S.boolean().description('Enable debug mode to return XML without sending').default(true))
-    .prop('data', S.ref('ComplaintFormSchema')),
+  description: 'Complaint submission is not available yet',
+  body: S.object().prop('data', S.ref('ComplaintFormSchema')),
   response: {
-    200: S.object()
-      .prop('success', S.boolean())
-      .prop('debug', S.boolean())
-      .prop('xml', S.string().description('Generated XML (only in debug mode)'))
-      .prop('data', S.anyOf([S.object(), S.string()]).description('Response data from the government forms system'))
-      .prop('referenceNumber', S.string().description('Generated reference number')),
     400: S.ref('ErrorResponseModel'),
-    500: S.ref('ErrorResponseModel'),
+    501: S.ref('ErrorResponseModel'),
   },
 };

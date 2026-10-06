@@ -1,7 +1,7 @@
 # 🚌 Open Bus Backend
 
 A backend service powering the Open-Bus platform.
-Provides APIs for health checks, GitHub issue creation, complaints, and government transportation data.
+Provides APIs for health checks and GitHub issue creation. Complaint submission is planned for a future PR.
 
 ## 📢 Get Involved
 
@@ -105,25 +105,6 @@ docker run -it -p 3001:3001 \
 
 ### 📣 Complaints
 
-- `POST /complaints` → Submit a complaint to government forms
-  - **Required:**
-    - `userData`: `firstName`, `lastName`, `id`, `email`, `phone`
-    - `databusData`: `operator`
-
-  - **Optional:** `debug`, `complaintType`, `description`
-
-### 🏛️ Government Transportation
-
-| Endpoint                | Method | Required Body                                           |
-| ----------------------- | ------ | ------------------------------------------------------- |
-| `/gov/lines-by-station` | POST   | `EventDate`, `OperatorId`, `StationId`                  |
-| `/gov/stations-by-line` | POST   | `eventDate`, `OperatorId`, `OfficelineId`, `Directions` |
-| `/gov/subjects`         | POST   | `listName = "subject_type_vehicles"`                    |
-| `/gov/train-stations`   | POST   | `StationTypeId`                                         |
-| `/gov/pniya`            | POST   | `listName = "pniya"`                                    |
-| `/gov/not-real-numbers` | POST   | `listName = "notrealnumbers"`                           |
-| `/gov/lines-by-line`    | POST   | `eventDate`, `OperatorId`, `OperatorLineId`             |
-| `/gov/cities`           | POST   | none                                                    |
-| `/gov/time`             | GET    | none                                                    |
+- `POST /complaints/send` → Returns `501 Not Implemented` until complaint submission is added.
 
 Server will be available at: [http://localhost:3001](http://localhost:3001)

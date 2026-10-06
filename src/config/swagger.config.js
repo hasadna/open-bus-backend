@@ -11,7 +11,6 @@ export const swaggerConfig = {
     externalDocs: { url: 'https://github.com/hasadna/open-bus-backend', description: 'Github' },
     tags: [
       { name: 'Complaints', description: 'Complaint submission to government' },
-      { name: 'Government Transportation', description: 'Government transportation data endpoints' },
       { name: 'Health', description: 'Health check endpoints' },
       { name: 'Issues', description: 'GitHub issue management' },
     ],
