@@ -2,7 +2,7 @@ import { CreateQueueCommand, GetQueueAttributesCommand, SendMessageCommand } fro
 import { expect } from 'chai';
 import f from 'fastify';
 import { afterEach, beforeEach, describe, it } from 'mocha';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import sinon from 'sinon';
 
 import { clearComplaintStatusCache } from '../src/controllers/complaints.controller.js';
@@ -19,6 +19,7 @@ describe('sendComplaint', () => {
   beforeEach(async () => {
     clearComplaintStatusCache();
     process.env.RESEND_API_KEY = 'test-key';
+    process.env.RESEND_COMPLAINT_FROM = 'complaints@verified.example';
     const send = sinon.stub(sqs, 'send');
     send
       .withArgs(sinon.match.instanceOf(CreateQueueCommand))
@@ -35,6 +36,7 @@ describe('sendComplaint', () => {
     await app.close();
     sinon.restore();
     delete process.env.RESEND_API_KEY;
+    delete process.env.RESEND_COMPLAINT_FROM;
   });
 
   const submit = (headers = { 'pair-key': uuid }, payload = { data }) => app.inject({ method: 'POST', url: '/complaints/send', headers, payload });
@@ -47,9 +49,30 @@ describe('sendComplaint', () => {
     expect(sendMessage.callCount).to.equal(1);
     expect(fetchStub.callCount).to.equal(1);
     expect(JSON.parse(sendMessage.firstCall.args[0].input.MessageBody)).to.deep.equal({ email: data.email, pairKey: uuid, data });
-    expect(JSON.parse(fetchStub.firstCall.args[1].body).from).to.equal(data.email);
+    expect(JSON.parse(fetchStub.firstCall.args[1].body).from).to.equal('complaints@verified.example');
+    expect(JSON.parse(fetchStub.firstCall.args[1].body).reply_to).to.equal(data.email);
     expect(JSON.parse(fetchStub.firstCall.args[1].body).to).to.deep.equal(['pniotcrm@mot.gov.il']);
-    expect(fetchStub.firstCall.args[1].headers.get('Idempotency-Key')).to.equal(uuid);
+    expect(fetchStub.firstCall.args[1].headers.get('Idempotency-Key')).to.equal(
+      `complaint/${createHash('sha256').update(`${uuid.toLowerCase()}:${data.email}`).digest('hex')}`,
+    );
+  });
+
+  it('uses different provider keys for different emails with the same pair-key', async () => {
+    expect((await submit()).statusCode).to.equal(200);
+    expect((await submit(undefined, { data: { ...data, email: 'other@gmail.com' } })).statusCode).to.equal(200);
+    expect(fetchStub.secondCall.args[1].headers.get('Idempotency-Key')).not.to.equal(fetchStub.firstCall.args[1].headers.get('Idempotency-Key'));
+  });
+
+  it('normalizes identity for duplicate submissions', async () => {
+    const first = await submit({ 'pair-key': uuid.toUpperCase() }, { data: { ...data, email: 'Rider@example.com' } });
+    expect((await submit()).json()).to.deep.equal(first.json());
+    expect(fetchStub.callCount).to.equal(1);
+  });
+
+  it('requires a configured sender before contacting Resend', async () => {
+    delete process.env.RESEND_COMPLAINT_FROM;
+    expect((await submit()).statusCode).to.equal(502);
+    expect(fetchStub.called).to.equal(false);
   });
 
   it('sends debug complaints to the submitter email', async () => {

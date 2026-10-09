@@ -1,5 +1,6 @@
 import { SendMessageCommand } from '@aws-sdk/client-sqs';
 import { LRUCache } from 'lru-cache';
+import { createHash } from 'node:crypto';
 
 import { sendComplaintEmail } from '../utils/complaintDelivery.js';
 import { getComplaintDLQUrl, getComplaintQueueUrl, sqs } from '../utils/complaintQueue.js';
@@ -39,7 +40,8 @@ export async function sendComplaint(request, reply) {
   }
 
   try {
-    const emailId = await sendComplaintEmail(data, pairKey, request.body.debug);
+    const idempotencyKey = `complaint/${createHash('sha256').update(key).digest('hex')}`;
+    const emailId = await sendComplaintEmail(data, idempotencyKey, request.body.debug);
     const response = { success: true, state: 'SENT', messageId, emailId };
     entries.set(key, { httpStatus: 200, response });
     return reply.status(200).send(response);

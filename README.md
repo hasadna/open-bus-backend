@@ -43,6 +43,7 @@ GITHUB_REPO=your_repository_name
 
 # Complaint email delivery
 RESEND_API_KEY=your_resend_api_key
+RESEND_COMPLAINT_FROM=complaints@your_verified_domain
 RESEND_WEBHOOK_SECRET=whsec_your_signing_secret
 RESEND_NOTIFICATION_FROM=notifications@your_verified_domain
 ```
@@ -110,8 +111,8 @@ docker run -it -p 3001:3001 \
 
 ### 📣 Complaints
 
-- `POST /complaints/send` → Requires a `pair-key` UUID header and a complaint body with `data.email`. Queues the complaint in SQS, then submits an email to Resend from that address to `pniotcrm@mot.gov.il`. Returns `SENT` (200), `PROCESSING` (202), or `FAILED` (502). A Resend failure is also copied to `complaints-dlq`. SQS queue and dead-letter queue are created when needed. AWS region and credentials use the SDK's standard configuration. The AWS identity needs `sqs:CreateQueue`, `sqs:GetQueueAttributes`, and `sqs:SendMessage` permissions. Duplicate status is cached in each server process for up to 24 hours or 1000 entries. SQS messages remain as an audit backlog; no worker consumes them in this phase.
+- `POST /complaints/send` → Requires a `pair-key` UUID header and a complaint body with `data.email`. Queues the complaint in SQS, then submits an email to Resend from the verified `RESEND_COMPLAINT_FROM` address to `pniotcrm@mot.gov.il`, with the submitter as Reply-To. Returns `SENT` (200), `PROCESSING` (202), or `FAILED` (502). A Resend failure is also copied to `complaints-dlq`. SQS queue and dead-letter queue are created when needed. AWS region and credentials use the SDK's standard configuration. The AWS identity needs `sqs:CreateQueue`, `sqs:GetQueueAttributes`, and `sqs:SendMessage` permissions. Duplicate status is cached in each server process for up to 24 hours or 1000 entries. Provider idempotency keys hash the same normalized UUID and email identity as the cache. SQS messages remain as an audit backlog; no worker consumes them in this phase.
 
 Server will be available at: [http://localhost:3001](http://localhost:3001)
 
-Configure a Resend webhook to send `email.failed`, `email.bounced`, and `email.suppressed` events to `POST /complaints/webhook` on your public server URL. Copy its signing secret into `RESEND_WEBHOOK_SECRET`. Set `RESEND_NOTIFICATION_FROM` to a sender on your verified Resend domain. After signature verification, failure events tagged `purpose=complaint` send a failure notification to the original complaint sender (`data.email` when submitting). Other events, including notification failures, are acknowledged without sending email. Notifications use the complaint email ID as an idempotency key. Invalid signatures receive `400`; missing configuration receives `503`; notification sending failures receive `502` so Resend can retry. Events do not update complaint status yet.
+Configure a Resend webhook to send `email.failed`, `email.bounced`, and `email.suppressed` events to `POST /complaints/webhook` on your public server URL. Copy its signing secret into `RESEND_WEBHOOK_SECRET`. Set `RESEND_NOTIFICATION_FROM` to a sender on your verified Resend domain. After signature verification, failure events tagged `purpose=complaint` retrieve the sent email and notify its stored Reply-To address (`data.email` when submitting). The Resend API key must allow reading and sending emails. Other events, including notification failures, are acknowledged without sending email. Notifications use the complaint email ID as an idempotency key. Invalid signatures receive `400`; missing configuration receives `503`; email lookup or notification sending failures receive `502` so Resend can retry. Events do not update complaint status yet.

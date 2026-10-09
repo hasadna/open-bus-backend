@@ -20,7 +20,11 @@ describe('Resend webhook', () => {
     originalSecret = process.env.RESEND_WEBHOOK_SECRET;
     originalFrom = process.env.RESEND_NOTIFICATION_FROM;
     process.env.RESEND_NOTIFICATION_FROM = 'notifications@example.com';
-    fetchStub = sinon.stub(globalThis, 'fetch').callsFake(() => Promise.resolve(new Response(JSON.stringify({ id: 'notification-123' }))));
+    fetchStub = sinon
+      .stub(globalThis, 'fetch')
+      .callsFake((url, options) =>
+        Promise.resolve(new Response(JSON.stringify(options.method === 'GET' ? { reply_to: ['rider@example.com'] } : { id: 'notification-123' }))),
+      );
     process.env.RESEND_API_KEY = 'test-key';
     process.env.RESEND_WEBHOOK_SECRET = `whsec_${secret}`;
     app = f();
@@ -80,17 +84,17 @@ describe('Resend webhook', () => {
   });
 
   const failurePayload = (type = 'email.failed', purpose = 'complaint') =>
-    JSON.stringify({ type, data: { email_id: 'email-123', from: 'rider@example.com', tags: { purpose } } });
+    JSON.stringify({ type, data: { email_id: 'email-123', from: 'complaints@verified.example', tags: { purpose } } });
 
   ['email.failed', 'email.bounced', 'email.suppressed'].forEach((type) => {
     it(`notifies the complaint sender for ${type}`, async () => {
       const body = failurePayload(type);
       const response = await app.inject({ method: 'POST', url: '/complaints/webhook', headers: headers(body), payload: body });
       expect(response.statusCode).to.equal(200);
-      const email = JSON.parse(fetchStub.firstCall.args[1].body);
+      const email = JSON.parse(fetchStub.secondCall.args[1].body);
       expect(email.to).to.deep.equal(['rider@example.com']);
       expect(email.from).to.equal('notifications@example.com');
-      expect(fetchStub.firstCall.args[1].headers.get('Idempotency-Key')).to.equal('complaint-failure/email-123');
+      expect(fetchStub.secondCall.args[1].headers.get('Idempotency-Key')).to.equal('complaint-failure/email-123');
     });
   });
 
@@ -107,7 +111,7 @@ describe('Resend webhook', () => {
       method: 'POST',
       url: '/complaints/webhook',
       headers: headers(body),
-      payload: body.replace('rider', 'attacker'),
+      payload: body.replace('complaints', 'attacker'),
     });
     expect(response.statusCode).to.equal(400);
     expect(fetchStub.called).to.equal(false);
@@ -118,5 +122,13 @@ describe('Resend webhook', () => {
     const body = failurePayload();
     const response = await app.inject({ method: 'POST', url: '/complaints/webhook', headers: headers(body), payload: body });
     expect(response.statusCode).to.equal(502);
+  });
+
+  it('retries when the original submitter is missing', async () => {
+    fetchStub.resolves(new Response(JSON.stringify({ reply_to: null })));
+    const body = failurePayload();
+    const response = await app.inject({ method: 'POST', url: '/complaints/webhook', headers: headers(body), payload: body });
+    expect(response.statusCode).to.equal(502);
+    expect(fetchStub.callCount).to.equal(1);
   });
 });

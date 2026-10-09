@@ -35,19 +35,24 @@ export function resendWebhookRoutes(fastify) {
       return reply.send({ success: true });
     }
 
-    const from = process.env.RESEND_NOTIFICATION_FROM;
+    const from = 'open-bus@hasadna.org.il';
     if (!from) {
       return reply.status(503).send({ error: 'Complaint failure notification configuration is incomplete' });
     }
-    if (!event.data.email_id || !event.data.from) {
-      return reply.status(400).send({ error: 'Complaint failure event omitted email ID or sender' });
+    if (!event.data.email_id) {
+      return reply.status(400).send({ error: 'Complaint failure event omitted email ID' });
     }
 
     try {
-      const { data, error } = await new Resend(apiKey).emails.send(
+      const resend = new Resend(apiKey);
+      const { data: complaint, error: lookupError } = await resend.emails.get(event.data.email_id);
+      if (lookupError) throw new Error(lookupError.message);
+      const submitter = complaint?.reply_to?.[0];
+      if (!submitter) throw new Error('Complaint email omitted submitter reply-to address');
+      const { data, error } = await resend.emails.send(
         {
           from,
-          to: [event.data.from],
+          to: [submitter],
           subject: 'Open Bus complaint delivery failed',
           text: `We could not deliver your Open Bus complaint. Please try submitting it again.\n\nComplaint email reference: ${event.data.email_id}`,
           tags: [{ name: 'purpose', value: 'complaint_failure_notification' }],
