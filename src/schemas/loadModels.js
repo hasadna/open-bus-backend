@@ -1,5 +1,5 @@
 import {
-  busAndOtherSchema,
+  busSchema,
   complaintFormSchema,
   documentsList,
   personalDetailsSchema,
@@ -21,7 +21,7 @@ export function loadModels(fastify) {
 
   fastify.addSchema(personalDetailsSchema);
   fastify.addSchema(requestSubjectSchema);
-  fastify.addSchema(busAndOtherSchema);
+  fastify.addSchema(busSchema);
   fastify.addSchema(taxiSchema);
   fastify.addSchema(trainSchema);
   fastify.addSchema(documentsList);

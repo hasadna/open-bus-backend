@@ -1,7 +1,7 @@
 # 🚌 Open Bus Backend
 
 A backend service powering the Open-Bus platform.
-Provides APIs for health checks and GitHub issue creation. Complaint submission is planned for a future PR.
+Provides APIs for health checks, GitHub issue creation, and complaint submission.
 
 ## 📢 Get Involved
 
@@ -40,6 +40,9 @@ LOG_LEVEL=info
 GITHUB_TOKEN=your_github_token
 GITHUB_OWNER=your_github_username
 GITHUB_REPO=your_repository_name
+
+# Complaint email delivery
+RESEND_API_KEY=your_resend_api_key
 ```
 
 ## 🚀 Running the Server
@@ -105,6 +108,6 @@ docker run -it -p 3001:3001 \
 
 ### 📣 Complaints
 
-- `POST /complaints/send` → Returns `501 Not Implemented` until complaint submission is added.
+- `POST /complaints/send` → Requires a `pair-key` UUID header and a complaint body with `data.email`. Queues the complaint in SQS, then submits an email to Resend from that address to `pniotcrm@mot.gov.il`. Returns `SENT` (200), `PROCESSING` (202), or `FAILED` (502). A Resend failure is also copied to `complaints-dlq`. SQS queue and dead-letter queue are created when needed. AWS region and credentials use the SDK's standard configuration. The AWS identity needs `sqs:CreateQueue`, `sqs:GetQueueAttributes`, and `sqs:SendMessage` permissions. Duplicate status is cached in each server process for up to 24 hours or 1000 entries. SQS messages remain as an audit backlog; no worker consumes them in this phase.
 
 Server will be available at: [http://localhost:3001](http://localhost:3001)
