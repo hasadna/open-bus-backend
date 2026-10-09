@@ -39,7 +39,7 @@ export async function sendComplaint(request, reply) {
   }
 
   try {
-    const emailId = await sendComplaintEmail(data, pairKey);
+    const emailId = await sendComplaintEmail(data, pairKey, request.body.debug);
     const response = { success: true, state: 'SENT', messageId, emailId };
     entries.set(key, { httpStatus: 200, response });
     return reply.status(200).send(response);

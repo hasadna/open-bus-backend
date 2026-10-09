@@ -1,32 +1,29 @@
+import { Resend } from 'resend';
+
 const COMPLAINTS_EMAIL = 'pniotcrm@mot.gov.il';
 
-export async function sendComplaintEmail(data, idempotencyKey) {
+export async function sendComplaintEmail(data, idempotencyKey, debug = false) {
   const RESEND_API_KEY = process.env?.RESEND_API_KEY;
 
   if (!RESEND_API_KEY) {
     throw new Error('Complaint email configuration is incomplete');
   }
 
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      'Content-Type': 'application/json',
-      'Idempotency-Key': idempotencyKey,
-    },
-    body: JSON.stringify({
+  const resend = new Resend(RESEND_API_KEY);
+  const { data: result, error } = await resend.emails.send(
+    {
       from: data.email,
-      to: [COMPLAINTS_EMAIL],
+      to: [debug === true ? data.email : COMPLAINTS_EMAIL],
       subject: `Open Bus complaint: ${data.title || idempotencyKey}`,
       text: JSON.stringify(data, null, 2),
-    }),
-  });
+    },
+    { idempotencyKey },
+  );
 
-  if (!response.ok) {
-    throw new Error(`Resend rejected complaint email (${response.status})`);
+  if (error) {
+    throw new Error(`Resend rejected complaint email (${error.statusCode}): ${error.message}`);
   }
 
-  const result = await response.json();
-  if (!result.id) throw new Error('Resend response omitted email ID');
+  if (!result?.id) throw new Error('Resend response omitted email ID');
   return result.id;
 }

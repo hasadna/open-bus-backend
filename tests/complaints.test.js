@@ -25,7 +25,7 @@ describe('sendComplaint', () => {
       .callsFake((command) => Promise.resolve({ QueueUrl: command.input.QueueName === 'complaints-dlq' ? 'dlq' : 'complaints' }));
     send.withArgs(sinon.match.instanceOf(GetQueueAttributesCommand)).resolves({ Attributes: { QueueArn: 'arn:dlq' } });
     sendMessage = send.withArgs(sinon.match.instanceOf(SendMessageCommand)).resolves({ MessageId: 'message-123' });
-    fetchStub = sinon.stub(globalThis, 'fetch').resolves({ ok: true, json: () => Promise.resolve({ id: 'email-123' }) });
+    fetchStub = sinon.stub(globalThis, 'fetch').callsFake(() => Promise.resolve(new Response(JSON.stringify({ id: 'email-123' }))));
     app = f();
     registerRoutes(app);
     await app.ready();
@@ -46,8 +46,15 @@ describe('sendComplaint', () => {
     expect(second.json()).to.deep.equal(first.json());
     expect(sendMessage.callCount).to.equal(1);
     expect(fetchStub.callCount).to.equal(1);
-    expect(JSON.parse(sendMessage.firstCall.args[0].input.MessageBody)).to.deep.equal({ idempotencyKey: uuid, data });
+    expect(JSON.parse(sendMessage.firstCall.args[0].input.MessageBody)).to.deep.equal({ email: data.email, pairKey: uuid, data });
     expect(JSON.parse(fetchStub.firstCall.args[1].body).from).to.equal(data.email);
+    expect(JSON.parse(fetchStub.firstCall.args[1].body).to).to.deep.equal(['pniotcrm@mot.gov.il']);
+    expect(fetchStub.firstCall.args[1].headers.get('Idempotency-Key')).to.equal(uuid);
+  });
+
+  it('sends debug complaints to the submitter email', async () => {
+    expect((await submit(undefined, { data, debug: true })).statusCode).to.equal(200);
+    expect(JSON.parse(fetchStub.firstCall.args[1].body).to).to.deep.equal([data.email]);
   });
 
   it('rejects invalid keys and complaint emails before running the handler', async () => {
@@ -103,7 +110,7 @@ describe('sendComplaint', () => {
   });
 
   it('records Resend failures in the dead-letter queue and caches failure', async () => {
-    fetchStub.resolves({ ok: false, status: 503 });
+    fetchStub.resolves(new Response(JSON.stringify({ statusCode: 503, message: 'Service unavailable', name: 'application_error' }), { status: 503 }));
     const first = await submit();
     const second = await submit();
     expect(first.statusCode).to.equal(502);
@@ -130,7 +137,7 @@ describe('sendComplaint', () => {
     const duplicate = await submit();
     expect(duplicate.statusCode).to.equal(202);
     expect(duplicate.json().state).to.equal('PROCESSING');
-    finishDelivery({ ok: true, json: () => Promise.resolve({ id: 'email-123' }) });
+    finishDelivery(new Response(JSON.stringify({ id: 'email-123' })));
     expect((await pending).statusCode).to.equal(200);
     expect(sendMessage.callCount).to.equal(1);
   });
