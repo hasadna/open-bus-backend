@@ -16,6 +16,7 @@ export async function sendComplaintEmail(data, idempotencyKey, debug = false) {
       to: [debug === true ? data.email : COMPLAINTS_EMAIL],
       subject: `Open Bus complaint: ${data.title || idempotencyKey}`,
       text: JSON.stringify(data, null, 2),
+      tags: [{ name: 'purpose', value: 'complaint' }],
     },
     { idempotencyKey },
   );
