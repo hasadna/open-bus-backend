@@ -80,6 +80,21 @@ describe('sendComplaint', () => {
     expect(JSON.parse(fetchStub.firstCall.args[1].body).to).to.deep.equal([data.email]);
   });
 
+  ['he', 'en', 'ru', 'ar'].forEach((lang) => {
+    it(`accepts ${lang} and tags the Hebrew complaint email`, async () => {
+      expect((await submit(undefined, { data: { ...data, lang } })).statusCode).to.equal(200);
+      const email = JSON.parse(fetchStub.firstCall.args[1].body);
+      expect(email.tags).to.deep.include({ name: 'lang', value: lang });
+      expect(email.html).to.include('lang="he" dir="rtl"');
+      expect(email.text).to.include('שפת הפונה');
+    });
+  });
+
+  it('rejects unsupported languages before queueing', async () => {
+    expect((await submit(undefined, { data: { ...data, lang: 'fr' } })).statusCode).to.equal(400);
+    expect(sendMessage.called).to.equal(false);
+  });
+
   it('rejects invalid keys and complaint emails before running the handler', async () => {
     expect((await submit({})).statusCode).to.equal(400);
     expect((await submit({ 'pair-key': 'invalid' })).statusCode).to.equal(400);

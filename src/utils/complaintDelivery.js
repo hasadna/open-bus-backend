@@ -1,5 +1,8 @@
 import { Resend } from 'resend';
 
+import { complaintTemplate } from '../templates/complaint.js';
+import { resolveLanguage } from '../templates/shared.js';
+
 const COMPLAINTS_EMAIL = 'pniotcrm@mot.gov.il';
 
 export async function sendComplaintEmail(data, idempotencyKey, debug = false) {
@@ -16,9 +19,11 @@ export async function sendComplaintEmail(data, idempotencyKey, debug = false) {
       from,
       replyTo: data.email,
       to: [debug === true ? data.email : COMPLAINTS_EMAIL],
-      subject: `Open Bus complaint: ${data.title || idempotencyKey}`,
-      text: JSON.stringify(data, null, 2),
-      tags: [{ name: 'purpose', value: 'complaint' }],
+      ...complaintTemplate(data),
+      tags: [
+        { name: 'purpose', value: 'complaint' },
+        { name: 'lang', value: resolveLanguage(data.lang) },
+      ],
     },
     { idempotencyKey },
   );

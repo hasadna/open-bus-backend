@@ -93,7 +93,9 @@ describe('Resend webhook', () => {
       expect(response.statusCode).to.equal(200);
       const email = JSON.parse(fetchStub.secondCall.args[1].body);
       expect(email.to).to.deep.equal(['rider@example.com']);
-      expect(email.from).to.equal('notifications@example.com');
+      expect(email.from).to.equal('open-bus@hasadna.org.il');
+      expect(email.html).to.include('lang="he" dir="rtl"');
+      expect(email.text).to.include('email-123');
       expect(fetchStub.secondCall.args[1].headers.get('Idempotency-Key')).to.equal('complaint-failure/email-123');
     });
   });
@@ -103,6 +105,22 @@ describe('Resend webhook', () => {
     const response = await app.inject({ method: 'POST', url: '/complaints/webhook', headers: headers(body), payload: body });
     expect(response.statusCode).to.equal(200);
     expect(fetchStub.called).to.equal(false);
+  });
+
+  ['he', 'en', 'ru', 'ar'].forEach((lang) => {
+    it(`uses the signed event language ${lang} before the stored language`, async () => {
+      fetchStub.onFirstCall().resolves(new Response(JSON.stringify({ reply_to: ['rider@example.com'], tags: [{ name: 'lang', value: 'en' }] })));
+      const body = JSON.stringify({ type: 'email.failed', data: { email_id: 'email-123', tags: { purpose: 'complaint', lang } } });
+      expect((await app.inject({ method: 'POST', url: '/complaints/webhook', headers: headers(body), payload: body })).statusCode).to.equal(200);
+      expect(JSON.parse(fetchStub.secondCall.args[1].body).html).to.include(`lang="${lang}"`);
+    });
+  });
+
+  it('uses the retrieved email language when the event has no language', async () => {
+    fetchStub.onFirstCall().resolves(new Response(JSON.stringify({ reply_to: ['rider@example.com'], tags: [{ name: 'lang', value: 'ru' }] })));
+    const body = failurePayload();
+    expect((await app.inject({ method: 'POST', url: '/complaints/webhook', headers: headers(body), payload: body })).statusCode).to.equal(200);
+    expect(JSON.parse(fetchStub.secondCall.args[1].body).html).to.include('lang="ru"');
   });
 
   it('rejects tampered failure events without sending email', async () => {

@@ -61,6 +61,9 @@ const complaintVariant = (transport, schemaId) =>
       details: Type.String(),
     }).properties,
     title: Type.String(),
+    lang: Type.Optional(
+      Type.String({ enum: ['he', 'en', 'ru', 'ar'], description: 'Preferred user language; defaults to Hebrew (he) when omitted.' }),
+    ),
     requestSubject: Type.Ref('RequestSubjectSchema'),
     [transport]: Type.Ref(schemaId),
     ...Object.fromEntries(['bus', 'train', 'taxi'].filter((name) => name !== transport).map((name) => [name, Type.Optional(Type.Never())])),

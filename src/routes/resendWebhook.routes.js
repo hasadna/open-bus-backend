@@ -1,5 +1,8 @@
 import { Resend } from 'resend';
 
+import { deliveryFailureTemplate } from '../templates/deliveryFailure.js';
+import { resolveLanguage } from '../templates/shared.js';
+
 /**
  * @param {import('fastify').FastifyInstance} fastify
  */
@@ -49,12 +52,12 @@ export function resendWebhookRoutes(fastify) {
       if (lookupError) throw new Error(lookupError.message);
       const submitter = complaint?.reply_to?.[0];
       if (!submitter) throw new Error('Complaint email omitted submitter reply-to address');
+      const lang = resolveLanguage(event.data.tags?.lang, complaint.tags?.find((tag) => tag.name === 'lang')?.value);
       const { data, error } = await resend.emails.send(
         {
           from,
           to: [submitter],
-          subject: 'Open Bus complaint delivery failed',
-          text: `We could not deliver your Open Bus complaint. Please try submitting it again.\n\nComplaint email reference: ${event.data.email_id}`,
+          ...deliveryFailureTemplate(event.data.email_id, lang),
           tags: [{ name: 'purpose', value: 'complaint_failure_notification' }],
         },
         { idempotencyKey: `complaint-failure/${event.data.email_id}` },
