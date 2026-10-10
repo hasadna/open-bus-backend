@@ -16,9 +16,9 @@ describe('TypeBox route schemas', () => {
 
       const document = app.swagger();
       const modelTitles = Object.values(document.components.schemas).map((schema) => schema.title);
-      expect(modelTitles).to.include('ComplaintFormSchema');
+      expect(modelTitles).to.include('ComplaintSchema');
       expect(modelTitles).to.include('GithubIssueModel');
-      const complaint = Object.values(document.components.schemas).find((schema) => schema.title === 'ComplaintFormSchema');
+      const complaint = Object.values(document.components.schemas).find((schema) => schema.title === 'ComplaintSchema');
       for (const transport of ['bus', 'train']) {
         expect(complaint.required).not.to.include(transport);
         const reference = complaint.properties[transport].$ref;

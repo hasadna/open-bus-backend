@@ -34,9 +34,10 @@ export async function sendComplaint(request, reply) {
     const result = await sqs.send(new SendMessageCommand({ QueueUrl, MessageBody: JSON.stringify({ email, pairKey, data }) }));
     messageId = result.MessageId;
   } catch (error) {
-    entries.delete(key);
     request.log.error({ err: error }, 'Failed to queue complaint');
-    return reply.status(503).send({ error: 'Queue error', message: 'Unable to queue complaint' });
+    const response = { success: false, state: 'FAILED', error: 'Queue error', message: 'Unable to queue complaint' };
+    entries.set(key, { httpStatus: 503, response });
+    return reply.status(503).send(response);
   }
 
   try {

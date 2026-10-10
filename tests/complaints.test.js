@@ -243,11 +243,15 @@ describe('sendComplaint', () => {
     expect(sendMessage.callCount).to.equal(1);
   });
 
-  it('allows a retry when queueing fails', async () => {
+  it('returns the cached failure without retrying when queueing fails', async () => {
     sendMessage.onFirstCall().rejects(new Error('SQS unavailable'));
-    expect((await submit()).statusCode).to.equal(503);
-    expect((await submit()).statusCode).to.equal(200);
-    expect(sendMessage.callCount).to.equal(2);
-    expect(fetchStub.callCount).to.equal(1);
+    const first = await submit();
+    const second = await submit();
+    expect(first.statusCode).to.equal(503);
+    expect(first.json().state).to.equal('FAILED');
+    expect(second.statusCode).to.equal(503);
+    expect(second.json()).to.deep.equal(first.json());
+    expect(sendMessage.callCount).to.equal(1);
+    expect(fetchStub.callCount).to.equal(0);
   });
 });

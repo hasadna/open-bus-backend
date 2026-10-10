@@ -60,9 +60,9 @@ export const createIssueSchema = {
   }),
   response: {
     200: commonSuccessResponse(Type.Ref('GithubIssueModel')),
-    400: Type.Ref('ErrorResponseModel'),
-    401: Type.Ref('ErrorResponseModel'),
-    500: Type.Ref('ErrorResponseModel'),
+    400: Type.Ref('ErrorResponse'),
+    401: Type.Ref('ErrorResponse'),
+    500: Type.Ref('ErrorResponse'),
   },
 };
 

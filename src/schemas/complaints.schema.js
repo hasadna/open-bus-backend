@@ -14,9 +14,9 @@ export const busSchema = optionalObject(
     driverName: Type.String(),
     licenseNumber: Type.String(),
     lineNumberText: Type.String(),
-    operator: Type.Ref('DataCodeModel'),
-    direction: Type.Ref('DataCodeModel'),
-    raisingStation: Type.Ref('DataCodeModel'),
+    operator: Type.Ref('DataCode'),
+    direction: Type.Ref('DataCode'),
+    raisingStation: Type.Ref('DataCode'),
   },
   { $id: 'BusSchema' },
 );
@@ -24,8 +24,8 @@ export const busSchema = optionalObject(
 export const trainSchema = optionalObject(
   {
     trainType: Type.String({ enum: ['1', '2', '3'], description: '1 = Israel Train, 2 = Jerusalem Light Train, 3 = Gush Dan Light Train (Dankal)' }),
-    startStation: Type.Ref('DataCodeModel'),
-    destinationStation: Type.Ref('DataCodeModel'),
+    startStation: Type.Ref('DataCode'),
+    destinationStation: Type.Ref('DataCode'),
     eventStation: Type.String({ enum: ['start', 'destination'] }),
     trainNumber: Type.String(),
   },
@@ -40,7 +40,7 @@ export const documentsList = Type.Array(
   { $id: 'DocumentsList' },
 );
 
-export const complaintFormSchema = Type.Object(
+export const ComplaintSchema = Type.Object(
   {
     firstName: Type.String({ pattern: hebOnly.source, minLength: 1, maxLength: 100, examples: ['פרטי'] }),
     lastName: Type.String({ pattern: hebOnly.source, minLength: 1, maxLength: 100, examples: ['משפחה'] }),
@@ -48,6 +48,7 @@ export const complaintFormSchema = Type.Object(
     passport: Type.String(),
     email: Type.String({ format: 'email', examples: ['email@gmail.com'] }),
     mobile: Type.String({ ...mobileSchema(), examples: ['050-2345678'] }),
+    ravkav: Type.String({ minLength: 11, maxLength: 11, pattern: numberOnly.source }),
     eventHour: hourStringSchema(['08:00']),
     fromHour: Type.Optional(hourStringSchema(['07:00'])),
     toHour: Type.Optional(hourStringSchema(['09:00'])),
@@ -57,12 +58,12 @@ export const complaintFormSchema = Type.Object(
     lang: Type.Optional(
       Type.String({ enum: ['he', 'en', 'ru', 'ar'], description: 'Preferred user language; defaults to Hebrew (he) when omitted.' }),
     ),
-    transport: Type.Ref('DataCodeModel'),
-    subject: Type.Ref('DataCodeModel'),
+    transport: Type.Ref('DataCode'),
+    subject: Type.Ref('DataCode'),
     bus: Type.Optional(Type.Ref('BusSchema')),
     train: Type.Optional(Type.Ref('TrainSchema')),
   },
-  { $id: 'ComplaintFormSchema' },
+  { $id: 'ComplaintSchema' },
 );
 
 /**
@@ -78,13 +79,13 @@ export const sendComplaintSchema = {
   }),
   body: Type.Object({
     debug: Type.Optional(Type.Boolean({ default: false, examples: [true] })),
-    data: Type.Intersect([Type.Ref('ComplaintFormSchema'), Type.Object({ email: Type.String({ format: 'email' }) })]),
+    data: Type.Intersect([Type.Ref('ComplaintSchema'), Type.Object({ email: Type.String({ format: 'email' }) })]),
   }),
   response: {
     200: Type.Object({ success: Type.Boolean(), state: Type.String(), messageId: Type.String(), emailId: Type.String() }),
     202: Type.Object({ success: Type.Boolean(), state: Type.String() }),
-    400: Type.Ref('ErrorResponseModel'),
+    400: Type.Ref('ErrorResponse'),
     502: Type.Object({ success: Type.Boolean(), state: Type.String(), messageId: Type.String() }),
-    503: Type.Ref('ErrorResponseModel'),
+    503: Type.Object({ success: Type.Boolean(), state: Type.String(), error: Type.String(), message: Type.String() }),
   },
 };
