@@ -10,7 +10,7 @@ describe('email templates', () => {
   for (const [lang, name] of Object.entries(names)) {
     it(`keeps complaints Hebrew and shows the ${lang} preference`, () => {
       for (const transport of ['bus', 'train', 'taxi']) {
-        const result = complaintTemplate({ title: 'Test', email: 'rider@example.com', lang, [transport]: {} });
+        const result = complaintTemplate({ title: 'Test', email: 'rider@example.com', lang, transport: { dataText: transport, dataCode: '1' } });
         expect(result.html).to.include('lang="he" dir="rtl"');
         expect(result.text).to.include(`שפת הפונה: ${name}`);
         expect(result.text).not.to.include('undefined');
@@ -26,6 +26,26 @@ describe('email templates', () => {
       expect(result.html).to.include('dir="ltr" style="unicode-bidi:isolate;display:inline-block">email-123');
     });
   }
+
+  it('renders transport, subject, and all train fields', () => {
+    const result = complaintTemplate({
+      title: 'Train complaint',
+      transport: { dataText: 'רכבת', dataCode: '2' },
+      subject: { dataText: 'איחור', dataCode: '3' },
+      bus: {},
+      train: {
+        trainType: '3',
+        startStation: { dataText: '<Start>', dataCode: 0 },
+        destinationStation: { dataText: 'End', dataCode: '20' },
+        eventStation: 'destination',
+        trainNumber: '42',
+      },
+    });
+    expect(result.text).to.include('אמצעי תחבורה: רכבת / 2').and.to.include('נושא הפנייה: איחור / 3');
+    expect(result.text).to.include('הרכבת הקלה בגוש דן (דנקל)').and.to.include('<Start> / 0').and.to.include('End / 20');
+    expect(result.text).to.include('תחנת האירוע: תחנת יעד').and.to.include('מספר רכבת: 42');
+    expect(result.html).to.include('&lt;Start&gt;');
+  });
 
   it('preserves submitted text and escapes HTML in all dynamic fields', () => {
     const result = complaintTemplate({

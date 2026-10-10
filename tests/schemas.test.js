@@ -18,6 +18,14 @@ describe('TypeBox route schemas', () => {
       const modelTitles = Object.values(document.components.schemas).map((schema) => schema.title);
       expect(modelTitles).to.include('ComplaintFormSchema');
       expect(modelTitles).to.include('GithubIssueModel');
+      const complaint = Object.values(document.components.schemas).find((schema) => schema.title === 'ComplaintFormSchema');
+      for (const transport of ['bus', 'train']) {
+        expect(complaint.required).not.to.include(transport);
+        const reference = complaint.properties[transport].$ref;
+        expect(reference).to.be.a('string');
+        const model = document.components.schemas[reference.split('/').at(-1)];
+        expect(model.title).to.equal(`${transport[0].toUpperCase()}${transport.slice(1)}Schema`);
+      }
       expect(document.paths).to.have.property('/issues/create');
       expect(document.paths).to.have.property('/complaints/send');
     } finally {
@@ -60,9 +68,26 @@ describe('TypeBox route schemas', () => {
       const response = await app.inject({
         method: 'POST',
         url: '/complaints/send',
-        payload: { data: { personalDetails: { mobile: 'invalid' } } },
+        headers: { 'pair-key': '12345678-1234-4123-8123-123456789abc' },
+        payload: {
+          data: {
+            firstName: 'אביבה',
+            lastName: 'ישראלי',
+            id: '123456782',
+            passport: '',
+            email: 'rider@example.com',
+            mobile: 'invalid',
+            eventHour: '08:00',
+            eventDate: '2026-10-09T08:00:00.000Z',
+            details: 'Complaint',
+            title: 'Test',
+            transport: {},
+            subject: {},
+          },
+        },
       });
       expect(response.statusCode).to.equal(400);
+      expect(response.json().message).to.include('mobile');
     } finally {
       await app.close();
     }

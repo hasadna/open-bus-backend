@@ -9,17 +9,16 @@ const displayValue = (value) => {
 
 export function complaintTemplate(data) {
   const lang = resolveLanguage(data.lang);
-  const transport = ['bus', 'train', 'taxi'].find((name) => data[name]);
-  const transportNames = { bus: 'אוטובוס', train: 'רכבת', taxi: 'מונית' };
+  const trainNames = { 1: 'רכבת ישראל', 2: 'הרכבת הקלה בירושלים', 3: 'הרכבת הקלה בגוש דן (דנקל)' };
+  const eventStationNames = { start: 'תחנת מוצא', destination: 'תחנת יעד' };
   const sections = [
     [
       'פרטי הפנייה',
       [
         ['נושא', data.title],
         ['שפת הפונה', languageNames[lang]],
-        ['אמצעי תחבורה', transportNames[transport]],
-        ['נושא הפנייה', data.requestSubject?.applySubject],
-        ['סוג הפנייה', data.requestSubject?.applyType],
+        ['אמצעי תחבורה', data.transport],
+        ['נושא הפנייה', data.subject],
         ['תיאור', data.details],
       ],
     ],
@@ -46,12 +45,22 @@ export function complaintTemplate(data) {
     [
       'פרטי התחבורה',
       [
-        ['שם הנהג', data[transport]?.driverName],
-        ['מספר רישוי', data[transport]?.licenseNumber],
-        ['מספר קו', data[transport]?.lineNumberText],
-        ['מפעיל', data[transport]?.operator],
-        ['כיוון', data[transport]?.direction],
-        ['תחנת עלייה', data[transport]?.raisingStation],
+        ['שם הנהג', data.bus?.driverName],
+        ['מספר רישוי', data.bus?.licenseNumber],
+        ['מספר קו', data.bus?.lineNumberText],
+        ['מפעיל', data.bus?.operator],
+        ['כיוון', data.bus?.direction],
+        ['תחנת עלייה', data.bus?.raisingStation],
+      ],
+    ],
+    [
+      'פרטי הרכבת',
+      [
+        ['סוג רכבת', trainNames[data.train?.trainType]],
+        ['תחנת מוצא', data.train?.startStation],
+        ['תחנת יעד', data.train?.destinationStation],
+        ['תחנת האירוע', eventStationNames[data.train?.eventStation]],
+        ['מספר רכבת', data.train?.trainNumber],
       ],
     ],
   ]

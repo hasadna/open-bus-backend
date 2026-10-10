@@ -18,6 +18,4 @@ export const dataCodeModel = optionalObject(
   { $id: 'DataCodeModel' },
 );
 
-export const toggle = Type.String({ $id: 'ToggleModel', enum: ['1', '2'] });
-
 export { Type };

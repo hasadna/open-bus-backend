@@ -11,7 +11,21 @@ import { sqs } from '../src/utils/complaintQueue.js';
 
 describe('sendComplaint', () => {
   const uuid = randomUUID();
-  const data = { title: 'A complaint', email: 'rider@example.com', requestSubject: {}, bus: {} };
+  const data = {
+    title: 'A complaint',
+    email: 'rider@example.com',
+    firstName: 'אביבה',
+    lastName: 'ישראלי',
+    id: '123456782',
+    passport: '',
+    mobile: '050-2345678',
+    eventDate: '2026-10-09T08:00:00.000Z',
+    eventHour: '08:00',
+    details: 'A short complaint',
+    transport: { dataText: 'אוטובוס', dataCode: '1' },
+    subject: { dataText: 'איחור', dataCode: '2' },
+    bus: {},
+  };
   let app;
   let sendMessage;
   let fetchStub;
@@ -128,14 +142,36 @@ describe('sendComplaint', () => {
     expect(JSON.parse(sendMessage.firstCall.args[0].input.MessageBody).data).to.deep.equal(payload);
   });
 
-  for (const transport of ['train', 'taxi']) {
+  for (const transport of ['bus', 'train']) {
     it(`accepts an empty ${transport} submission`, async () => {
-      const payload = { title: data.title, email: data.email, requestSubject: data.requestSubject, [transport]: {} };
+      const payload = { ...data, [transport]: {} };
       expect((await submit(undefined, { data: payload })).statusCode).to.equal(200);
     });
   }
 
-  it('rejects missing or multiple transports and invalid times', async () => {
+  for (const transport of ['bus', 'train']) {
+    // eslint-disable-next-line no-loop-func
+    it(`accepts empty placeholders alongside a populated ${transport}`, async () => {
+      const payload = {
+        ...data,
+        bus: {},
+        train: {},
+        [transport]: transport === 'bus' ? { driverName: 'Driver' } : { trainType: '3', trainNumber: '42' },
+      };
+      expect((await submit(undefined, { data: payload })).statusCode).to.equal(200);
+      const queued = JSON.parse(sendMessage.firstCall.args[0].input.MessageBody).data;
+      expect(queued[transport]).to.deep.equal(payload[transport]);
+      expect(queued).to.deep.equal(payload);
+    });
+  }
+
+  it('accepts multiple populated transports', async () => {
+    const payload = { ...data, bus: { driverName: 'Driver' }, train: { trainNumber: '42' } };
+    expect((await submit(undefined, { data: payload })).statusCode).to.equal(200);
+    expect(sendMessage.called).to.equal(true);
+  });
+
+  it('accepts optional transports and rejects invalid times', async () => {
     const { bus, ...fields } = data;
     expect(bus).to.deep.equal({});
     const responses = await Promise.all(
@@ -143,8 +179,35 @@ describe('sendComplaint', () => {
         submit(undefined, { data: payload }),
       ),
     );
-    expect(responses.map((response) => response.statusCode)).to.deep.equal([400, 400, 400, 400]);
-    expect(sendMessage.callCount).to.equal(0);
+    expect(responses.map((response) => response.statusCode)).to.deep.equal([200, 200, 400, 400]);
+    expect(sendMessage.callCount).to.equal(1);
+  });
+
+  it('rejects missing required fields and invalid train values before queueing', async () => {
+    const required = [
+      'firstName',
+      'lastName',
+      'id',
+      'passport',
+      'email',
+      'mobile',
+      'eventHour',
+      'eventDate',
+      'details',
+      'title',
+      'transport',
+      'subject',
+    ];
+    const payloads = required.map((field) => {
+      const payload = { ...data };
+      delete payload[field];
+      return payload;
+    });
+    payloads.push({ ...data, train: { trainType: '4' } }, { ...data, train: { eventStation: 'other' } });
+    const responses = await Promise.all(payloads.map((payload) => submit(undefined, { data: payload })));
+    expect(responses.map((response) => response.statusCode)).to.deep.equal(payloads.map(() => 400));
+    expect(sendMessage.called).to.equal(false);
+    expect(fetchStub.called).to.equal(false);
   });
 
   it('records Resend failures in the dead-letter queue and caches failure', async () => {
