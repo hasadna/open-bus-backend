@@ -47,6 +47,15 @@ describe('TypeBox route schemas', () => {
       const defaults = await app.inject({ method: 'POST', url: '/validate', payload: valid });
       expect(defaults.statusCode).to.equal(200);
       expect(defaults.json().debug).to.equal(false);
+      expect(defaults.json().publishContactEmail).to.equal(false);
+
+      const withoutEmail = { ...valid };
+      delete withoutEmail.contactEmail;
+      const anonymous = await app.inject({ method: 'POST', url: '/validate', payload: withoutEmail });
+      expect(anonymous.statusCode).to.equal(200);
+
+      const badEmail = await app.inject({ method: 'POST', url: '/validate', payload: { ...valid, contactEmail: 'not-an-email' } });
+      expect(badEmail.statusCode).to.equal(400);
     } finally {
       await app.close();
     }

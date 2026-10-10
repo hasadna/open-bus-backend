@@ -1,7 +1,5 @@
 import ky from 'ky';
 
-import { maskEmail } from '../utils/maskEmail.js';
-
 /**
  * Create issue handler
  * @param {import('fastify').FastifyRequest} request
@@ -13,6 +11,7 @@ export async function createIssue(request, reply) {
       title,
       contactName,
       contactEmail,
+      publishContactEmail,
       description,
       environment,
       debugContext,
@@ -41,8 +40,9 @@ export async function createIssue(request, reply) {
       });
     }
 
-    const maskedEmail = maskEmail(contactEmail);
-    request.log.info('GitHub issue creation started', { title, contactEmail: maskedEmail, reproducibility });
+    // The email is posted only with the reporter's explicit consent; otherwise it is dropped.
+    const publishedEmail = publishContactEmail === true && contactEmail ? contactEmail : undefined;
+    request.log.info('GitHub issue creation started', { title, publishContactEmail: Boolean(publishedEmail), reproducibility });
 
     // Validate required environment variables
     const repoName = process.env.GITHUB_REPO;
@@ -55,7 +55,7 @@ export async function createIssue(request, reply) {
     }
 
     // Create the body for the GitHub issue
-    const body = `## Contact Information\n**Contact Name:** ${contactName}\n**Contact Email:** ${maskedEmail}\n\n## Issue Details\n**Description:** \n${description}\n\n**Environment:** ${environment}\n\n**Expected Behavior:** \n${expectedBehavior}\n\n**Actual Behavior:** \n${actualBehavior}\n\n**Reproducibility:** ${reproducibility}\n${debugContext ? `\n\n**Debug Context:** ${debugContext}` : ''}\n\n${attachments && attachments.length > 0 ? `## Attachments\n${attachments.map((url) => `- ${url}`).join('\n')}` : ''}\n\n---\n*Issue created via API on ${new Date().toISOString()}*`;
+    const body = `## Contact Information\n**Contact Name:** ${contactName}\n${publishedEmail ? `**Contact Email:** ${publishedEmail}\n` : ''}\n## Issue Details\n**Description:** \n${description}\n\n**Environment:** ${environment}\n\n**Expected Behavior:** \n${expectedBehavior}\n\n**Actual Behavior:** \n${actualBehavior}\n\n**Reproducibility:** ${reproducibility}\n${debugContext ? `\n\n**Debug Context:** ${debugContext}` : ''}\n\n${attachments && attachments.length > 0 ? `## Attachments\n${attachments.map((url) => `- ${url}`).join('\n')}` : ''}\n\n---\n*Issue created via API on ${new Date().toISOString()}*`;
     const labels = ['REPORTED-BY-USER'];
     // Create the GitHub issue
     const response = await ky.post(`https://api.github.com/repos/${repoOwner}/${repoName}/issues`, {
