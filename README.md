@@ -100,8 +100,8 @@ docker run -it -p 3001:3001 \
 ### 🐞 GitHub Issues
 
 - `POST /issues` → Create a new GitHub issue
-  - **Required:** `title`, `contactName`, `contactEmail`, `description`, `environment`, `expectedBehavior`, `actualBehavior`, `reproducibility`
-  - **Optional:** `attachments[]` (array of URLs), `debugContext` (URL/context of the page the report was filed from)
+  - **Required:** `title`, `contactName`, `description`, `environment`, `expectedBehavior`, `actualBehavior`, `reproducibility`
+  - **Optional:** `contactEmail`, `publishContactEmail` (boolean, default `false`; the email is posted in the public issue only when `true`), `attachments[]` (array of URLs), `debugContext` (URL/context of the page the report was filed from)
 
 ### 📣 Complaints
 
