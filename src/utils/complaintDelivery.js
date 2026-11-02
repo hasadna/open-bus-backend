@@ -3,13 +3,12 @@ import { Resend } from 'resend';
 import { complaintTemplate } from '../templates/complaint.js';
 import { resolveLanguage } from '../templates/shared.js';
 
-const COMPLAINTS_EMAIL = 'pniotcrm@mot.gov.il';
-
 export async function sendComplaintEmail(data, idempotencyKey, debug = false) {
   const RESEND_API_KEY = process.env?.RESEND_API_KEY;
   const from = process.env.RESEND_EMAIL;
+  const recipient = debug === true ? 'delivered@resend.dev' : process.env.COMPLAINTS_EMAIL;
 
-  if (!RESEND_API_KEY || !from) {
+  if (!RESEND_API_KEY || !from || !recipient) {
     throw new Error('Complaint email configuration is incomplete');
   }
 
@@ -18,7 +17,7 @@ export async function sendComplaintEmail(data, idempotencyKey, debug = false) {
     {
       from,
       replyTo: data.email,
-      to: [debug === true ? data.email : COMPLAINTS_EMAIL],
+      to: [recipient],
       ...complaintTemplate(data),
       tags: [
         { name: 'purpose', value: 'complaint' },
