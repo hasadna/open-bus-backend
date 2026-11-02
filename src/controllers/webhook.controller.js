@@ -36,7 +36,7 @@ export async function webhook(request, reply) {
     return reply.send({ success: true });
   }
 
-  const from = 'open-bus@hasadna.org.il';
+  const from = process.env.RESEND_EMAIL;
   if (!from) {
     return reply.status(503).send({ error: 'Complaint failure notification configuration is incomplete' });
   }

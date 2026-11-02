@@ -12,14 +12,14 @@ describe('Resend webhook', () => {
   let app;
   let originalApiKey;
   let originalSecret;
-  let originalFrom;
+  let originalEmail;
   let fetchStub;
 
   beforeEach(async () => {
     originalApiKey = process.env.RESEND_API_KEY;
     originalSecret = process.env.RESEND_WEBHOOK_SECRET;
-    originalFrom = process.env.RESEND_NOTIFICATION_FROM;
-    process.env.RESEND_NOTIFICATION_FROM = 'notifications@example.com';
+    originalEmail = process.env.RESEND_EMAIL;
+    process.env.RESEND_EMAIL = 'complaints@verified.example';
     fetchStub = sinon
       .stub(globalThis, 'fetch')
       .callsFake((url, options) =>
@@ -35,12 +35,12 @@ describe('Resend webhook', () => {
   afterEach(async () => {
     await app.close();
     sinon.restore();
-    if (originalFrom === undefined) delete process.env.RESEND_NOTIFICATION_FROM;
-    else process.env.RESEND_NOTIFICATION_FROM = originalFrom;
     if (originalApiKey === undefined) delete process.env.RESEND_API_KEY;
     else process.env.RESEND_API_KEY = originalApiKey;
     if (originalSecret === undefined) delete process.env.RESEND_WEBHOOK_SECRET;
     else process.env.RESEND_WEBHOOK_SECRET = originalSecret;
+    if (originalEmail === undefined) delete process.env.RESEND_EMAIL;
+    else process.env.RESEND_EMAIL = originalEmail;
   });
 
   const headers = (body = payload) => {
@@ -93,7 +93,7 @@ describe('Resend webhook', () => {
       expect(response.statusCode).to.equal(200);
       const email = JSON.parse(fetchStub.secondCall.args[1].body);
       expect(email.to).to.deep.equal(['rider@example.com']);
-      expect(email.from).to.equal('open-bus@hasadna.org.il');
+      expect(email.from).to.equal('complaints@verified.example');
       expect(email.html).to.include('lang="he" dir="rtl"');
       expect(email.text).to.include('email-123');
       expect(fetchStub.secondCall.args[1].headers.get('Idempotency-Key')).to.equal('complaint-failure/email-123');

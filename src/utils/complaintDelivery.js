@@ -7,7 +7,7 @@ const COMPLAINTS_EMAIL = 'pniotcrm@mot.gov.il';
 
 export async function sendComplaintEmail(data, idempotencyKey, debug = false) {
   const RESEND_API_KEY = process.env?.RESEND_API_KEY;
-  const from = process.env.RESEND_COMPLAINT_FROM;
+  const from = process.env.RESEND_EMAIL;
 
   if (!RESEND_API_KEY || !from) {
     throw new Error('Complaint email configuration is incomplete');

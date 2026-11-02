@@ -33,7 +33,7 @@ describe('sendComplaint', () => {
   beforeEach(async () => {
     clearComplaintStatusCache();
     process.env.RESEND_API_KEY = 'test-key';
-    process.env.RESEND_COMPLAINT_FROM = 'complaints@verified.example';
+    process.env.RESEND_EMAIL = 'complaints@verified.example';
     const send = sinon.stub(sqs, 'send');
     send
       .withArgs(sinon.match.instanceOf(CreateQueueCommand))
@@ -50,7 +50,7 @@ describe('sendComplaint', () => {
     await app.close();
     sinon.restore();
     delete process.env.RESEND_API_KEY;
-    delete process.env.RESEND_COMPLAINT_FROM;
+    delete process.env.RESEND_EMAIL;
   });
 
   const submit = (headers = { 'pair-key': uuid }, payload = { data }) => app.inject({ method: 'POST', url: '/complaints/send', headers, payload });
@@ -84,7 +84,7 @@ describe('sendComplaint', () => {
   });
 
   it('requires a configured sender before contacting Resend', async () => {
-    delete process.env.RESEND_COMPLAINT_FROM;
+    delete process.env.RESEND_EMAIL;
     expect((await submit()).statusCode).to.equal(502);
     expect(fetchStub.called).to.equal(false);
   });
