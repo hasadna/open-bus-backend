@@ -5,9 +5,9 @@ import { createHash } from 'node:crypto';
 import { sendComplaintEmail } from '../utils/complaintDelivery.js';
 import { getComplaintDLQUrl, getComplaintQueueUrl, sqs } from '../utils/complaintQueue.js';
 
-const entries = new LRUCache({ max: 1000, ttl: 24 * 60 * 60 * 1000 });
+const cache = new LRUCache({ max: 1000, ttl: 24 * 60 * 60 * 1000 });
 export function clearComplaintStatusCache() {
-  entries.clear();
+  cache.clear();
 }
 
 /**
@@ -21,12 +21,12 @@ export async function sendComplaint(request, reply) {
   const { email } = data;
 
   const key = `${pairKey.toLowerCase()}:${email.trim().toLowerCase()}`;
-  const cached = entries.get(key);
+  const cached = cache.get(key);
   if (cached) {
     return reply.status(cached.httpStatus).send(cached.response);
   }
 
-  entries.set(key, { httpStatus: 202, response: { success: true, state: 'PROCESSING' } });
+  cache.set(key, { httpStatus: 202, response: { success: true, state: 'PROCESSING' } });
 
   let messageId;
   try {
@@ -36,7 +36,7 @@ export async function sendComplaint(request, reply) {
   } catch (error) {
     request.log.error({ err: error }, 'Failed to queue complaint');
     const response = { success: false, state: 'FAILED', error: 'Queue error', message: 'Unable to queue complaint' };
-    entries.set(key, { httpStatus: 503, response });
+    cache.set(key, { httpStatus: 503, response });
     return reply.status(503).send(response);
   }
 
@@ -44,7 +44,7 @@ export async function sendComplaint(request, reply) {
     const idempotencyKey = `complaint/${createHash('sha256').update(key).digest('hex')}`;
     const emailId = await sendComplaintEmail(data, idempotencyKey, request.body.debug);
     const response = { success: true, state: 'SENT', messageId, emailId };
-    entries.set(key, { httpStatus: 200, response });
+    cache.set(key, { httpStatus: 200, response });
     return reply.status(200).send(response);
   } catch (error) {
     request.log.error({ err: error, messageId }, 'Failed to submit complaint email');
@@ -55,7 +55,7 @@ export async function sendComplaint(request, reply) {
       request.log.error({ err: dlqError, messageId }, 'Failed to record complaint in dead-letter queue');
     }
     const response = { success: false, state: 'FAILED', messageId };
-    entries.set(key, { httpStatus: 502, response });
+    cache.set(key, { httpStatus: 502, response });
     return reply.status(502).send(response);
   }
 }
