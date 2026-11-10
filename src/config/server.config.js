@@ -10,6 +10,7 @@ import { swaggerConfig, swaggerUIConfig } from './swagger.config.js';
 export async function createServer() {
   const isDev = process.env.NODE_ENV !== 'production';
   const fastify = f({
+    ajv: { customOptions: { allErrors: true } },
     logger: {
       level: process.env.LOG_LEVEL || (isDev ? 'debug' : 'info'),
       transport: isDev
