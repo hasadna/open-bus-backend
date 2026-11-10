@@ -5,10 +5,10 @@ import { resolveLanguage } from '../templates/shared.js';
 
 export async function sendComplaintEmail(data, idempotencyKey, debug = false) {
   const RESEND_API_KEY = process.env?.RESEND_API_KEY;
-  const from = process.env.RESEND_EMAIL;
+  const from = debug === true ? 'onboarding@resend.dev' : process.env.RESEND_EMAIL;
   const recipient = debug === true ? 'delivered@resend.dev' : process.env.RESEND_COMPLAINTS_EMAIL;
 
-  if (!RESEND_API_KEY || !from || !recipient) {
+  if (!RESEND_API_KEY || !recipient) {
     throw new Error('Complaint email configuration is incomplete');
   }
 

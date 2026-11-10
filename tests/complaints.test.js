@@ -96,8 +96,14 @@ describe('sendComplaint', () => {
     expect(fetchStub.callCount).to.equal(1);
   });
 
-  it('requires a configured sender before contacting Resend', async () => {
+  it('uses the Resend test sender when no sender is configured', async () => {
     delete process.env.RESEND_EMAIL;
+    expect((await submit()).statusCode).to.equal(200);
+    expect(JSON.parse(fetchStub.firstCall.args[1].body).from).to.equal('onboarding@resend.dev');
+  });
+
+  it('requires an API key before contacting Resend', async () => {
+    delete process.env.RESEND_API_KEY;
     expect((await submit()).statusCode).to.equal(502);
     expect(fetchStub.called).to.equal(false);
   });
