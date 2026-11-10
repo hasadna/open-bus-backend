@@ -1,0 +1,7 @@
+.git
+.env
+.env.*
+.envrc
+.aws
+node_modules
+coverage

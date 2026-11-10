@@ -42,9 +42,13 @@ GITHUB_OWNER=your_github_username
 GITHUB_REPO=your_repository_name
 
 # Complaint email delivery
+AWS_REGION=us-east-1
+# For local development; deployments can use an IAM role instead.
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
 RESEND_API_KEY=your_resend_api_key
-RESEND_EMAIL=complaints@your_verified_domain
-COMPLAINTS_EMAIL=pniotcrm@mot.gov.il
+RESEND_EMAIL=open_bus@your_verified_domain
+RESEND_COMPLAINTS_EMAIL=complaints@domain
 RESEND_WEBHOOK_SECRET=whsec_your_signing_secret
 ```
 
@@ -88,11 +92,12 @@ docker build -t open-bus-backend .
 
 2. **Run the container**
 
+Populate `.env` with your AWS, Resend, and GitHub configuration, then pass it to the container at runtime:
+
 ```bash
 docker run -it -p 3001:3001 \
-  -e GITHUB_TOKEN=your_github_token \
-  -e GITHUB_OWNER=your_github_owner \
-  -e GITHUB_REPO=your_github_repo \
+  --env-file .env \
+  -e NODE_ENV=production \
   -e LOG_LEVEL=info \
   open-bus-backend
 ```
@@ -115,7 +120,7 @@ Complaint data requires `firstName`, `lastName`, `id`, `passport` (an empty stri
 
 Complaint bodies accept optional `data.lang`: `he`, `en`, `ru`, or `ar` (Hebrew when omitted). Unsupported values return `400`. Complaint emails always use Hebrew labels and include the user's preferred language; submitted titles and descriptions are preserved as written. Both complaint and delivery-failure emails include HTML and plain-text versions. Failure notifications use the preferred language stored in the complaint email's `lang` tag, with Hebrew as the fallback for older emails. Hebrew and Arabic notifications use right-to-left layouts.
 
-- `POST /complaints/send` → Requires a `pair-key` UUID header and a complaint body with `data.email`. Queues the complaint in SQS, then submits an email to Resend from the verified `RESEND_EMAIL` address to `COMPLAINTS_EMAIL`, with the submitter as Reply-To. Returns `SENT` (200), `PROCESSING` (202), or `FAILED` (502). A Resend failure is also copied to `complaints-dlq`. SQS queue and dead-letter queue are created when needed. AWS region and credentials use the SDK's standard configuration. The AWS identity needs `sqs:CreateQueue`, `sqs:GetQueueAttributes`, and `sqs:SendMessage` permissions. Duplicate status is cached in each server process for up to 24 hours or 1000 entries. Provider idempotency keys hash the same normalized UUID and email identity as the cache. SQS messages remain as an audit backlog; no worker consumes them in this phase.
+- `POST /complaints/send` → Requires a `pair-key` UUID header and a complaint body with `data.email`. Queues the complaint in SQS, then submits an email to Resend from the verified `RESEND_EMAIL` address to `RESEND_COMPLAINTS_EMAIL`, with the submitter as Reply-To. Returns `SENT` (200), `PROCESSING` (202), or `FAILED` (502). A Resend failure is also copied to `complaints-dlq`. SQS queue and dead-letter queue are created when needed. AWS region and credentials use the SDK's standard configuration. The AWS identity needs `sqs:CreateQueue`, `sqs:GetQueueAttributes`, and `sqs:SendMessage` permissions. Duplicate status is cached in each server process for up to 24 hours or 1000 entries. Provider idempotency keys hash the same normalized UUID and email identity as the cache. SQS messages remain as an audit backlog; no worker consumes them in this phase.
 
 Server will be available at: [http://localhost:3001](http://localhost:3001)
 

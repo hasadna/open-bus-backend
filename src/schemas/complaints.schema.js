@@ -48,7 +48,7 @@ export const ComplaintSchema = Type.Object(
     passport: Type.String(),
     email: Type.String({ format: 'email', examples: ['email@gmail.com'] }),
     mobile: Type.String({ ...mobileSchema(), examples: ['050-2345678'] }),
-    ravkav: Type.String({ minLength: 11, maxLength: 11, pattern: numberOnly.source }),
+    ravkav: Type.Optional(Type.String({ minLength: 11, maxLength: 11, pattern: numberOnly.source })),
     eventHour: hourStringSchema(['08:00']),
     fromHour: Type.Optional(hourStringSchema(['07:00'])),
     toHour: Type.Optional(hourStringSchema(['09:00'])),

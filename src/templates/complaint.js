@@ -31,6 +31,7 @@ export function complaintTemplate(data) {
         ['דרכון', data.passport],
         ['דואר אלקטרוני', data.email, true],
         ['טלפון', data.mobile, true],
+        ['מספר רב-קו', data.ravkav, true],
       ],
     ],
     [

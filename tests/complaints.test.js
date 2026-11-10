@@ -34,7 +34,7 @@ describe('sendComplaint', () => {
     clearComplaintStatusCache();
     process.env.RESEND_API_KEY = 'test-key';
     process.env.RESEND_EMAIL = 'complaints@verified.example';
-    process.env.COMPLAINTS_EMAIL = 'pniotcrm@mot.gov.il';
+    process.env.RESEND_COMPLAINTS_EMAIL = 'pniotcrm@mot.gov.il';
     const send = sinon.stub(sqs, 'send');
     send
       .withArgs(sinon.match.instanceOf(CreateQueueCommand))
@@ -52,7 +52,7 @@ describe('sendComplaint', () => {
     sinon.restore();
     delete process.env.RESEND_API_KEY;
     delete process.env.RESEND_EMAIL;
-    delete process.env.COMPLAINTS_EMAIL;
+    delete process.env.RESEND_COMPLAINTS_EMAIL;
   });
 
   const submit = (headers = { 'pair-key': uuid }, payload = { data }) => app.inject({ method: 'POST', url: '/complaints/send', headers, payload });
@@ -94,6 +94,29 @@ describe('sendComplaint', () => {
   it('sends debug complaints to Resend’s test address', async () => {
     expect((await submit(undefined, { data, debug: true })).statusCode).to.equal(200);
     expect(JSON.parse(fetchStub.firstCall.args[1].body).to).to.deep.equal(['delivered@resend.dev']);
+  });
+
+  it('sends a real complaint after a debug submission with the same identity', async () => {
+    expect((await submit(undefined, { data, debug: true })).statusCode).to.equal(200);
+    expect((await submit(undefined, { data, debug: false })).statusCode).to.equal(200);
+    expect((await submit()).statusCode).to.equal(200);
+    expect((await submit(undefined, { data, debug: true })).statusCode).to.equal(200);
+    expect(sendMessage.callCount).to.equal(2);
+    expect(fetchStub.callCount).to.equal(2);
+    expect(JSON.parse(fetchStub.firstCall.args[1].body).to).to.deep.equal(['delivered@resend.dev']);
+    expect(JSON.parse(fetchStub.secondCall.args[1].body).to).to.deep.equal(['pniotcrm@mot.gov.il']);
+    expect(fetchStub.secondCall.args[1].headers.get('Idempotency-Key')).not.to.equal(fetchStub.firstCall.args[1].headers.get('Idempotency-Key'));
+  });
+
+  it('preserves an optional Rav-Kav number and rejects invalid values', async () => {
+    expect((await submit(undefined, { data: { ...data, ravkav: '12345678901' } })).statusCode).to.equal(200);
+    expect(JSON.parse(sendMessage.firstCall.args[0].input.MessageBody).data.ravkav).to.equal('12345678901');
+    const email = JSON.parse(fetchStub.firstCall.args[1].body);
+    expect(email.text).to.include('מספר רב-קו: 12345678901');
+    expect(email.html).to.include('12345678901');
+    const responses = await Promise.all(['123', '123456789012', '1234567890a'].map((ravkav) => submit(undefined, { data: { ...data, ravkav } })));
+    expect(responses.map((response) => response.statusCode)).to.deep.equal([400, 400, 400]);
+    expect(sendMessage.callCount).to.equal(1);
   });
 
   ['he', 'en', 'ru', 'ar'].forEach((lang) => {
@@ -212,15 +235,21 @@ describe('sendComplaint', () => {
     expect(fetchStub.called).to.equal(false);
   });
 
-  it('records Resend failures in the dead-letter queue and caches failure', async () => {
-    fetchStub.resolves(new Response(JSON.stringify({ statusCode: 503, message: 'Service unavailable', name: 'application_error' }), { status: 503 }));
+  it('records Resend failures in the dead-letter queue and allows a retry after recovery', async () => {
+    fetchStub
+      .onFirstCall()
+      .resolves(new Response(JSON.stringify({ statusCode: 503, message: 'Service unavailable', name: 'application_error' }), { status: 503 }));
     const first = await submit();
     const second = await submit();
     expect(first.statusCode).to.equal(502);
-    expect(second.json()).to.deep.equal(first.json());
-    expect(sendMessage.callCount).to.equal(2);
+    expect(second.statusCode).to.equal(200);
+    expect(second.json().state).to.equal('SENT');
+    expect(sendMessage.callCount).to.equal(3);
     expect(sendMessage.secondCall.args[0].input.QueueUrl).to.equal('dlq');
-    expect(fetchStub.callCount).to.equal(1);
+    expect(fetchStub.callCount).to.equal(2);
+    expect(fetchStub.secondCall.args[1].headers.get('Idempotency-Key')).to.equal(fetchStub.firstCall.args[1].headers.get('Idempotency-Key'));
+    expect((await submit()).json()).to.deep.equal(second.json());
+    expect(fetchStub.callCount).to.equal(2);
   });
 
   it('returns processing while the first delivery is pending', async () => {
@@ -245,15 +274,16 @@ describe('sendComplaint', () => {
     expect(sendMessage.callCount).to.equal(1);
   });
 
-  it('returns the cached failure without retrying when queueing fails', async () => {
+  it('retries after a queue failure and caches the recovered success', async () => {
     sendMessage.onFirstCall().rejects(new Error('SQS unavailable'));
     const first = await submit();
     const second = await submit();
     expect(first.statusCode).to.equal(503);
     expect(first.json().state).to.equal('FAILED');
-    expect(second.statusCode).to.equal(503);
-    expect(second.json()).to.deep.equal(first.json());
-    expect(sendMessage.callCount).to.equal(1);
-    expect(fetchStub.callCount).to.equal(0);
+    expect(second.statusCode).to.equal(200);
+    expect(second.json().state).to.equal('SENT');
+    expect((await submit()).json()).to.deep.equal(second.json());
+    expect(sendMessage.callCount).to.equal(2);
+    expect(fetchStub.callCount).to.equal(1);
   });
 });

@@ -20,7 +20,8 @@ export async function sendComplaint(request, reply) {
   const data = request.body?.data;
   const { email } = data;
 
-  const key = `${pairKey.toLowerCase()}:${email.trim().toLowerCase()}`;
+  const debug = request.body.debug === true;
+  const key = `${pairKey.toLowerCase()}:${email.trim().toLowerCase()}${debug ? ':debug' : ''}`;
   const cached = cache.get(key);
   if (cached) {
     return reply.status(cached.httpStatus).send(cached.response);
@@ -36,13 +37,13 @@ export async function sendComplaint(request, reply) {
   } catch (error) {
     request.log.error({ err: error }, 'Failed to queue complaint');
     const response = { success: false, state: 'FAILED', error: 'Queue error', message: 'Unable to queue complaint' };
-    cache.set(key, { httpStatus: 503, response });
+    cache.delete(key);
     return reply.status(503).send(response);
   }
 
   try {
     const idempotencyKey = `complaint/${createHash('sha256').update(key).digest('hex')}`;
-    const emailId = await sendComplaintEmail(data, idempotencyKey, request.body.debug);
+    const emailId = await sendComplaintEmail(data, idempotencyKey, debug);
     const response = { success: true, state: 'SENT', messageId, emailId };
     cache.set(key, { httpStatus: 200, response });
     return reply.status(200).send(response);
@@ -55,7 +56,7 @@ export async function sendComplaint(request, reply) {
       request.log.error({ err: dlqError, messageId }, 'Failed to record complaint in dead-letter queue');
     }
     const response = { success: false, state: 'FAILED', messageId };
-    cache.set(key, { httpStatus: 502, response });
+    cache.delete(key);
     return reply.status(502).send(response);
   }
 }
