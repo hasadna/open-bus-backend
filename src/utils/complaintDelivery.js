@@ -16,11 +16,12 @@ export async function sendComplaintEmail(data, idempotencyKey, debug = false) {
   const { data: result, error } = await resend.emails.send(
     {
       from,
-      replyTo: data.email,
+      ...(data.email ? { replyTo: data.email } : {}),
       to: [recipient],
       ...complaintTemplate(data),
       tags: [
         { name: 'purpose', value: 'complaint' },
+        ...(data.email ? [] : [{ name: 'no_reply_to', value: 'true' }]),
         { name: 'lang', value: resolveLanguage(data.lang) },
       ],
     },

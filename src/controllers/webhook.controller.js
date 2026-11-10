@@ -49,6 +49,7 @@ export async function webhook(request, reply) {
     const { data: complaint, error: lookupError } = await resend.emails.get(event.data.email_id);
     if (lookupError) throw new Error(lookupError.message);
     const submitter = complaint?.reply_to?.[0];
+    if (!submitter && complaint?.tags?.some((tag) => tag.name === 'no_reply_to' && tag.value === 'true')) return reply.send({ success: true });
     if (!submitter) throw new Error('Complaint email omitted submitter reply-to address');
     const lang = resolveLanguage(event.data.tags?.lang, complaint.tags?.find((tag) => tag.name === 'lang')?.value);
     const { data, error } = await resend.emails.send(

@@ -83,6 +83,12 @@ describe('TypeBox route schemas', () => {
             title: 'Test',
             transport: {},
             subject: {},
+            bus: {
+              lineNumberText: '1',
+              operator: { dataText: 'Operator', dataCode: '3' },
+              direction: { dataText: 'Direction', dataCode: '1' },
+              raisingStation: { dataText: 'Station', dataCode: '123' },
+            },
           },
         },
       });

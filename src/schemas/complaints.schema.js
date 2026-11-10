@@ -1,7 +1,8 @@
 import { optionalObject, Type } from './index.js';
 
 const numberOnly = /^[0-9]+$/u;
-const hebOnly = /^[א-ת-\s'"()]+/u;
+const hebrewName = /^[א-ת\s'"()-]+$/u;
+const multilingualName = /^[א-תA-Za-zء-ي\s'"()-]+$/u;
 export const mobileOnly = /^05[0-689]-?[2-9][0-9]{6}$/u;
 const fileType = /^.*\.(?<type>doc|docx|jpeg|jpg|pdf|gif|tiff|png)$/giu;
 
@@ -9,25 +10,28 @@ const mobileSchema = () => Type.String({ pattern: mobileOnly.source });
 const dateStringSchema = () => Type.String({ format: 'date-time' });
 const hourStringSchema = (examples) => Type.String({ pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$', ...(examples && { examples }) });
 
-export const busSchema = optionalObject(
+const requiredDataCode = () =>
+  Type.Object({ dataText: Type.String({ minLength: 1 }), dataCode: Type.Union([Type.String({ minLength: 1 }), Type.Number()]) });
+
+export const busSchema = Type.Object(
   {
-    driverName: Type.String(),
-    licenseNumber: Type.String(),
-    lineNumberText: Type.String(),
-    operator: Type.Ref('DataCode'),
-    direction: Type.Ref('DataCode'),
-    raisingStation: Type.Ref('DataCode'),
+    driverName: Type.Optional(Type.String()),
+    licenseNumber: Type.Optional(Type.String()),
+    lineNumberText: Type.String({ minLength: 1 }),
+    operator: requiredDataCode(),
+    direction: requiredDataCode(),
+    raisingStation: requiredDataCode(),
   },
   { $id: 'BusSchema' },
 );
 
-export const trainSchema = optionalObject(
+export const trainSchema = Type.Object(
   {
     trainType: Type.String({ enum: ['1', '2', '3'], description: '1 = Israel Train, 2 = Jerusalem Light Train, 3 = Gush Dan Light Train (Dankal)' }),
-    startStation: Type.Ref('DataCode'),
-    destinationStation: Type.Ref('DataCode'),
+    startStation: requiredDataCode(),
+    destinationStation: requiredDataCode(),
     eventStation: Type.String({ enum: ['start', 'destination'] }),
-    trainNumber: Type.String(),
+    trainNumber: Type.Optional(Type.String()),
   },
   { $id: 'TrainSchema' },
 );
@@ -42,10 +46,12 @@ export const documentsList = Type.Array(
 
 export const ComplaintSchema = Type.Object(
   {
-    firstName: Type.String({ pattern: hebOnly.source, minLength: 1, maxLength: 100, examples: ['פרטי'] }),
-    lastName: Type.String({ pattern: hebOnly.source, minLength: 1, maxLength: 100, examples: ['משפחה'] }),
-    id: Type.String({ minLength: 9, maxLength: 9, pattern: numberOnly.source, examples: ['123456782'] }),
-    passport: Type.String(),
+    firstName: Type.String({ minLength: 1, maxLength: 100, examples: ['פרטי'] }),
+    lastName: Type.String({ minLength: 1, maxLength: 100, examples: ['משפחה'] }),
+    id: Type.Optional(
+      Type.Union([Type.String({ minLength: 9, maxLength: 9, pattern: numberOnly.source, examples: ['123456782'] }), Type.Literal(''), Type.Null()]),
+    ),
+    passport: Type.Optional(Type.Union([Type.String({ maxLength: 10 }), Type.Null()])),
     email: Type.String({ format: 'email', examples: ['email@gmail.com'] }),
     mobile: Type.String({ ...mobileSchema(), examples: ['050-2345678'] }),
     ravkav: Type.Optional(Type.String({ minLength: 11, maxLength: 11, pattern: numberOnly.source })),
@@ -53,7 +59,7 @@ export const ComplaintSchema = Type.Object(
     fromHour: Type.Optional(hourStringSchema(['07:00'])),
     toHour: Type.Optional(hourStringSchema(['09:00'])),
     eventDate: dateStringSchema(),
-    details: Type.String(),
+    details: Type.String({ minLength: 5, maxLength: 400, pattern: '^[^&<>]*$' }),
     title: Type.String(),
     lang: Type.Optional(
       Type.String({ enum: ['he', 'en', 'ru', 'ar'], description: 'Preferred user language; defaults to Hebrew (he) when omitted.' }),
@@ -63,7 +69,23 @@ export const ComplaintSchema = Type.Object(
     bus: Type.Optional(Type.Ref('BusSchema')),
     train: Type.Optional(Type.Ref('TrainSchema')),
   },
-  { $id: 'ComplaintSchema' },
+  {
+    $id: 'ComplaintSchema',
+    allOf: [
+      { oneOf: [{ required: ['bus'] }, { required: ['train'] }] },
+      {
+        if: { properties: { lang: { const: 'he' } } },
+        then: { properties: { firstName: Type.String({ pattern: hebrewName.source }), lastName: Type.String({ pattern: hebrewName.source }) } },
+        else: {
+          properties: { firstName: Type.String({ pattern: multilingualName.source }), lastName: Type.String({ pattern: multilingualName.source }) },
+        },
+      },
+    ],
+    oneOf: [
+      { required: ['passport'], properties: { passport: { type: 'string', pattern: '\\S' } } },
+      { required: ['id'], properties: { id: { type: 'string', minLength: 1 } } },
+    ],
+  },
 );
 
 /**
@@ -79,7 +101,7 @@ export const sendComplaintSchema = {
   }),
   body: Type.Object({
     debug: Type.Optional(Type.Boolean({ default: false, examples: [true] })),
-    data: Type.Intersect([Type.Ref('ComplaintSchema'), Type.Object({ email: Type.String({ format: 'email' }) })]),
+    data: Type.Ref('ComplaintSchema'),
   }),
   response: {
     200: Type.Object({ success: Type.Boolean(), state: Type.String(), messageId: Type.String(), emailId: Type.String() }),

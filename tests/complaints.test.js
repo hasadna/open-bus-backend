@@ -24,7 +24,18 @@ describe('sendComplaint', () => {
     details: 'A short complaint',
     transport: { dataText: 'אוטובוס', dataCode: '1' },
     subject: { dataText: 'איחור', dataCode: '2' },
-    bus: {},
+    bus: {
+      lineNumberText: '1',
+      operator: { dataText: 'Operator', dataCode: '3' },
+      direction: { dataText: 'Direction', dataCode: '1' },
+      raisingStation: { dataText: 'Station', dataCode: '123' },
+    },
+  };
+  const train = {
+    trainType: '1',
+    startStation: { dataText: 'Start', dataCode: '1' },
+    destinationStation: { dataText: 'End', dataCode: '2' },
+    eventStation: 'start',
   };
   let app;
   let sendMessage;
@@ -129,6 +140,38 @@ describe('sendComplaint', () => {
     });
   });
 
+  [undefined, 'he', 'en', 'ru', 'ar'].forEach((lang) => {
+    ['firstName', 'lastName'].forEach((field) => {
+      it(`validates ${field} for ${lang ?? 'default Hebrew'}`, async () => {
+        const multilingual = lang !== undefined && lang !== 'he';
+        const cases = [
+          ['אביבה 123', 200],
+          ['Anne-Marie 123', multilingual ? 200 : 400],
+          ['محمد 123', multilingual ? 200 : 400],
+          ['אביבה John محمد 123', multilingual ? 200 : 400],
+          ['אביבה&', 400],
+          ['אביבה<', 400],
+          ['אביבה>', 400],
+          ['אביבהЖ', 400],
+        ];
+        await Promise.all(
+          cases.map(async ([name, status]) => {
+            const response = await submit({ 'pair-key': randomUUID() }, { data: { ...data, lang, [field]: name } });
+            expect(response.statusCode, name).to.equal(status);
+          }),
+        );
+      });
+    });
+  });
+
+  ['&', '<', '>'].forEach((character) => {
+    it(`rejects details containing ${character} before queueing`, async () => {
+      const response = await submit(undefined, { data: { ...data, details: `Complaint ${character} details` } });
+      expect(response.statusCode).to.equal(400);
+      expect(sendMessage.called).to.equal(false);
+    });
+  });
+
   it('rejects unsupported languages before queueing', async () => {
     expect((await submit(undefined, { data: { ...data, lang: 'fr' } })).statusCode).to.equal(400);
     expect(sendMessage.called).to.equal(false);
@@ -148,6 +191,7 @@ describe('sendComplaint', () => {
     const payload = {
       ...data,
       passport: 'AB123456',
+      id: undefined,
       firstName: 'אביבה',
       eventDate: '2026-10-09T08:00:00.000Z',
       eventHour: '23:59',
@@ -164,74 +208,87 @@ describe('sendComplaint', () => {
       },
     };
     expect((await submit(undefined, { data: payload })).statusCode).to.equal(200);
-    expect(JSON.parse(sendMessage.firstCall.args[0].input.MessageBody).data).to.deep.equal(payload);
+    expect(JSON.parse(sendMessage.firstCall.args[0].input.MessageBody).data).to.deep.equal(JSON.parse(JSON.stringify(payload)));
   });
 
-  for (const transport of ['bus', 'train']) {
-    it(`accepts an empty ${transport} submission`, async () => {
-      const payload = { ...data, [transport]: {} };
-      expect((await submit(undefined, { data: payload })).statusCode).to.equal(200);
-    });
-  }
-
-  for (const transport of ['bus', 'train']) {
-    // eslint-disable-next-line no-loop-func
-    it(`accepts empty placeholders alongside a populated ${transport}`, async () => {
-      const payload = {
-        ...data,
-        bus: {},
-        train: {},
-        [transport]: transport === 'bus' ? { driverName: 'Driver' } : { trainType: '3', trainNumber: '42' },
-      };
-      expect((await submit(undefined, { data: payload })).statusCode).to.equal(200);
-      const queued = JSON.parse(sendMessage.firstCall.args[0].input.MessageBody).data;
-      expect(queued[transport]).to.deep.equal(payload[transport]);
-      expect(queued).to.deep.equal(payload);
-    });
-  }
-
-  it('accepts multiple populated transports', async () => {
-    const payload = { ...data, bus: { driverName: 'Driver' }, train: { trainNumber: '42' } };
-    expect((await submit(undefined, { data: payload })).statusCode).to.equal(200);
-    expect(sendMessage.called).to.equal(true);
-  });
-
-  it('accepts optional transports and rejects invalid times', async () => {
+  it('accepts a train with the required fields', async () => {
     const { bus, ...fields } = data;
-    expect(bus).to.deep.equal({});
+    expect(bus).to.exist;
+    expect((await submit(undefined, { data: { ...fields, train } })).statusCode).to.equal(200);
+  });
+
+  it('rejects multiple populated transports', async () => {
+    const payload = {
+      ...data,
+      bus: { ...data.bus, driverName: 'Driver' },
+      train: { ...train, trainNumber: '42' },
+    };
+    expect((await submit(undefined, { data: payload })).statusCode).to.equal(400);
+    expect(sendMessage.called).to.equal(false);
+  });
+
+  it('requires a transport and rejects invalid times', async () => {
+    const { bus, ...fields } = data;
+    expect(bus.raisingStation.dataCode).to.equal('123');
     const responses = await Promise.all(
-      [fields, { ...data, train: {} }, { ...data, eventHour: '24:00' }, { ...data, fromHour: '08:60' }].map((payload) =>
+      [fields, { ...fields, train }, { ...data, eventHour: '24:00' }, { ...data, fromHour: '08:60' }].map((payload) =>
         submit(undefined, { data: payload }),
       ),
     );
-    expect(responses.map((response) => response.statusCode)).to.deep.equal([200, 200, 400, 400]);
+    expect(responses.map((response) => response.statusCode)).to.deep.equal([400, 200, 400, 400]);
     expect(sendMessage.callCount).to.equal(1);
   });
 
   it('rejects missing required fields and invalid train values before queueing', async () => {
-    const required = [
-      'firstName',
-      'lastName',
-      'id',
-      'passport',
-      'email',
-      'mobile',
-      'eventHour',
-      'eventDate',
-      'details',
-      'title',
-      'transport',
-      'subject',
-    ];
+    const required = ['firstName', 'lastName', 'id', 'mobile', 'eventHour', 'eventDate', 'details', 'title', 'transport', 'subject'];
     const payloads = required.map((field) => {
       const payload = { ...data };
       delete payload[field];
       return payload;
     });
-    payloads.push({ ...data, train: { trainType: '4' } }, { ...data, train: { eventStation: 'other' } });
+    payloads.push(
+      { ...data, passport: '', email: '' },
+      { ...data, passport: null, email: null },
+      ...['lineNumberText', 'operator', 'direction', 'raisingStation'].map((field) => {
+        const bus = { ...data.bus };
+        delete bus[field];
+        return { ...data, bus };
+      }),
+      { ...data, bus: { ...data.bus, lineNumberText: '' } },
+      { ...data, bus: { ...data.bus, operator: {} } },
+      { ...data, bus: { ...data.bus, direction: {} } },
+      { ...data, bus: {} },
+      { ...data, bus: { raisingStation: {} } },
+      { ...data, train: { trainType: '4' } },
+      { ...data, train: { eventStation: 'other' } },
+    );
     const responses = await Promise.all(payloads.map((payload) => submit(undefined, { data: payload })));
     expect(responses.map((response) => response.statusCode)).to.deep.equal(payloads.map(() => 400));
     expect(sendMessage.called).to.equal(false);
+    expect(fetchStub.called).to.equal(false);
+  });
+
+  it('limits complaint details to 400 characters', async () => {
+    expect((await submit(undefined, { data: { ...data, details: 'a'.repeat(400) } })).statusCode).to.equal(200);
+    expect((await submit(undefined, { data: { ...data, details: 'a'.repeat(401) } })).statusCode).to.equal(400);
+  });
+
+  it('limits passports to 10 characters', async () => {
+    expect((await submit(undefined, { data: { ...data, id: undefined, passport: '1234567890' } })).statusCode).to.equal(200);
+    expect((await submit(undefined, { data: { ...data, id: undefined, passport: '12345678901' } })).statusCode).to.equal(400);
+  });
+
+  it('requires email and exactly one identity document', async () => {
+    const payloads = [
+      { id: undefined, passport: 'AB123456', email: null },
+      { email: undefined },
+      { email: '' },
+      { passport: 'AB123456' },
+      { id: undefined },
+      { id: '', passport: '' },
+    ];
+    const responses = await Promise.all(payloads.map((fields) => submit(undefined, { data: { ...data, ...fields } })));
+    expect(responses.map((response) => response.statusCode)).to.deep.equal(payloads.map(() => 400));
     expect(fetchStub.called).to.equal(false);
   });
 
