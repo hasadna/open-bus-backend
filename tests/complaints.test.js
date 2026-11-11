@@ -122,7 +122,7 @@ describe('sendComplaint', () => {
 
   it('sends debug complaints to Resend’s test address', async () => {
     expect((await submit(undefined, { data, debug: true })).statusCode).to.equal(200);
-    expect(JSON.parse(fetchStub.firstCall.args[1].body).to).to.deep.equal(['suppressed@resend.dev']);
+    expect(JSON.parse(fetchStub.firstCall.args[1].body).to).to.deep.equal(['delivered@resend.dev']);
   });
 
   it('sends a real complaint after a debug submission with the same identity', async () => {
@@ -132,7 +132,7 @@ describe('sendComplaint', () => {
     expect((await submit(undefined, { data, debug: true })).statusCode).to.equal(200);
     expect(sendMessage.callCount).to.equal(2);
     expect(fetchStub.callCount).to.equal(2);
-    expect(JSON.parse(fetchStub.firstCall.args[1].body).to).to.deep.equal(['suppressed@resend.dev']);
+    expect(JSON.parse(fetchStub.firstCall.args[1].body).to).to.deep.equal(['delivered@resend.dev']);
     expect(JSON.parse(fetchStub.secondCall.args[1].body).to).to.deep.equal(['pniotcrm@mot.gov.il']);
     expect(fetchStub.secondCall.args[1].headers.get('Idempotency-Key')).not.to.equal(fetchStub.firstCall.args[1].headers.get('Idempotency-Key'));
   });
