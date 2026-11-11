@@ -2,13 +2,14 @@ import { Resend } from 'resend';
 
 import { deliveryFailureTemplate } from '../templates/deliveryFailure.js';
 import { resolveLanguage } from '../templates/shared.js';
+import { emailTest } from '../utils/complaintDelivery.js';
 
 /**
  * Send complaint handler
  * @param {import('fastify').FastifyRequest} request
  * @param {import('fastify').FastifyReply} reply
  */
-export async function webhook(request, reply) {
+export async function resendWebhook(request, reply) {
   const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
   const apiKey = process.env.RESEND_API_KEY;
   if (!webhookSecret || !apiKey) {
@@ -36,22 +37,26 @@ export async function webhook(request, reply) {
     return reply.send({ success: true });
   }
 
-  const from = process.env.RESEND_EMAIL;
-  if (!from) {
-    return reply.status(503).send({ error: 'Complaint failure notification configuration is incomplete' });
-  }
   if (!event.data.email_id) {
     return reply.status(400).send({ error: 'Complaint failure event omitted email ID' });
   }
 
   try {
     const resend = new Resend(apiKey);
-    const { data: complaint, error: lookupError } = await resend.emails.get(event.data.email_id);
-    if (lookupError) throw new Error(lookupError.message);
-    const submitter = complaint?.reply_to?.[0];
+    const eventDebug = event.data.tags?.debug === 'true';
+    let complaint;
+    if (!eventDebug) {
+      const { data, error: lookupError } = await resend.emails.get(event.data.email_id);
+      if (lookupError) throw new Error(lookupError.message);
+      complaint = data;
+    }
+    const debug = eventDebug || complaint?.tags?.some((tag) => tag.name === 'debug' && tag.value === 'true');
+    const from = debug ? emailTest.onboarding : process.env.RESEND_EMAIL;
+    if (!from) return reply.status(503).send({ error: 'Complaint failure notification configuration is incomplete' });
+    const submitter = debug ? emailTest.delivered : complaint?.reply_to?.[0];
     if (!submitter && complaint?.tags?.some((tag) => tag.name === 'no_reply_to' && tag.value === 'true')) return reply.send({ success: true });
     if (!submitter) throw new Error('Complaint email omitted submitter reply-to address');
-    const lang = resolveLanguage(event.data.tags?.lang, complaint.tags?.find((tag) => tag.name === 'lang')?.value);
+    const lang = resolveLanguage(event.data.tags?.lang, complaint?.tags?.find((tag) => tag.name === 'lang')?.value);
     const { data, error } = await resend.emails.send(
       {
         from,

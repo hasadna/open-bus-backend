@@ -3,10 +3,23 @@ import { Resend } from 'resend';
 import { complaintTemplate } from '../templates/complaint.js';
 import { resolveLanguage } from '../templates/shared.js';
 
+export const emailTest = {
+  onboarding: 'onboarding@resend.dev',
+  // sender email
+  delivered: 'delivered@resend.dev',
+  // successfully delivered
+  bounced: 'bounced@resend.dev',
+  // provider rejected your email
+  complained: 'complained@resend.dev',
+  // marked as spam
+  suppressed: 'suppressed@resend.dev',
+  // suppressed
+};
+
 export async function sendComplaintEmail(data, idempotencyKey, debug = false) {
   const RESEND_API_KEY = process.env?.RESEND_API_KEY;
-  const from = debug === true ? 'onboarding@resend.dev' : process.env.RESEND_EMAIL;
-  const recipient = debug === true ? 'delivered@resend.dev' : process.env.RESEND_COMPLAINTS_EMAIL;
+  const from = debug === true ? emailTest.onboarding : process.env.RESEND_EMAIL;
+  const recipient = debug === true ? emailTest.suppressed : process.env.RESEND_COMPLAINTS_EMAIL;
 
   if (!RESEND_API_KEY || !recipient) {
     throw new Error('Complaint email configuration is incomplete');
@@ -16,12 +29,12 @@ export async function sendComplaintEmail(data, idempotencyKey, debug = false) {
   const { data: result, error } = await resend.emails.send(
     {
       from,
-      ...(data.email ? { replyTo: data.email } : {}),
+      replyTo: data.email,
       to: [recipient],
       ...complaintTemplate(data),
       tags: [
         { name: 'purpose', value: 'complaint' },
-        ...(data.email ? [] : [{ name: 'no_reply_to', value: 'true' }]),
+        ...(debug === true ? [{ name: 'debug', value: 'true' }] : []),
         { name: 'lang', value: resolveLanguage(data.lang) },
       ],
     },

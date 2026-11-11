@@ -56,7 +56,7 @@ describe('Resend webhook', () => {
   };
 
   it('accepts a signed event using the exact raw payload', async () => {
-    const response = await app.inject({ method: 'POST', url: '/complaints/webhook', headers: headers(), payload });
+    const response = await app.inject({ method: 'POST', url: '/webhook/resend', headers: headers(), payload });
     expect(response.statusCode).to.equal(200);
     expect(response.json()).to.deep.equal({ success: true });
     expect(fetchStub.called).to.equal(false);
@@ -65,7 +65,7 @@ describe('Resend webhook', () => {
   it('rejects a tampered payload', async () => {
     const response = await app.inject({
       method: 'POST',
-      url: '/complaints/webhook',
+      url: '/webhook/resend',
       headers: headers(),
       payload: payload.replace('email-123', 'email-456'),
     });
@@ -73,13 +73,13 @@ describe('Resend webhook', () => {
   });
 
   it('rejects missing signature headers', async () => {
-    const response = await app.inject({ method: 'POST', url: '/complaints/webhook', headers: { 'content-type': 'application/json' }, payload });
+    const response = await app.inject({ method: 'POST', url: '/webhook/resend', headers: { 'content-type': 'application/json' }, payload });
     expect(response.statusCode).to.equal(400);
   });
 
   it('returns unavailable when the signing secret is missing', async () => {
     delete process.env.RESEND_WEBHOOK_SECRET;
-    const response = await app.inject({ method: 'POST', url: '/complaints/webhook', headers: headers(), payload });
+    const response = await app.inject({ method: 'POST', url: '/webhook/resend', headers: headers(), payload });
     expect(response.statusCode).to.equal(503);
   });
 
@@ -89,7 +89,7 @@ describe('Resend webhook', () => {
   ['email.failed', 'email.bounced', 'email.suppressed'].forEach((type) => {
     it(`notifies the complaint sender for ${type}`, async () => {
       const body = failurePayload(type);
-      const response = await app.inject({ method: 'POST', url: '/complaints/webhook', headers: headers(body), payload: body });
+      const response = await app.inject({ method: 'POST', url: '/webhook/resend', headers: headers(body), payload: body });
       expect(response.statusCode).to.equal(200);
       const email = JSON.parse(fetchStub.secondCall.args[1].body);
       expect(email.to).to.deep.equal(['rider@example.com']);
@@ -100,9 +100,34 @@ describe('Resend webhook', () => {
     });
   });
 
+  ['event', 'stored'].forEach((source) => {
+    it(`routes debug failures to the test mailbox using the ${source} tag`, async () => {
+      delete process.env.RESEND_EMAIL;
+      if (source === 'stored')
+        fetchStub.onFirstCall().resolves(
+          new Response(
+            JSON.stringify({
+              reply_to: null,
+              tags: source === 'stored' ? [{ name: 'debug', value: 'true' }] : [],
+            }),
+          ),
+        );
+      const body = JSON.stringify({
+        type: 'email.bounced',
+        data: { email_id: 'email-123', tags: { purpose: 'complaint', ...(source === 'event' ? { debug: 'true' } : {}) } },
+      });
+      const response = await app.inject({ method: 'POST', url: '/webhook/resend', headers: headers(body), payload: body });
+      expect(response.statusCode).to.equal(200);
+      expect(fetchStub.callCount).to.equal(source === 'event' ? 1 : 2);
+      const email = JSON.parse((source === 'event' ? fetchStub.firstCall : fetchStub.secondCall).args[1].body);
+      expect(email.from).to.equal('onboarding@resend.dev');
+      expect(email.to).to.deep.equal(['delivered@resend.dev']);
+    });
+  });
+
   it('does not notify when a failure notification itself fails', async () => {
     const body = failurePayload('email.failed', 'complaint_failure_notification');
-    const response = await app.inject({ method: 'POST', url: '/complaints/webhook', headers: headers(body), payload: body });
+    const response = await app.inject({ method: 'POST', url: '/webhook/resend', headers: headers(body), payload: body });
     expect(response.statusCode).to.equal(200);
     expect(fetchStub.called).to.equal(false);
   });
@@ -111,7 +136,7 @@ describe('Resend webhook', () => {
     it(`uses the signed event language ${lang} before the stored language`, async () => {
       fetchStub.onFirstCall().resolves(new Response(JSON.stringify({ reply_to: ['rider@example.com'], tags: [{ name: 'lang', value: 'en' }] })));
       const body = JSON.stringify({ type: 'email.failed', data: { email_id: 'email-123', tags: { purpose: 'complaint', lang } } });
-      expect((await app.inject({ method: 'POST', url: '/complaints/webhook', headers: headers(body), payload: body })).statusCode).to.equal(200);
+      expect((await app.inject({ method: 'POST', url: '/webhook/resend', headers: headers(body), payload: body })).statusCode).to.equal(200);
       expect(JSON.parse(fetchStub.secondCall.args[1].body).html).to.include(`lang="${lang}"`);
     });
   });
@@ -119,7 +144,7 @@ describe('Resend webhook', () => {
   it('uses the retrieved email language when the event has no language', async () => {
     fetchStub.onFirstCall().resolves(new Response(JSON.stringify({ reply_to: ['rider@example.com'], tags: [{ name: 'lang', value: 'ru' }] })));
     const body = failurePayload();
-    expect((await app.inject({ method: 'POST', url: '/complaints/webhook', headers: headers(body), payload: body })).statusCode).to.equal(200);
+    expect((await app.inject({ method: 'POST', url: '/webhook/resend', headers: headers(body), payload: body })).statusCode).to.equal(200);
     expect(JSON.parse(fetchStub.secondCall.args[1].body).html).to.include('lang="ru"');
   });
 
@@ -127,7 +152,7 @@ describe('Resend webhook', () => {
     const body = failurePayload();
     const response = await app.inject({
       method: 'POST',
-      url: '/complaints/webhook',
+      url: '/webhook/resend',
       headers: headers(body),
       payload: body.replace('complaints', 'attacker'),
     });
@@ -138,14 +163,14 @@ describe('Resend webhook', () => {
   it('returns an error so Resend retries failed notifications', async () => {
     fetchStub.resolves(new Response(JSON.stringify({ message: 'Unavailable', statusCode: 503 }), { status: 503 }));
     const body = failurePayload();
-    const response = await app.inject({ method: 'POST', url: '/complaints/webhook', headers: headers(body), payload: body });
+    const response = await app.inject({ method: 'POST', url: '/webhook/resend', headers: headers(body), payload: body });
     expect(response.statusCode).to.equal(502);
   });
 
   it('retries when the original submitter is missing', async () => {
     fetchStub.resolves(new Response(JSON.stringify({ reply_to: null })));
     const body = failurePayload();
-    const response = await app.inject({ method: 'POST', url: '/complaints/webhook', headers: headers(body), payload: body });
+    const response = await app.inject({ method: 'POST', url: '/webhook/resend', headers: headers(body), payload: body });
     expect(response.statusCode).to.equal(502);
     expect(fetchStub.callCount).to.equal(1);
   });

@@ -21,7 +21,7 @@ export async function sendComplaint(request, reply) {
   const { email } = data;
 
   const debug = request.body.debug === true;
-  const key = `${pairKey.toLowerCase()}:${email?.trim().toLowerCase() || `passport:${data.passport.trim()}`}${debug ? ':debug' : ''}`;
+  const key = `${pairKey.toLowerCase()}:${email?.trim().toLowerCase()}${debug ? ':debug' : ''}`;
   const cached = cache.get(key);
   if (cached) {
     return reply.status(cached.httpStatus).send(cached.response);
