@@ -60,7 +60,6 @@ export const ComplaintSchema = Type.Object(
     toHour: Type.Optional(hourStringSchema(['09:00'])),
     eventDate: dateStringSchema(),
     details: Type.String({ minLength: 5, maxLength: 400, pattern: '^[^&<>]*$' }),
-    title: Type.String(),
     lang: Type.Optional(
       Type.String({ enum: ['he', 'en', 'ru', 'ar'], description: 'Preferred user language; defaults to Hebrew (he) when omitted.' }),
     ),

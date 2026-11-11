@@ -41,7 +41,8 @@ describe('email templates', () => {
         trainNumber: '42',
       },
     });
-    expect(result.text).to.include('אמצעי תחבורה: רכבת / 2').and.to.include('נושא הפנייה: איחור / 3');
+    expect(result.text).to.include('אמצעי תחבורה: רכבת').and.to.include('נושא הפנייה: איחור\n');
+    expect(result.text).not.to.include('נושא הפנייה: איחור / 3');
     expect(result.text).to.include('הרכבת הקלה בגוש דן (דנקל)').and.to.include('<Start> / 0').and.to.include('End / 20');
     expect(result.text).to.include('תחנת האירוע: תחנת יעד').and.to.include('מספר רכבת: 42');
     expect(result.html).to.include('&lt;Start&gt;');
@@ -49,7 +50,7 @@ describe('email templates', () => {
 
   it('preserves submitted text and escapes HTML in all dynamic fields', () => {
     const result = complaintTemplate({
-      title: '<script>&"\'',
+      firstName: '<script>&"\'',
       details: 'First line\n<b>Second line</b>',
       bus: { operator: { dataText: '<Operator>', dataCode: 0 } },
     });
@@ -57,7 +58,7 @@ describe('email templates', () => {
     expect(result.html).not.to.include('<script>');
     expect(result.html).to.include('First line\n&lt;b&gt;Second line&lt;/b&gt;');
     expect(result.text).to.include('First line\n<b>Second line</b>');
-    expect(result.text).to.include('<Operator> / 0');
+    expect(result.text).to.include('<Operator>');
     expect(deliveryFailureTemplate('<reference>', 'en').html).to.include('&lt;reference&gt;');
   });
 

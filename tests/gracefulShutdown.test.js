@@ -29,7 +29,7 @@ describe('gracefulShutdown', () => {
     const error = new Error('fail');
     fastify.close.rejects(error);
     await gracefulShutdown(fastify, 'SIGINT');
-    expect(fastify.log.error.calledWith('Error during graceful shutdown:', error)).to.be.true;
+    expect(fastify.log.error.calledOnceWithExactly({ err: error }, 'Error during graceful shutdown')).to.be.true;
     expect(exit.calledWith(1)).to.be.true;
     // Also check that info log for shutdown was called
     expect(fastify.log.info.calledWith('Received SIGINT. Starting graceful shutdown...')).to.be.true;
@@ -84,16 +84,15 @@ describe('setupGracefulShutdown error handlers', () => {
     setupGracefulShutdown(fastify);
     const error = new Error('uncaught!');
     handlers.uncaughtException(error);
-    expect(fastify.log.error.calledWith('Uncaught Exception:', error)).to.be.true;
+    expect(fastify.log.error.calledOnceWithExactly({ err: error }, 'Uncaught Exception')).to.be.true;
     expect(exitStub.calledWith(1)).to.be.true;
   });
 
   it('should handle unhandledRejection and exit 1', () => {
     setupGracefulShutdown(fastify);
     const reason = new Error('promise fail');
-    const promise = Promise.reject(reason);
-    handlers.unhandledRejection(reason, promise);
-    expect(fastify.log.error.calledWith('Unhandled Rejection at:', promise, 'reason:', reason)).to.be.true;
+    handlers.unhandledRejection(reason);
+    expect(fastify.log.error.calledOnceWithExactly({ err: reason }, 'Unhandled Rejection')).to.be.true;
     expect(exitStub.calledWith(1)).to.be.true;
   });
 });

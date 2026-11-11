@@ -7,6 +7,7 @@ import sinon from 'sinon';
 
 import { clearComplaintStatusCache } from '../src/controllers/complaints.controller.js';
 import { registerRoutes } from '../src/routes/index.js';
+import { complaintTitle } from '../src/templates/complaint.js';
 import { sqs } from '../src/utils/complaintQueue.js';
 
 describe('sendComplaint', () => {
@@ -75,7 +76,11 @@ describe('sendComplaint', () => {
     expect(second.json()).to.deep.equal(first.json());
     expect(sendMessage.callCount).to.equal(1);
     expect(fetchStub.callCount).to.equal(1);
-    expect(JSON.parse(sendMessage.firstCall.args[0].input.MessageBody)).to.deep.equal({ email: data.email, pairKey: uuid, data });
+    expect(JSON.parse(sendMessage.firstCall.args[0].input.MessageBody)).to.deep.equal({
+      email: data.email,
+      pairKey: uuid,
+      data: { ...data, title: complaintTitle(data) },
+    });
     expect(JSON.parse(fetchStub.firstCall.args[1].body).from).to.equal('complaints@verified.example');
     expect(JSON.parse(fetchStub.firstCall.args[1].body).reply_to).to.equal(data.email);
     expect(JSON.parse(fetchStub.firstCall.args[1].body).to).to.deep.equal(['pniotcrm@mot.gov.il']);
@@ -96,9 +101,16 @@ describe('sendComplaint', () => {
     expect(fetchStub.callCount).to.equal(1);
   });
 
-  it('uses the Resend test sender when no sender is configured', async () => {
+  it('requires a sender for real complaints before contacting Resend', async () => {
     delete process.env.RESEND_EMAIL;
-    expect((await submit()).statusCode).to.equal(200);
+    expect((await submit()).statusCode).to.equal(502);
+    expect(fetchStub.called).to.equal(false);
+    expect(sendMessage.secondCall.args[0].input.QueueUrl).to.equal('dlq');
+  });
+
+  it('uses the Resend test sender for debug complaints when no sender is configured', async () => {
+    delete process.env.RESEND_EMAIL;
+    expect((await submit(undefined, { data, debug: true })).statusCode).to.equal(200);
     expect(JSON.parse(fetchStub.firstCall.args[1].body).from).to.equal('onboarding@resend.dev');
   });
 
@@ -110,7 +122,7 @@ describe('sendComplaint', () => {
 
   it('sends debug complaints to Resend’s test address', async () => {
     expect((await submit(undefined, { data, debug: true })).statusCode).to.equal(200);
-    expect(JSON.parse(fetchStub.firstCall.args[1].body).to).to.deep.equal(['delivered@resend.dev']);
+    expect(JSON.parse(fetchStub.firstCall.args[1].body).to).to.deep.equal(['suppressed@resend.dev']);
   });
 
   it('sends a real complaint after a debug submission with the same identity', async () => {
@@ -120,7 +132,7 @@ describe('sendComplaint', () => {
     expect((await submit(undefined, { data, debug: true })).statusCode).to.equal(200);
     expect(sendMessage.callCount).to.equal(2);
     expect(fetchStub.callCount).to.equal(2);
-    expect(JSON.parse(fetchStub.firstCall.args[1].body).to).to.deep.equal(['delivered@resend.dev']);
+    expect(JSON.parse(fetchStub.firstCall.args[1].body).to).to.deep.equal(['suppressed@resend.dev']);
     expect(JSON.parse(fetchStub.secondCall.args[1].body).to).to.deep.equal(['pniotcrm@mot.gov.il']);
     expect(fetchStub.secondCall.args[1].headers.get('Idempotency-Key')).not.to.equal(fetchStub.firstCall.args[1].headers.get('Idempotency-Key'));
   });
@@ -151,10 +163,14 @@ describe('sendComplaint', () => {
       it(`validates ${field} for ${lang ?? 'default Hebrew'}`, async () => {
         const multilingual = lang !== undefined && lang !== 'he';
         const cases = [
-          ['אביבה 123', 200],
-          ['Anne-Marie 123', multilingual ? 200 : 400],
-          ['محمد 123', multilingual ? 200 : 400],
-          ['אביבה John محمد 123', multilingual ? 200 : 400],
+          ['אביבה', 200],
+          ['Anne-Marie', multilingual ? 200 : 400],
+          ['محمد', multilingual ? 200 : 400],
+          ['אביבה John محمد', multilingual ? 200 : 400],
+          ['אביבה 123', 400],
+          ['Anne-Marie 123', 400],
+          ['محمد 123', 400],
+          ['אביבה John محمد 123', 400],
           ['אביבה&', 400],
           ['אביבה<', 400],
           ['אביבה>', 400],
@@ -214,7 +230,9 @@ describe('sendComplaint', () => {
       },
     };
     expect((await submit(undefined, { data: payload })).statusCode).to.equal(200);
-    expect(JSON.parse(sendMessage.firstCall.args[0].input.MessageBody).data).to.deep.equal(JSON.parse(JSON.stringify(payload)));
+    expect(JSON.parse(sendMessage.firstCall.args[0].input.MessageBody).data).to.deep.equal(
+      JSON.parse(JSON.stringify({ ...payload, title: complaintTitle(payload) })),
+    );
   });
 
   it('accepts a train with the required fields', async () => {
@@ -246,7 +264,7 @@ describe('sendComplaint', () => {
   });
 
   it('rejects missing required fields and invalid train values before queueing', async () => {
-    const required = ['firstName', 'lastName', 'id', 'mobile', 'eventHour', 'eventDate', 'details', 'title', 'transport', 'subject'];
+    const required = ['firstName', 'lastName', 'id', 'mobile', 'eventHour', 'eventDate', 'details', 'transport', 'subject'];
     const payloads = required.map((field) => {
       const payload = { ...data };
       delete payload[field];

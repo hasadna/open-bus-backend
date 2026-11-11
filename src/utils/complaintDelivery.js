@@ -19,9 +19,9 @@ export const emailTest = {
 export async function sendComplaintEmail(data, idempotencyKey, debug = false) {
   const RESEND_API_KEY = process.env?.RESEND_API_KEY;
   const from = debug === true ? emailTest.onboarding : process.env.RESEND_EMAIL;
-  const recipient = debug === true ? emailTest.suppressed : process.env.RESEND_COMPLAINTS_EMAIL;
+  const recipient = debug === true ? emailTest.delivered : process.env.RESEND_COMPLAINTS_EMAIL;
 
-  if (!RESEND_API_KEY || !recipient) {
+  if (!RESEND_API_KEY || !from || !recipient) {
     throw new Error('Complaint email configuration is incomplete');
   }
 

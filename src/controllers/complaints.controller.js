@@ -2,6 +2,7 @@ import { SendMessageCommand } from '@aws-sdk/client-sqs';
 import { LRUCache } from 'lru-cache';
 import { createHash } from 'node:crypto';
 
+import { complaintTitle } from '../templates/complaint.js';
 import { sendComplaintEmail } from '../utils/complaintDelivery.js';
 import { getComplaintDLQUrl, getComplaintQueueUrl, sqs } from '../utils/complaintQueue.js';
 
@@ -17,7 +18,7 @@ export function clearComplaintStatusCache() {
  */
 export async function sendComplaint(request, reply) {
   const pairKey = request.headers['pair-key'];
-  const data = request.body?.data;
+  const data = { ...request.body.data, title: complaintTitle(request.body.data) };
   const { email } = data;
 
   const debug = request.body.debug === true;
