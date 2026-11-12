@@ -1,13 +1,13 @@
-import { Type } from 'typebox';
+import { type TProperties, type TSchema, type TSchemaOptions, Type } from 'typebox';
 
-export const optionalObject = (properties, options = {}) => Type.Partial(Type.Object(properties), options);
+export const optionalObject = <T extends TProperties>(properties: T, options: TSchemaOptions = {}) => Type.Partial(Type.Object(properties), options);
 
 export const commonErrorResponse = optionalObject(
   { error: Type.String(), message: Type.String(), details: Type.Object({}) },
   { $id: 'ErrorResponseModel' },
 );
 
-export const commonSuccessResponse = (itemsSchema) =>
+export const commonSuccessResponse = <T extends TSchema>(itemsSchema: T) =>
   optionalObject({ success: Type.Boolean({ default: true }), data: itemsSchema }, { $id: 'SuccessResponseModel' });
 
 export const dataCodeModel = optionalObject(

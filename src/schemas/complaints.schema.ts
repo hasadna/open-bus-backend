@@ -7,7 +7,7 @@ const fileType = /^.*\.(?<type>doc|docx|jpeg|jpg|pdf|gif|tiff|png)$/giu;
 
 const mobileSchema = () => Type.String({ pattern: mobileOnly.source });
 const dateStringSchema = () => Type.String({ format: 'date-time' });
-const hourStringSchema = (examples) => Type.String({ pattern: '[012][0-9]:[012][0-9]', ...(examples && { examples }) });
+const hourStringSchema = (examples?: string[]) => Type.String({ pattern: '[012][0-9]:[012][0-9]', ...(examples && { examples }) });
 
 export const personalDetailsSchema = optionalObject(
   {
@@ -109,7 +109,7 @@ export const documentsList = Type.Array(
   { $id: 'DocumentsList' },
 );
 
-const complaintVariant = (transport) =>
+const complaintVariant = (transport: string) =>
   optionalObject({
     personalDetails: Type.Ref('PersonalDetailsSchema'),
     title: Type.String(),
@@ -122,10 +122,6 @@ export const complaintFormSchema = Type.Union([complaintVariant('busAndOther'), 
   $id: 'ComplaintFormSchema',
 });
 
-/**
- * Send complaint endpoint schema
- * @type {import('fastify').FastifySchema}
- */
 export const sendComplaintSchema = {
   tags: ['Complaints'],
   summary: 'Send a complaint',

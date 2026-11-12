@@ -5,7 +5,7 @@ import { registerRoutes } from './src/routes/index.js';
 import { setupGracefulShutdown } from './src/utils/index.js';
 
 const HOST = process.env.HOST || '0.0.0.0';
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT || 3001);
 
 // Start the server
 async function start() {
@@ -24,7 +24,7 @@ async function start() {
     setupGracefulShutdown(fastify);
 
     // Start listening
-    fastify.listen({ host: HOST, port: PORT });
+    await fastify.listen({ host: HOST, port: PORT });
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);
