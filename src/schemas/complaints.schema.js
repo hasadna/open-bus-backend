@@ -41,7 +41,7 @@ export const documentsList = Type.Array(
   { $id: 'DocumentsList' },
 );
 
-export const ComplaintSchema = Type.Object(
+export const complaintSchema = Type.Object(
   {
     firstName: Type.String({ minLength: 1, maxLength: 100, examples: ['פרטי'] }),
     lastName: Type.String({ minLength: 1, maxLength: 100, examples: ['משפחה'] }),
