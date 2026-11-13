@@ -1,9 +1,7 @@
 import { healthCheck } from '../controllers/health.controller.js';
 import { healthCheckSchema } from '../schemas/health.schema.js';
+import type { AppServer } from '../types.js';
 
-/**
- * @param {import('fastify').FastifyInstance} fastify
- */
-export function healthRoutes(fastify) {
+export function healthRoutes(fastify: AppServer) {
   fastify.get('/', { schema: healthCheckSchema }, healthCheck);
 }

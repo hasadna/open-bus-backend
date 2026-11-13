@@ -35,10 +35,6 @@ export const githubIssueModel = optionalObject(
   },
 );
 
-/**
- * Create issue endpoint schema
- * @type {import('fastify').FastifySchema}
- */
 export const createIssueSchema = {
   tags: ['Issues'],
   summary: 'Create a GitHub issue',
@@ -72,10 +68,6 @@ export const createIssueSchema = {
   },
 };
 
-/**
- * Create issue endpoint schema (deprecated)
- * @type {import('fastify').FastifySchema}
- */
 export const createIssueDepractedSchema = {
   tags: ['Issues'],
   summary: 'Create a GitHub issue (deprecated)',

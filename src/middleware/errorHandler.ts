@@ -1,18 +1,26 @@
-/**
- * Global error handler for Fastify
- * @param {import('fastify').FastifyError} error - The error object
- * @param {import('fastify').FastifyRequest} request - The request object
- * @param {import('fastify').FastifyReply} reply - The reply object
- */
-export function globalErrorHandler(error, request, reply) {
-  request.log.error('Unhandled error:', error);
+import type { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
+
+export function globalErrorHandler(error: FastifyError, request: FastifyRequest, reply: FastifyReply) {
+  request.log.error(error, 'Unhandled error:');
 
   // Handle validation errors
   if (error.validation) {
     return reply.status(400).send({
       error: 'Validation failed',
       message: 'Request validation failed',
-      details: error.validation,
+      details: error.validation.map((validation) => {
+        const segments = validation.instancePath
+          .split('/')
+          .slice(1)
+          .map((part) => part.replace(/~1/gu, '/').replace(/~0/gu, '~'));
+        const property = validation.params.missingProperty ?? validation.params.additionalProperty;
+        if (property !== undefined) segments.push(property as any);
+        return {
+          ...validation,
+          field: segments.join('.') || error.validationContext || 'request',
+          message: validation.message || 'Invalid value',
+        };
+      }),
     });
   }
 
@@ -43,12 +51,7 @@ export function globalErrorHandler(error, request, reply) {
   };
 }
 
-/**
- * Global not found handler for Fastify
- * @param {import('fastify').FastifyRequest} request - The request object
- * @param {import('fastify').FastifyReply} reply - The reply object
- */
-export function notFoundHandler(request, reply) {
+export function notFoundHandler(request: FastifyRequest, reply: FastifyReply) {
   reply.status(404).send({
     error: 'Not found',
     message: `Route ${request.method}:${request.url} not found`,

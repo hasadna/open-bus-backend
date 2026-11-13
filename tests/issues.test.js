@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import ky from 'ky';
+import ky, { NetworkError } from 'ky';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 
@@ -220,9 +220,9 @@ describe('createIssue', () => {
   });
 
   it('should handle network connection errors', async () => {
-    const error = new Error('getaddrinfo ENOTFOUND api.github.com');
-
-    error.name = 'TypeError';
+    const error = new NetworkError(new Request('https://api.github.com/repos/fake-owner/fake-repo/issues'), {
+      cause: new TypeError('getaddrinfo ENOTFOUND api.github.com'),
+    });
     post.rejects(error);
 
     await createIssue(request, reply);
