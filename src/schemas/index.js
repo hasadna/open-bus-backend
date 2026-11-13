@@ -2,7 +2,7 @@ import { Type } from 'typebox';
 
 export const optionalObject = (properties, options = {}) => Type.Partial(Type.Object(properties), options);
 
-export const commonErrorResponseModel = optionalObject(
+export const commonErrorResponse = optionalObject(
   {
     error: Type.String(),
     message: Type.String(),
