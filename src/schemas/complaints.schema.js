@@ -41,7 +41,7 @@ export const documentsList = Type.Array(
   { $id: 'DocumentsList' },
 );
 
-export const complaintSchema = Type.Object(
+export const complaintFormSchema = Type.Object(
   {
     firstName: Type.String({ minLength: 1, maxLength: 100, examples: ['פרטי'] }),
     lastName: Type.String({ minLength: 1, maxLength: 100, examples: ['משפחה'] }),
@@ -66,7 +66,7 @@ export const complaintSchema = Type.Object(
     train: Type.Optional(Type.Ref('TrainSchema')),
   },
   {
-    $id: 'ComplaintSchema',
+    $id: 'ComplaintFormSchema',
     allOf: [
       { oneOf: [{ required: ['bus'] }, { required: ['train'] }] },
       {
@@ -97,7 +97,7 @@ export const sendComplaintSchema = {
   }),
   body: Type.Object({
     debug: Type.Optional(Type.Boolean({ default: false, examples: [true] })),
-    data: Type.Ref('ComplaintSchema'),
+    data: Type.Ref('ComplaintFormSchema'),
   }),
   response: {
     200: Type.Object({ success: Type.Boolean(), state: Type.String(), messageId: Type.String(), emailId: Type.String() }),
