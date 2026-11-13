@@ -37,7 +37,7 @@ jobs:
         run: npm ci
 
       - name: Run lint tests
-        run: npm run test:lint
+        run: npm run typecheck && npm run test:lint
 
   mocha-test:
     name: Mocha Test

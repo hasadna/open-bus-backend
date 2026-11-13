@@ -292,6 +292,36 @@ describe('sendComplaint', () => {
     expect(fetchStub.called).to.equal(false);
   });
 
+  for (const field of ['transport', 'subject', 'operator', 'direction', 'raisingStation', 'startStation', 'destinationStation']) {
+    it(`requires non-empty text and code for ${field}`, async () => {
+      const invalidSelections = [
+        {},
+        { dataText: 'Selection' },
+        { dataCode: '1' },
+        { dataText: '', dataCode: '1' },
+        { dataText: 'Selection', dataCode: '' },
+      ];
+      for (const selection of invalidSelections) {
+        const payload = { ...data };
+        if (['transport', 'subject'].includes(field)) payload[field] = selection;
+        else if (['startStation', 'destinationStation'].includes(field)) {
+          delete payload.bus;
+          payload.train = { ...train, [field]: selection };
+        } else payload.bus = { ...data.bus, [field]: selection };
+        const response = await submit(undefined, { data: payload });
+        expect(response.statusCode, `${field}: ${JSON.stringify(selection)}`).to.equal(400);
+      }
+      expect(sendMessage.called).to.equal(false);
+      expect(fetchStub.called).to.equal(false);
+    });
+  }
+
+  it('accepts numeric zero as a selection code', async () => {
+    const response = await submit(undefined, { data: { ...data, bus: { ...data.bus, raisingStation: { dataText: 'Station', dataCode: 0 } } } });
+    expect(response.statusCode).to.equal(200);
+    expect(sendMessage.callCount).to.equal(1);
+  });
+
   it('limits complaint details to 400 characters', async () => {
     expect((await submit(undefined, { data: { ...data, details: 'a'.repeat(400) } })).statusCode).to.equal(200);
     expect((await submit(undefined, { data: { ...data, details: 'a'.repeat(401) } })).statusCode).to.equal(400);

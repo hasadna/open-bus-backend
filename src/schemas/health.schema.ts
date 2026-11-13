@@ -1,9 +1,5 @@
 import { optionalObject, Type } from './index.js';
 
-/**
- * Health check endpoint schema
- * @type {import('fastify').FastifySchema}
- */
 export const healthCheckSchema = {
   tags: ['Health'],
   summary: 'Health check endpoint',

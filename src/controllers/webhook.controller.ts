@@ -1,15 +1,11 @@
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Resend } from 'resend';
 
 import { deliveryFailureTemplate } from '../templates/deliveryFailure.js';
 import { resolveLanguage } from '../templates/shared.js';
 import { emailTest } from '../utils/complaintDelivery.js';
 
-/**
- * Send complaint handler
- * @param {import('fastify').FastifyRequest} request
- * @param {import('fastify').FastifyReply} reply
- */
-export async function resendWebhook(request, reply) {
+export async function resendWebhook(request: FastifyRequest, reply: FastifyReply) {
   const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
   const apiKey = process.env.RESEND_API_KEY;
   if (!webhookSecret || !apiKey) {
@@ -19,11 +15,11 @@ export async function resendWebhook(request, reply) {
   let event;
   try {
     event = new Resend(apiKey).webhooks.verify({
-      payload: request.body,
+      payload: request.body as string,
       headers: {
-        id: request.headers['svix-id'],
-        timestamp: request.headers['svix-timestamp'],
-        signature: request.headers['svix-signature'],
+        id: request.headers['svix-id'] as string,
+        timestamp: request.headers['svix-timestamp'] as string,
+        signature: request.headers['svix-signature'] as string,
       },
       webhookSecret,
     });
@@ -31,9 +27,14 @@ export async function resendWebhook(request, reply) {
     return reply.status(400).send({ error: 'Invalid webhook signature or payload' });
   }
 
-  request.log.info({ eventId: request.headers['svix-id'], type: event.type, emailId: event.data?.email_id }, 'Received Resend webhook');
-  const isFailure = ['email.failed', 'email.bounced', 'email.suppressed'].includes(event.type);
-  if (!isFailure || event.data?.tags?.purpose !== 'complaint') {
+  request.log.info(
+    { eventId: request.headers['svix-id'], type: event.type, emailId: event.data && 'email_id' in event.data ? event.data.email_id : undefined },
+    'Received Resend webhook',
+  );
+  if (
+    (event.type !== 'email.failed' && event.type !== 'email.bounced' && event.type !== 'email.suppressed') ||
+    event.data?.tags?.purpose !== 'complaint'
+  ) {
     return reply.send({ success: true });
   }
 

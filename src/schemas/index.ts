@@ -1,6 +1,6 @@
-import { Type } from 'typebox';
+import { type TProperties, type TSchema, type TSchemaOptions, Type } from 'typebox';
 
-export const optionalObject = (properties, options = {}) => Type.Partial(Type.Object(properties), options);
+export const optionalObject = <T extends TProperties>(properties: T, options: TSchemaOptions = {}) => Type.Partial(Type.Object(properties), options);
 
 export const commonErrorResponse = optionalObject(
   {
@@ -14,7 +14,7 @@ export const commonErrorResponse = optionalObject(
   { $id: 'ErrorResponseModel' },
 );
 
-export const commonSuccessResponse = (itemsSchema) =>
+export const commonSuccessResponse = <T extends TSchema>(itemsSchema: T) =>
   optionalObject({ success: Type.Boolean({ default: true }), data: itemsSchema }, { $id: 'SuccessResponseModel' });
 
 export const dataCodeModel = Type.Object(
@@ -24,5 +24,7 @@ export const dataCodeModel = Type.Object(
   },
   { $id: 'DataCodeModel' },
 );
+
+export const toggle = Type.String({ $id: 'ToggleModel', enum: ['1', '2'] });
 
 export { Type };

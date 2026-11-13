@@ -1,18 +1,19 @@
-import ky from 'ky';
+import type { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
+import ky, { isNetworkError } from 'ky';
+import type { Static } from 'typebox';
 
-import { maskEmail } from '../utils/maskEmail.js';
+import type { createIssueSchema, githubIssueModel } from '../schemas/issues.schema.js';
 
-/**
- * Create issue handler
- * @param {import('fastify').FastifyRequest} request
- * @param {import('fastify').FastifyReply} reply
- */
-export async function createIssue(request, reply) {
+type IssueBody = Static<typeof createIssueSchema.body> & { attachments?: string[] };
+type IssueError = Error & { validation?: FastifyError['validation']; response?: { status: number; statusText: string } };
+
+export async function createIssue(request: FastifyRequest<{ Body: IssueBody }>, reply: FastifyReply) {
   try {
     const {
       title,
       contactName,
       contactEmail,
+      publishContactEmail,
       description,
       environment,
       debugContext,
@@ -41,8 +42,9 @@ export async function createIssue(request, reply) {
       });
     }
 
-    const maskedEmail = maskEmail(contactEmail);
-    request.log.info('GitHub issue creation started', { title, contactEmail: maskedEmail, reproducibility });
+    // The email is posted only with the reporter's explicit consent; otherwise it is dropped.
+    const publishedEmail = publishContactEmail === true && contactEmail ? contactEmail : undefined;
+    request.log.info({ title, publishContactEmail: Boolean(publishedEmail), reproducibility }, 'GitHub issue creation started');
 
     // Validate required environment variables
     const repoName = process.env.GITHUB_REPO;
@@ -50,12 +52,12 @@ export async function createIssue(request, reply) {
     const token = process.env.GITHUB_TOKEN;
 
     if (!token || !repoOwner || !repoName) {
-      request?.log?.error?.('Missing GitHub configuration', { hasToken: Boolean(token), hasOwner: Boolean(repoOwner), hasRepo: Boolean(repoName) });
+      request?.log?.error?.({ hasToken: Boolean(token), hasOwner: Boolean(repoOwner), hasRepo: Boolean(repoName) }, 'Missing GitHub configuration');
       return reply.status(500).send({ error: 'Configuration error', message: 'GitHub configuration is incomplete' });
     }
 
     // Create the body for the GitHub issue
-    const body = `## Contact Information\n**Contact Name:** ${contactName}\n**Contact Email:** ${maskedEmail}\n\n## Issue Details\n**Description:** \n${description}\n\n**Environment:** ${environment}\n\n**Expected Behavior:** \n${expectedBehavior}\n\n**Actual Behavior:** \n${actualBehavior}\n\n**Reproducibility:** ${reproducibility}\n${debugContext ? `\n\n**Debug Context:** ${debugContext}` : ''}\n\n${attachments && attachments.length > 0 ? `## Attachments\n${attachments.map((url) => `- ${url}`).join('\n')}` : ''}\n\n---\n*Issue created via API on ${new Date().toISOString()}*`;
+    const body = `## Contact Information\n**Contact Name:** ${contactName}\n${publishedEmail ? `**Contact Email:** ${publishedEmail}\n` : ''}\n## Issue Details\n**Description:** \n${description}\n\n**Environment:** ${environment}\n\n**Expected Behavior:** \n${expectedBehavior}\n\n**Actual Behavior:** \n${actualBehavior}\n\n**Reproducibility:** ${reproducibility}\n${debugContext ? `\n\n**Debug Context:** ${debugContext}` : ''}\n\n${attachments && attachments.length > 0 ? `## Attachments\n${attachments.map((url) => `- ${url}`).join('\n')}` : ''}\n\n---\n*Issue created via API on ${new Date().toISOString()}*`;
     const labels = ['REPORTED-BY-USER'];
     // Create the GitHub issue
     const response = await ky.post(`https://api.github.com/repos/${repoOwner}/${repoName}/issues`, {
@@ -67,24 +69,31 @@ export async function createIssue(request, reply) {
       },
       timeout: 30000,
     });
-    const data = await response.json();
+    const data = await response.json<Static<typeof githubIssueModel>>();
 
-    request.log.info('GitHub issue created successfully', {
-      issueNumber: data.number,
-      issueId: data.id,
-    });
+    request.log.info(
+      {
+        issueNumber: data.number,
+        issueId: data.id,
+      },
+      'GitHub issue created successfully',
+    );
 
     return reply.status(200).send({ success: true, data });
-  } catch (error) {
-    request.log.error('GitHub issue creation failed', {
-      error: error.message,
-      stack: error.stack,
-      body: request.body,
-    });
+  } catch (caught) {
+    const error: IssueError = caught instanceof Error ? caught : new Error(String(caught));
+    request.log.error(
+      {
+        error: error.message,
+        stack: error.stack,
+        body: request.body,
+      },
+      'GitHub issue creation failed',
+    );
 
     // Handle validation errors
     if (error.validation) {
-      request?.log?.error?.('Validation failed', { validation: error.validation });
+      request?.log?.error?.({ validation: error.validation }, 'Validation failed');
       return reply.status(400).send({
         error: 'Validation failed',
         details: error.validation,
@@ -117,7 +126,7 @@ export async function createIssue(request, reply) {
         });
       }
 
-      request?.log?.error?.('GitHub API error', { status, statusText: error.response.statusText });
+      request?.log?.error?.({ status, statusText: error.response.statusText }, 'GitHub API error');
       return reply.status(500).send({
         error: 'GitHub API error',
         message: `Status: ${status} - ${error.response.statusText}`,
@@ -134,8 +143,8 @@ export async function createIssue(request, reply) {
     }
 
     // Handle network errors
-    if (error.name === 'TypeError') {
-      request?.log?.error?.('GitHub API network error', { name: error.name });
+    if (isNetworkError(error)) {
+      request?.log?.error?.({ name: error.name }, 'GitHub API network error');
       return reply.status(500).send({
         error: 'Network error',
         message: 'Unable to connect to GitHub API',

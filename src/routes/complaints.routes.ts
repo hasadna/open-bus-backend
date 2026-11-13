@@ -1,9 +1,7 @@
 import { sendComplaint } from '../controllers/complaints.controller.js';
 import { sendComplaintSchema } from '../schemas/complaints.schema.js';
+import type { AppServer } from '../types.js';
 
-/**
- * @param {import('fastify').FastifyInstance} fastify
- */
-export function complaintsRoutes(fastify) {
+export function complaintsRoutes(fastify: AppServer) {
   fastify.post('/send', { schema: sendComplaintSchema }, sendComplaint);
 }

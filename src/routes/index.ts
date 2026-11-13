@@ -1,14 +1,11 @@
 import { loadModels } from '../schemas/loadModels.js';
+import type { AppServer } from '../types.js';
 import { complaintsRoutes } from './complaints.routes.js';
 import { healthRoutes } from './health.routes.js';
 import { issuesRoutes } from './issues.routes.js';
 import { webhookRoutes } from './webhook.routes.js';
 
-/**
- * Register all application routes
- * @param {import('fastify').FastifyInstance} fastify - Fastify instance
- */
-export function registerRoutes(fastify) {
+export function registerRoutes(fastify: AppServer) {
   // load Models
   loadModels(fastify);
 

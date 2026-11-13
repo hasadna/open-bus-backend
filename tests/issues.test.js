@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import ky from 'ky';
+import ky, { NetworkError } from 'ky';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 
@@ -94,6 +94,41 @@ describe('createIssue', () => {
     expect(options.headers['Content-Type']).to.equal('application/json');
   });
 
+  it('should not post the contact email without consent', async () => {
+    post.resolves(createMockGitHubResponse(1, 'Test Issue'));
+
+    await createIssue(request, reply);
+
+    const [, options] = post.firstCall.args;
+
+    expect(options.json.body).to.not.include('Contact Email');
+    expect(options.json.body).to.not.include('john');
+  });
+
+  it('should post the full contact email when publishContactEmail is true', async () => {
+    request.body.publishContactEmail = true;
+    post.resolves(createMockGitHubResponse(1, 'Test Issue'));
+
+    await createIssue(request, reply);
+
+    const [, options] = post.firstCall.args;
+
+    expect(options.json.body).to.include('**Contact Email:** john@example.com');
+  });
+
+  it('should create the issue when contactEmail is omitted', async () => {
+    request.body.contactEmail = undefined;
+    request.body.publishContactEmail = true;
+    post.resolves(createMockGitHubResponse(1, 'Test Issue'));
+
+    await createIssue(request, reply);
+
+    const [, options] = post.firstCall.args;
+
+    expect(reply.statusCalledWith).to.equal(200);
+    expect(options.json.body).to.not.include('Contact Email');
+  });
+
   it('should include debug context in the GitHub issue body when provided', async () => {
     request.body.debugContext = 'https://example.com/some-page';
 
@@ -185,9 +220,9 @@ describe('createIssue', () => {
   });
 
   it('should handle network connection errors', async () => {
-    const error = new Error('getaddrinfo ENOTFOUND api.github.com');
-
-    error.name = 'TypeError';
+    const error = new NetworkError(new Request('https://api.github.com/repos/fake-owner/fake-repo/issues'), {
+      cause: new TypeError('getaddrinfo ENOTFOUND api.github.com'),
+    });
     post.rejects(error);
 
     await createIssue(request, reply);
@@ -197,18 +232,6 @@ describe('createIssue', () => {
       error: 'Network error',
       message: 'Unable to connect to GitHub API',
     });
-  });
-
-  it('should mask the contact email in the issue body', async () => {
-    const mockResponse = createMockGitHubResponse(1, 'Test Issue');
-
-    post.resolves(mockResponse);
-
-    await createIssue(request, reply);
-
-    const [, options] = post.firstCall.args;
-
-    expect(options.json.body).to.include('**Contact Email:** joh*@example.com');
   });
 
   it('should return fake data when debug is true', async () => {

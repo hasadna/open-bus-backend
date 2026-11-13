@@ -1,9 +1,6 @@
-/**
- * Graceful shutdown handler
- * @param {import('fastify').FastifyInstance} fastify - Fastify instance
- * @param {string} signal - The signal that triggered the shutdown
- */
-export const gracefulShutdown = async (fastify, signal) => {
+import type { FastifyInstance } from 'fastify';
+
+export const gracefulShutdown = async (fastify: FastifyInstance, signal: string) => {
   fastify.log.info(`Received ${signal}. Starting graceful shutdown...`);
 
   try {
@@ -16,11 +13,7 @@ export const gracefulShutdown = async (fastify, signal) => {
   }
 };
 
-/**
- * Setup graceful shutdown handlers
- * @param {import('fastify').FastifyInstance} fastify - Fastify instance
- */
-export function setupGracefulShutdown(fastify) {
+export function setupGracefulShutdown(fastify: FastifyInstance) {
   // Handle shutdown signals
   process.on('SIGTERM', () => gracefulShutdown(fastify, 'SIGTERM'));
   process.on('SIGINT', () => gracefulShutdown(fastify, 'SIGINT'));

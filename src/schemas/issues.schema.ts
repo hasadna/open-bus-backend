@@ -35,10 +35,6 @@ export const githubIssueModel = optionalObject(
   },
 );
 
-/**
- * Create issue endpoint schema
- * @type {import('fastify').FastifySchema}
- */
 export const createIssueSchema = {
   tags: ['Issues'],
   summary: 'Create a GitHub issue',
@@ -47,7 +43,13 @@ export const createIssueSchema = {
     type: Type.String({ enum: ['bug', 'feature', 'other'], description: 'Type of the issue' }),
     title: Type.String({ minLength: 5, maxLength: 200, description: 'Title of the issue' }),
     contactName: Type.String({ minLength: 1, maxLength: 100, description: 'Name of the person reporting the issue' }),
-    contactEmail: Type.String({ format: 'email', description: 'Email of the person reporting the issue' }),
+    contactEmail: Type.Optional(Type.String({ format: 'email', description: 'Email of the person reporting the issue' })),
+    publishContactEmail: Type.Optional(
+      Type.Boolean({
+        default: false,
+        description: 'Whether the reporter consented to publishing contactEmail in the public GitHub issue. Without it, the email is not posted.',
+      }),
+    ),
     description: Type.String({ minLength: 10, maxLength: 5000, description: 'Detailed description of the issue' }),
     environment: Type.String({ minLength: 1, maxLength: 200, description: 'Environment where the issue occurred' }),
     debugContext: Type.Optional(
@@ -66,10 +68,6 @@ export const createIssueSchema = {
   },
 };
 
-/**
- * Create issue endpoint schema (deprecated)
- * @type {import('fastify').FastifySchema}
- */
 export const createIssueDepractedSchema = {
   tags: ['Issues'],
   summary: 'Create a GitHub issue (deprecated)',

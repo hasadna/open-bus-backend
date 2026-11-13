@@ -2,6 +2,7 @@ import { Resend } from 'resend';
 
 import { complaintTemplate } from '../templates/complaint.js';
 import { resolveLanguage } from '../templates/shared.js';
+import type { ComplaintData } from '../types.js';
 
 export const emailTest = {
   onboarding: 'onboarding@resend.dev',
@@ -16,7 +17,7 @@ export const emailTest = {
   // suppressed
 };
 
-export async function sendComplaintEmail(data, idempotencyKey, debug = false) {
+export async function sendComplaintEmail(data: ComplaintData, idempotencyKey: string, debug = false) {
   const RESEND_API_KEY = process.env?.RESEND_API_KEY;
   const from = debug === true ? emailTest.onboarding : process.env.RESEND_EMAIL;
   const recipient = debug === true ? emailTest.delivered : process.env.RESEND_COMPLAINTS_EMAIL;

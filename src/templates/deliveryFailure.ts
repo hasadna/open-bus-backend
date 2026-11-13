@@ -27,7 +27,7 @@ const failureCopy = {
   },
 };
 
-export function deliveryFailureTemplate(emailId, language) {
+export function deliveryFailureTemplate(emailId: string, language?: string) {
   const lang = resolveLanguage(language);
   const copy = failureCopy[lang];
   return {

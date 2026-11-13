@@ -1,22 +1,24 @@
 import { SendMessageCommand } from '@aws-sdk/client-sqs';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { LRUCache } from 'lru-cache';
 import { createHash } from 'node:crypto';
 
 import { complaintTitle } from '../templates/complaint.js';
+import type { ComplaintBody, ComplaintHeaders } from '../types.js';
 import { sendComplaintEmail } from '../utils/complaintDelivery.js';
 import { getComplaintDLQUrl, getComplaintQueueUrl, sqs } from '../utils/complaintQueue.js';
 
-const cache = new LRUCache({ max: 1000, ttl: 60 * 60 * 1000 });
+type CachedComplaintStatus = {
+  httpStatus: 200 | 202;
+  response: { success: boolean; state: string; messageId?: string; emailId?: string };
+};
+
+const cache = new LRUCache<string, CachedComplaintStatus>({ max: 1000, ttl: 60 * 60 * 1000 });
 export function clearComplaintStatusCache() {
   cache.clear();
 }
 
-/**
- * Send complaint handler
- * @param {import('fastify').FastifyRequest} request
- * @param {import('fastify').FastifyReply} reply
- */
-export async function sendComplaint(request, reply) {
+export async function sendComplaint(request: FastifyRequest<{ Body: ComplaintBody; Headers: ComplaintHeaders }>, reply: FastifyReply) {
   const pairKey = request.headers['pair-key'];
   const data = { ...request.body.data, title: complaintTitle(request.body.data) };
   const { email } = data;

@@ -8,7 +8,7 @@ const fileType = /^.*\.(?<type>doc|docx|jpeg|jpg|pdf|gif|tiff|png)$/giu;
 
 const mobileSchema = () => Type.String({ pattern: mobileOnly.source });
 const dateStringSchema = () => Type.String({ format: 'date-time' });
-const hourStringSchema = (examples) => Type.String({ pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$', ...(examples && { examples }) });
+const hourStringSchema = (examples: string[]) => Type.String({ pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$', ...(examples && { examples }) });
 
 export const busSchema = Type.Object(
   {
@@ -84,10 +84,6 @@ export const complaintFormSchema = Type.Object(
   },
 );
 
-/**
- * Send complaint endpoint schema
- * @type {import('fastify').FastifySchema}
- */
 export const sendComplaintSchema = {
   tags: ['Complaints'],
   summary: 'Send a complaint',

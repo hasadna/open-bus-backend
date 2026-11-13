@@ -1,12 +1,9 @@
 import cors from '@fastify/cors';
+import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import f from 'fastify';
 
 import { swaggerConfig, swaggerUIConfig } from './swagger.config.js';
 
-/**
- * Create and configure Fastify instance
- * @returns {Promise<import('fastify').FastifyInstance>} Configured Fastify instance
- */
 export async function createServer() {
   const isDev = process.env.NODE_ENV !== 'production';
   const fastify = f({
@@ -26,7 +23,7 @@ export async function createServer() {
         : undefined,
     },
     trustProxy: true,
-  });
+  }).withTypeProvider<TypeBoxTypeProvider>();
 
   // Register Swagger for API documentation
   await fastify.register(import('@fastify/swagger'), swaggerConfig);

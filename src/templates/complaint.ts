@@ -1,13 +1,20 @@
+import type { ComplaintData, DataCode } from '../types.js';
 import { escapeHtml, languageNames, layout, resolveLanguage } from './shared.js';
 
-const displayValue = (value) => {
+type FieldValue = string | number | null | undefined | DataCode;
+type Field = [label: string, value: FieldValue, ltr?: boolean];
+type Section = [title: string, fields: Field[]];
+type DisplayField = [label: string, value: string, ltr?: boolean];
+type DisplaySection = [title: string, fields: DisplayField[]];
+
+const displayValue = (value: FieldValue) => {
   if (value && typeof value === 'object') {
     return [value.dataText, value.dataCode].filter((part) => part !== undefined && part !== null && part !== '').join(' / ');
   }
   return value === undefined || value === null ? '' : String(value);
 };
 
-export function complaintTitle(data) {
+export function complaintTitle(data: ComplaintData) {
   const name = [data.firstName, data.lastName].filter(Boolean).join(' ').trim();
   let trip = '';
   if (data.train) {
@@ -19,12 +26,12 @@ export function complaintTitle(data) {
   return [name, [data.subject?.dataText, trip, date, data.eventHour].filter(Boolean).join(' ')].filter(Boolean).join(' - ');
 }
 
-export function complaintTemplate(data) {
+export function complaintTemplate(data: ComplaintData) {
   const generatedTitle = complaintTitle(data);
   const lang = resolveLanguage(data.lang);
-  const trainNames = { 1: 'רכבת ישראל', 2: 'הרכבת הקלה בירושלים', 3: 'הרכבת הקלה בגוש דן (דנקל)' };
-  const eventStationNames = { start: 'תחנת מוצא', destination: 'תחנת יעד' };
-  const sections = [
+  const trainNames: Record<string, string | undefined> = { 1: 'רכבת ישראל', 2: 'הרכבת הקלה בירושלים', 3: 'הרכבת הקלה בגוש דן (דנקל)' };
+  const eventStationNames: Record<string, string | undefined> = { start: 'תחנת מוצא', destination: 'תחנת יעד' };
+  const rawSections: Section[] = [
     [
       'פרטי הפנייה',
       [
@@ -57,10 +64,10 @@ export function complaintTemplate(data) {
     [
       'פרטי הרכבת',
       [
-        ['סוג רכבת', trainNames[data.train?.trainType]],
+        ['סוג רכבת', data.train ? trainNames[data.train.trainType] : undefined],
         ['תחנת מוצא/קוד תחנה', data.train?.startStation],
         ['תחנת יעד/קוד תחנה', data.train?.destinationStation],
-        ['תחנת האירוע', eventStationNames[data.train?.eventStation]],
+        ['תחנת האירוע', data.train ? eventStationNames[data.train.eventStation] : undefined],
         ['מספר רכבת', data.train?.trainNumber],
       ],
     ],
@@ -76,8 +83,12 @@ export function complaintTemplate(data) {
         ['מספר רב-קו', data.ravkav, true],
       ],
     ],
-  ]
-    .map(([title, fields]) => [title, fields.map(([label, value, ltr]) => [label, displayValue(value), ltr]).filter(([, value]) => value !== '')])
+  ];
+  const sections = rawSections
+    .map<DisplaySection>(([title, fields]) => [
+      title,
+      fields.map<DisplayField>(([label, value, ltr]) => [label, displayValue(value), ltr]).filter(([, value]) => value !== ''),
+    ])
     .filter(([, fields]) => fields.length);
   const subject = generatedTitle;
   const text = sections.map(([title, fields]) => `${title}\n${fields.map(([label, value]) => `${label}: ${value}`).join('\n')}`).join('\n\n');

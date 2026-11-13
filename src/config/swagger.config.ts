@@ -1,8 +1,7 @@
-/**
- * Swagger configuration
- * @type {import('@fastify/swagger').SwaggerOptions}
- */
-export const swaggerConfig = {
+import type { SwaggerOptions } from '@fastify/swagger';
+import type { FastifySwaggerUiOptions } from '@fastify/swagger-ui';
+
+export const swaggerConfig: SwaggerOptions = {
   openapi: {
     info: {
       title: 'Open Bus Backend API',
@@ -15,15 +14,10 @@ export const swaggerConfig = {
       { name: 'Issues', description: 'GitHub issue management' },
     ],
   },
-  staticCSP: true,
   transform: ({ schema, url }) => ({ schema, url }),
 };
 
-/**
- * Swagger UI configuration
- * @type {import('@fastify/swagger-ui').FastifySwaggerUiOptions}
- */
-export const swaggerUIConfig = {
+export const swaggerUIConfig: FastifySwaggerUiOptions = {
   routePrefix: '/docs',
   uiConfig: {
     deepLinking: true,
@@ -42,6 +36,6 @@ export const swaggerUIConfig = {
       next();
     },
   },
-  transformStaticCSP: (header) => header,
   staticCSP: true,
+  transformStaticCSP: (header) => header,
 };

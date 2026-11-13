@@ -2,19 +2,19 @@ import { CreateQueueCommand, GetQueueAttributesCommand, SQSClient } from '@aws-s
 
 export const sqs = new SQSClient();
 
-let queuesPromise;
+let queuesPromise: Promise<{
+  queueUrl: undefined | string;
+  dlqUrl: undefined | string;
+}> | null = null;
 
 async function createComplaintQueues() {
   const { QueueUrl: dlqUrl } = await sqs.send(new CreateQueueCommand({ QueueName: 'complaints-dlq' }));
-
-  const {
-    Attributes: { QueueArn: dlqArn },
-  } = await sqs.send(new GetQueueAttributesCommand({ QueueUrl: dlqUrl, AttributeNames: ['QueueArn'] }));
+  const { Attributes } = await sqs.send(new GetQueueAttributesCommand({ QueueUrl: dlqUrl, AttributeNames: ['QueueArn'] }));
 
   const { QueueUrl: queueUrl } = await sqs.send(
     new CreateQueueCommand({
       QueueName: 'complaints',
-      Attributes: { RedrivePolicy: JSON.stringify({ deadLetterTargetArn: dlqArn, maxReceiveCount: 5 }) },
+      Attributes: { RedrivePolicy: JSON.stringify({ deadLetterTargetArn: Attributes?.QueueArn, maxReceiveCount: 5 }) },
     }),
   );
 
