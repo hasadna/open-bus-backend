@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 
 import { deliveryFailureTemplate } from '../templates/deliveryFailure.js';
 import { resolveLanguage } from '../templates/shared.js';
-import { emailTest } from '../utils/complaintDelivery.js';
+import { emailAddress } from '../utils/index.js';
 
 export async function resendWebhook(request: FastifyRequest, reply: FastifyReply) {
   const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
@@ -52,9 +52,9 @@ export async function resendWebhook(request: FastifyRequest, reply: FastifyReply
       complaint = data;
     }
     const debug = eventDebug || complaint?.tags?.some((tag) => tag.name === 'debug' && tag.value === 'true');
-    const from = debug ? emailTest.onboarding : process.env.RESEND_EMAIL;
+    const from = debug ? emailAddress.onboarding : process.env.RESEND_EMAIL;
     if (!from) return reply.status(503).send({ error: 'Complaint failure notification configuration is incomplete' });
-    const submitter = debug ? emailTest.delivered : complaint?.reply_to?.[0];
+    const submitter = debug ? emailAddress.delivered : complaint?.reply_to?.[0];
     if (!submitter && complaint?.tags?.some((tag) => tag.name === 'no_reply_to' && tag.value === 'true')) return reply.send({ success: true });
     if (!submitter) throw new Error('Complaint email omitted submitter reply-to address');
     const lang = resolveLanguage(event.data.tags?.lang, complaint?.tags?.find((tag) => tag.name === 'lang')?.value);

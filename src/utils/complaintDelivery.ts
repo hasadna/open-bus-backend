@@ -4,7 +4,7 @@ import { complaintTemplate } from '../templates/complaint.js';
 import { resolveLanguage } from '../templates/shared.js';
 import type { ComplaintData } from '../types.js';
 
-export const emailTest = {
+export const emailAddress = {
   onboarding: 'onboarding@resend.dev',
   // sender email
   delivered: 'delivered@resend.dev',
@@ -19,8 +19,8 @@ export const emailTest = {
 
 export async function sendComplaintEmail(data: ComplaintData, idempotencyKey: string, debug = false) {
   const RESEND_API_KEY = process.env?.RESEND_API_KEY;
-  const from = debug === true ? emailTest.onboarding : process.env.RESEND_EMAIL;
-  const recipient = debug === true ? emailTest.delivered : process.env.RESEND_COMPLAINTS_EMAIL;
+  const from = debug === true ? emailAddress.onboarding : process.env.RESEND_EMAIL;
+  const recipient = debug === true ? emailAddress.delivered : process.env.RESEND_COMPLAINTS_EMAIL;
 
   if (!RESEND_API_KEY || !from || !recipient) {
     throw new Error('Complaint email configuration is incomplete');

@@ -8,7 +8,7 @@ import sinon from 'sinon';
 import { clearComplaintStatusCache } from '../src/controllers/complaints.controller.js';
 import { registerRoutes } from '../src/routes/index.js';
 import { complaintTitle } from '../src/templates/complaint.js';
-import { sqs } from '../src/utils/complaintQueue.js';
+import { sqs } from '../src/utils/index.js';
 
 describe('sendComplaint', () => {
   const uuid = randomUUID();

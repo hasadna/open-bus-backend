@@ -5,8 +5,7 @@ import { createHash } from 'node:crypto';
 
 import { complaintTitle } from '../templates/complaint.js';
 import type { ComplaintBody, ComplaintHeaders } from '../types.js';
-import { sendComplaintEmail } from '../utils/complaintDelivery.js';
-import { getComplaintDLQUrl, getComplaintQueueUrl, sqs } from '../utils/complaintQueue.js';
+import { sendComplaintEmail, getComplaintDLQUrl, getComplaintQueueUrl, sqs } from '../utils/index.js';
 
 type CachedComplaintStatus = {
   httpStatus: 200 | 202;
