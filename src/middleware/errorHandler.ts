@@ -8,7 +8,19 @@ export function globalErrorHandler(error: FastifyError, request: FastifyRequest,
     return reply.status(400).send({
       error: 'Validation failed',
       message: 'Request validation failed',
-      details: error.validation,
+      details: error.validation.map((validation) => {
+        const segments = validation.instancePath
+          .split('/')
+          .slice(1)
+          .map((part) => part.replace(/~1/gu, '/').replace(/~0/gu, '~'));
+        const property = validation.params.missingProperty ?? validation.params.additionalProperty;
+        if (property !== undefined) segments.push(property as any);
+        return {
+          ...validation,
+          field: segments.join('.') || error.validationContext || 'request',
+          message: validation.message || 'Invalid value',
+        };
+      }),
     });
   }
 

@@ -3,7 +3,14 @@ import { type TProperties, type TSchema, type TSchemaOptions, Type } from 'typeb
 export const optionalObject = <T extends TProperties>(properties: T, options: TSchemaOptions = {}) => Type.Partial(Type.Object(properties), options);
 
 export const commonErrorResponse = optionalObject(
-  { error: Type.String(), message: Type.String(), details: Type.Object({}) },
+  {
+    error: Type.String(),
+    message: Type.String(),
+    details: Type.Union([
+      Type.Object({}, { additionalProperties: true }),
+      Type.Array(Type.Object({ field: Type.String(), message: Type.String() }, { additionalProperties: true })),
+    ]),
+  },
   { $id: 'ErrorResponseModel' },
 );
 
