@@ -11,7 +11,7 @@ export const gracefulShutdown = async (fastify, signal) => {
     fastify.log.info('Server closed successfully');
     process.exit(0);
   } catch (error) {
-    fastify.log.error({ err: error }, 'Error during graceful shutdown');
+    fastify.log.error(error, 'Error during graceful shutdown');
     process.exit(1);
   }
 };
@@ -27,13 +27,13 @@ export function setupGracefulShutdown(fastify) {
 
   // Handle uncaught exceptions
   process.on('uncaughtException', (error) => {
-    fastify.log.error({ err: error }, 'Uncaught Exception');
+    fastify.log.error(error, 'Uncaught Exception');
     process.exit(1);
   });
 
   // Handle unhandled promise rejections
-  process.on('unhandledRejection', (reason) => {
-    fastify.log.error({ err: reason }, 'Unhandled Rejection');
+  process.on('unhandledRejection', (reason, promise) => {
+    fastify.log.error({ promise, reason }, 'Unhandled Rejection');
     process.exit(1);
   });
 }

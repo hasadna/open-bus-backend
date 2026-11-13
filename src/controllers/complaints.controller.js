@@ -6,7 +6,7 @@ import { complaintTitle } from '../templates/complaint.js';
 import { sendComplaintEmail } from '../utils/complaintDelivery.js';
 import { getComplaintDLQUrl, getComplaintQueueUrl, sqs } from '../utils/complaintQueue.js';
 
-const cache = new LRUCache({ max: 1000, ttl: 24 * 60 * 60 * 1000 });
+const cache = new LRUCache({ max: 1000, ttl: 60 * 60 * 1000 });
 export function clearComplaintStatusCache() {
   cache.clear();
 }

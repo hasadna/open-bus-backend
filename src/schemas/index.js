@@ -2,7 +2,7 @@ import { Type } from 'typebox';
 
 export const optionalObject = (properties, options = {}) => Type.Partial(Type.Object(properties), options);
 
-export const commonErrorResponse = optionalObject(
+export const commonErrorResponseModel = optionalObject(
   {
     error: Type.String(),
     message: Type.String(),
@@ -11,18 +11,18 @@ export const commonErrorResponse = optionalObject(
       Type.Array(Type.Object({ field: Type.String(), message: Type.String() }, { additionalProperties: true })),
     ]),
   },
-  { $id: 'ErrorResponse' },
+  { $id: 'ErrorResponseModel' },
 );
 
 export const commonSuccessResponse = (itemsSchema) =>
   optionalObject({ success: Type.Boolean({ default: true }), data: itemsSchema }, { $id: 'SuccessResponseModel' });
 
-export const DataCode = optionalObject(
+export const dataCodeModel = Type.Object(
   {
-    dataText: Type.Union([Type.String(), Type.Null()]),
-    dataCode: Type.Union([Type.String(), Type.Number(), Type.Null()]),
+    dataText: Type.String({ minLength: 1 }),
+    dataCode: Type.Union([Type.String({ minLength: 1 }), Type.Number()]),
   },
-  { $id: 'DataCode' },
+  { $id: 'DataCodeModel' },
 );
 
 export { Type };

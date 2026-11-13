@@ -1,5 +1,5 @@
 import { busSchema, ComplaintSchema, documentsList, trainSchema } from './complaints.schema.js';
-import { commonErrorResponse, DataCode } from './index.js';
+import { commonErrorResponseModel, dataCodeModel } from './index.js';
 import { githubIssueModel } from './issues.schema.js';
 
 /**
@@ -7,8 +7,8 @@ import { githubIssueModel } from './issues.schema.js';
  * @param {import('fastify').FastifyInstance} fastify - Fastify instance
  */
 export function loadModels(fastify) {
-  fastify.addSchema(commonErrorResponse);
-  fastify.addSchema(DataCode);
+  fastify.addSchema(commonErrorResponseModel);
+  fastify.addSchema(dataCodeModel);
 
   fastify.addSchema(busSchema);
   fastify.addSchema(trainSchema);

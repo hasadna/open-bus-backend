@@ -27,7 +27,6 @@ async function start() {
     await fastify.listen({ host: HOST, port: PORT });
   } catch (err) {
     console.error('Failed to start server:', err);
-    process.exitCode = 1;
     process.exit(1);
   }
 }

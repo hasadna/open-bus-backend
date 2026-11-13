@@ -237,7 +237,7 @@ describe('sendComplaint', () => {
 
   it('accepts a train with the required fields', async () => {
     const { bus, ...fields } = data;
-    expect(bus).to.exist;
+    expect(bus).to.exist();
     expect((await submit(undefined, { data: { ...fields, train } })).statusCode).to.equal(200);
   });
 

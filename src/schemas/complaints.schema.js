@@ -10,17 +10,14 @@ const mobileSchema = () => Type.String({ pattern: mobileOnly.source });
 const dateStringSchema = () => Type.String({ format: 'date-time' });
 const hourStringSchema = (examples) => Type.String({ pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$', ...(examples && { examples }) });
 
-const requiredDataCode = () =>
-  Type.Object({ dataText: Type.String({ minLength: 1 }), dataCode: Type.Union([Type.String({ minLength: 1 }), Type.Number()]) });
-
 export const busSchema = Type.Object(
   {
     driverName: Type.Optional(Type.String()),
     licenseNumber: Type.Optional(Type.String()),
     lineNumberText: Type.String({ minLength: 1 }),
-    operator: requiredDataCode(),
-    direction: requiredDataCode(),
-    raisingStation: requiredDataCode(),
+    operator: Type.Ref('DataCodeModel'),
+    direction: Type.Ref('DataCodeModel'),
+    raisingStation: Type.Ref('DataCodeModel'),
   },
   { $id: 'BusSchema' },
 );
@@ -28,8 +25,8 @@ export const busSchema = Type.Object(
 export const trainSchema = Type.Object(
   {
     trainType: Type.String({ enum: ['1', '2', '3'], description: '1 = Israel Train, 2 = Jerusalem Light Train, 3 = Gush Dan Light Train (Dankal)' }),
-    startStation: requiredDataCode(),
-    destinationStation: requiredDataCode(),
+    startStation: Type.Ref('DataCodeModel'),
+    destinationStation: Type.Ref('DataCodeModel'),
     eventStation: Type.String({ enum: ['start', 'destination'] }),
     trainNumber: Type.Optional(Type.String()),
   },
@@ -63,8 +60,8 @@ export const ComplaintSchema = Type.Object(
     lang: Type.Optional(
       Type.String({ enum: ['he', 'en', 'ru', 'ar'], description: 'Preferred user language; defaults to Hebrew (he) when omitted.' }),
     ),
-    transport: Type.Ref('DataCode'),
-    subject: Type.Ref('DataCode'),
+    transport: Type.Ref('DataCodeModel'),
+    subject: Type.Ref('DataCodeModel'),
     bus: Type.Optional(Type.Ref('BusSchema')),
     train: Type.Optional(Type.Ref('TrainSchema')),
   },
@@ -105,7 +102,7 @@ export const sendComplaintSchema = {
   response: {
     200: Type.Object({ success: Type.Boolean(), state: Type.String(), messageId: Type.String(), emailId: Type.String() }),
     202: Type.Object({ success: Type.Boolean(), state: Type.String() }),
-    400: Type.Ref('ErrorResponse'),
+    400: Type.Ref('ErrorResponseModel'),
     502: Type.Object({ success: Type.Boolean(), state: Type.String(), messageId: Type.String() }),
     503: Type.Object({ success: Type.Boolean(), state: Type.String(), error: Type.String(), message: Type.String() }),
   },
