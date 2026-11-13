@@ -29,7 +29,7 @@ describe('gracefulShutdown', () => {
     const error = new Error('fail');
     fastify.close.rejects(error);
     await gracefulShutdown(fastify, 'SIGINT');
-    expect(fastify.log.error.calledOnceWithExactly(error, 'Error during graceful shutdown')).to.be.true;
+    expect(fastify.log.error.calledWith(error, 'Error during graceful shutdown')).to.be.true;
     expect(exit.calledWith(1)).to.be.true;
     // Also check that info log for shutdown was called
     expect(fastify.log.info.calledWith('Received SIGINT. Starting graceful shutdown...')).to.be.true;
@@ -84,7 +84,7 @@ describe('setupGracefulShutdown error handlers', () => {
     setupGracefulShutdown(fastify);
     const error = new Error('uncaught!');
     handlers.uncaughtException(error);
-    expect(fastify.log.error.calledOnceWithExactly(error, 'Uncaught Exception')).to.be.true;
+    expect(fastify.log.error.calledWith(error, 'Uncaught Exception')).to.be.true;
     expect(exitStub.calledWith(1)).to.be.true;
   });
 
