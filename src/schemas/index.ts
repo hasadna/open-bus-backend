@@ -17,10 +17,10 @@ export const commonErrorResponse = optionalObject(
 export const commonSuccessResponse = <T extends TSchema>(itemsSchema: T) =>
   optionalObject({ success: Type.Boolean({ default: true }), data: itemsSchema }, { $id: 'SuccessResponseModel' });
 
-export const dataCodeModel = optionalObject(
+export const dataCodeModel = Type.Object(
   {
-    dataText: Type.Union([Type.String(), Type.Null()]),
-    dataCode: Type.Union([Type.String(), Type.Number(), Type.Null()]),
+    dataText: Type.String({ minLength: 1 }),
+    dataCode: Type.Union([Type.String({ minLength: 1 }), Type.Number()]),
   },
   { $id: 'DataCodeModel' },
 );

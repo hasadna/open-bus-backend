@@ -1,25 +1,13 @@
-import type { AppServer } from '../types.js';
-import {
-  busAndOtherSchema,
-  complaintFormSchema,
-  documentsList,
-  personalDetailsSchema,
-  requestSubjectSchema,
-  taxiSchema,
-  trainSchema,
-} from './complaints.schema.js';
-import { commonErrorResponse, dataCodeModel, toggle } from './index.js';
+import type types = require('../types.js');
+import { busSchema, complaintFormSchema, documentsList, trainSchema } from './complaints.schema.js';
+import { commonErrorResponse, dataCodeModel } from './index.js';
 import { githubIssueModel } from './issues.schema.js';
 
-export function loadModels(fastify: AppServer) {
+export function loadModels(fastify: types.AppServer) {
   fastify.addSchema(commonErrorResponse);
   fastify.addSchema(dataCodeModel);
-  fastify.addSchema(toggle);
 
-  fastify.addSchema(personalDetailsSchema);
-  fastify.addSchema(requestSubjectSchema);
-  fastify.addSchema(busAndOtherSchema);
-  fastify.addSchema(taxiSchema);
+  fastify.addSchema(busSchema);
   fastify.addSchema(trainSchema);
   fastify.addSchema(documentsList);
   fastify.addSchema(complaintFormSchema);

@@ -14,7 +14,7 @@ export function globalErrorHandler(error: FastifyError, request: FastifyRequest,
           .slice(1)
           .map((part) => part.replace(/~1/gu, '/').replace(/~0/gu, '~'));
         const property = validation.params.missingProperty ?? validation.params.additionalProperty;
-        if (property !== undefined) segments.push(property as any);
+        if (typeof property === 'string') segments.push(property);
         return {
           ...validation,
           field: segments.join('.') || error.validationContext || 'request',

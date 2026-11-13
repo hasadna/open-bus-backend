@@ -1,7 +1,7 @@
 # 🚌 Open Bus Backend
 
 A backend service powering the Open-Bus platform.
-Provides APIs for health checks and GitHub issue creation. Complaint submission is planned for a future PR.
+Provides APIs for health checks, GitHub issue creation, and complaint submission.
 
 ## 📢 Get Involved
 
@@ -40,6 +40,16 @@ LOG_LEVEL=info
 GITHUB_TOKEN=your_github_token
 GITHUB_OWNER=your_github_username
 GITHUB_REPO=your_repository_name
+
+# Complaint email delivery
+AWS_REGION=us-east-1
+# For local development; deployments can use an IAM role instead.
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+RESEND_API_KEY=your_resend_api_key
+RESEND_EMAIL=open_bus@your_verified_domain
+RESEND_COMPLAINTS_EMAIL=complaints@domain
+RESEND_WEBHOOK_SECRET=whsec_your_signing_secret
 ```
 
 ## 🚀 Running the Server
@@ -86,11 +96,12 @@ docker build -t open-bus-backend .
 
 2. **Run the container**
 
+Populate `.env` with your AWS, Resend, and GitHub configuration, then pass it to the container at runtime:
+
 ```bash
 docker run -it -p 3001:3001 \
-  -e GITHUB_TOKEN=your_github_token \
-  -e GITHUB_OWNER=your_github_owner \
-  -e GITHUB_REPO=your_github_repo \
+  --env-file .env \
+  -e NODE_ENV=production \
   -e LOG_LEVEL=info \
   open-bus-backend
 ```
@@ -109,6 +120,12 @@ docker run -it -p 3001:3001 \
 
 ### 📣 Complaints
 
-- `POST /complaints/send` → Returns `501 Not Implemented` until complaint submission is added.
+Complaint data requires `firstName`, `lastName`, `email`, `mobile`, `eventHour`, `eventDate`, `details`, `title`, `transport`, and `subject`. `passport` is limited to 10 characters. Exactly one of `passport` or `id` must be non-empty. The unused identity may be omitted, null, or empty. Email is always required. If `bus` is provided, `bus.lineNumberText`, `bus.operator`, `bus.direction`, and `bus.raisingStation` are required. The line number must be non-empty, and each of the other three fields must contain a non-empty `dataText` and `dataCode`. `transport` and `subject` use `{ dataText, dataCode }` objects. `fromHour` and `toHour` are optional. Exactly one of `bus` or `train` is required. `details` is limited to 400 characters. Times use `HH:mm`; `eventDate` uses an ISO date-time. If `train` is provided, `trainType`, `startStation`, `destinationStation`, and `eventStation` are required; both stations must contain a non-empty `dataText` and `dataCode`. Train details accept `trainType` (`"1"` Israel Railways, `"2"` Jerusalem light rail, `"3"` Dankal), `startStation`, `destinationStation`, `eventStation` (`"start"` or `"destination"`), and `trainNumber`. Station fields use `{ dataText, dataCode }` objects. The former `requestSubject` and `taxi` fields are no longer part of the schema.
+
+Complaint bodies accept optional `data.lang`: `he`, `en`, `ru`, or `ar` (Hebrew when omitted). Unsupported values return `400`. Complaint emails always use Hebrew labels and include the user's preferred language; submitted titles and descriptions are preserved as written. Both complaint and delivery-failure emails include HTML and plain-text versions. Failure notifications use the preferred language stored in the complaint email's `lang` tag, with Hebrew as the fallback for older emails. Hebrew and Arabic notifications use right-to-left layouts.
+
+- `POST /complaints/send` → Requires a `pair-key` UUID header and a complaint body with an email and exactly one of passport or ID. Queues the complaint in SQS, then submits an email to Resend from the verified `RESEND_EMAIL` address to `RESEND_COMPLAINTS_EMAIL`, with the submitter as Reply-To when an email is provided. Returns `SENT` (200), `PROCESSING` (202), or `FAILED` (502). A Resend failure is also copied to `complaints-dlq`. SQS queue and dead-letter queue are created when needed. AWS region and credentials use the SDK's standard configuration. The AWS identity needs `sqs:CreateQueue`, `sqs:GetQueueAttributes`, and `sqs:SendMessage` permissions. Duplicate status is cached in each server process for up to 24 hours or 1000 entries. Provider idempotency keys hash the same normalized UUID and email identity as the cache. SQS messages remain as an audit backlog; no worker consumes them in this phase.
 
 Server will be available at: [http://localhost:3001](http://localhost:3001)
+
+Configure a Resend webhook to send `email.failed`, `email.bounced`, and `email.suppressed` events to `POST /webhook/complaints` on your public server URL. Copy its signing secret into `RESEND_WEBHOOK_SECRET`. After signature verification, failure events tagged `purpose=complaint` retrieve the sent email and notify its stored Reply-To address (`data.email` when submitting). The Resend API key must allow reading and sending emails. Other events, including notification failures, are acknowledged without sending email. Notifications use the complaint email ID as an idempotency key. Invalid signatures receive `400`; missing configuration receives `503`; email lookup or notification sending failures receive `502` so Resend can retry. Events do not update complaint status yet.

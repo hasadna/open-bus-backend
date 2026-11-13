@@ -1,0 +1,72 @@
+import { expect } from 'chai';
+import { describe, it } from 'mocha';
+
+import { complaintTemplate } from '../src/templates/complaint.js';
+import { deliveryFailureTemplate } from '../src/templates/deliveryFailure.js';
+import { resolveLanguage } from '../src/templates/shared.js';
+
+describe('email templates', () => {
+  const names = { he: 'עברית', en: 'אנגלית', ru: 'רוסית', ar: 'ערבית' };
+  for (const [lang, name] of Object.entries(names)) {
+    it(`keeps complaints Hebrew and shows the ${lang} preference`, () => {
+      for (const transport of ['bus', 'train', 'taxi']) {
+        const result = complaintTemplate({ title: 'Test', email: 'rider@example.com', lang, transport: { dataText: transport, dataCode: '1' } });
+        expect(result.html).to.include('lang="he" dir="rtl"');
+        expect(result.text).to.include(`שפת הפונה: ${name}`);
+        expect(result.text).not.to.include('undefined');
+        expect(result.text).not.to.include('פרטי האירוע');
+      }
+    });
+
+    it(`localizes failure notices in ${lang}`, () => {
+      const result = deliveryFailureTemplate('email-123', lang);
+      expect(result.html).to.include(`lang="${lang}" dir="${['he', 'ar'].includes(lang) ? 'rtl' : 'ltr'}"`);
+      expect(result.html).to.include(result.subject);
+      expect(result.text).to.include('email-123');
+      expect(result.html).to.include('dir="ltr" style="unicode-bidi:isolate;display:inline-block">email-123');
+    });
+  }
+
+  it('renders transport, subject, and all train fields', () => {
+    const result = complaintTemplate({
+      title: 'Train complaint',
+      transport: { dataText: 'רכבת', dataCode: '2' },
+      subject: { dataText: 'איחור', dataCode: '3' },
+      bus: {},
+      train: {
+        trainType: '3',
+        startStation: { dataText: '<Start>', dataCode: 0 },
+        destinationStation: { dataText: 'End', dataCode: '20' },
+        eventStation: 'destination',
+        trainNumber: '42',
+      },
+    });
+    expect(result.text).to.include('אמצעי תחבורה: רכבת').and.to.include('נושא הפנייה: איחור\n');
+    expect(result.text).not.to.include('נושא הפנייה: איחור / 3');
+    expect(result.text).to.include('הרכבת הקלה בגוש דן (דנקל)').and.to.include('<Start> / 0').and.to.include('End / 20');
+    expect(result.text).to.include('תחנת האירוע: תחנת יעד').and.to.include('מספר רכבת: 42');
+    expect(result.html).to.include('&lt;Start&gt;');
+  });
+
+  it('preserves submitted text and escapes HTML in all dynamic fields', () => {
+    const result = complaintTemplate({
+      firstName: '<script>&"\'',
+      details: 'First line\n<b>Second line</b>',
+      bus: { operator: { dataText: '<Operator>', dataCode: 0 } },
+    });
+    expect(result.html).to.include('&lt;script&gt;&amp;&quot;&#39;');
+    expect(result.html).not.to.include('<script>');
+    expect(result.html).to.include('First line\n&lt;b&gt;Second line&lt;/b&gt;');
+    expect(result.text).to.include('First line\n<b>Second line</b>');
+    expect(result.text).to.include('<Operator>');
+    expect(deliveryFailureTemplate('<reference>', 'en').html).to.include('&lt;reference&gt;');
+  });
+
+  it('defaults missing or invalid language to Hebrew and accepts the next valid fallback', () => {
+    expect(resolveLanguage()).to.equal('he');
+    expect(resolveLanguage('invalid')).to.equal('he');
+    expect(resolveLanguage('invalid', 'ru')).to.equal('ru');
+    expect(complaintTemplate({ title: 'Test', bus: {} }).text).to.include('שפת הפונה: עברית');
+    expect(deliveryFailureTemplate('email-123').html).to.include('lang="he"');
+  });
+});

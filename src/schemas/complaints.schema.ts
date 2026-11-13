@@ -1,104 +1,36 @@
 import { optionalObject, Type } from './index.js';
 
 const numberOnly = /^[0-9]+$/u;
-const hebOnly = /^[א-ת-\s'"()]+/u;
+const hebrewName = /^[א-ת\s'"()-]+$/u;
+const multilingualName = /^[א-תA-Za-zء-ي\s'"()-]+$/u;
 export const mobileOnly = /^05[0-689]-?[2-9][0-9]{6}$/u;
 const fileType = /^.*\.(?<type>doc|docx|jpeg|jpg|pdf|gif|tiff|png)$/giu;
 
 const mobileSchema = () => Type.String({ pattern: mobileOnly.source });
 const dateStringSchema = () => Type.String({ format: 'date-time' });
-const hourStringSchema = (examples?: string[]) => Type.String({ pattern: '[012][0-9]:[012][0-9]', ...(examples && { examples }) });
+const hourStringSchema = (examples: string[]) => Type.String({ pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$', ...(examples && { examples }) });
 
-export const personalDetailsSchema = optionalObject(
+export const busSchema = Type.Object(
   {
-    firstName: Type.String({ pattern: hebOnly.source, minLength: 1, maxLength: 100, examples: ['פרטי'] }),
-    lastName: Type.String({ pattern: hebOnly.source, minLength: 1, maxLength: 100, examples: ['משפחה'] }),
-    iDNum: Type.String({ minLength: 9, maxLength: 9, pattern: numberOnly.source, examples: ['123456782'] }),
-    email: Type.String({ format: 'email', examples: ['email@gmail.com'] }),
-    mobile: Type.String({ ...mobileSchema(), examples: ['050-2345678'] }),
-  },
-  { $id: 'PersonalDetailsSchema' },
-);
-
-export const requestSubjectSchema = optionalObject(
-  { applySubject: Type.Ref('DataCodeModel'), applyType: Type.Ref('DataCodeModel') },
-  { $id: 'RequestSubjectSchema' },
-);
-
-export const busAndOtherSchema = optionalObject(
-  {
-    ravKav: Type.Boolean(),
-    singleTrip: Type.Boolean(),
-    ravKavNumber: Type.String({ minLength: 9, maxLength: 11, pattern: numberOnly.source, examples: ['123456789'] }),
-    reportdate: dateStringSchema(),
-    reportTime: hourStringSchema(),
-    addingFrequencyReason: Type.Array(Type.String({ enum: ['LoadTopics', 'LongWaiting', 'ExtensionHours'] })),
+    driverName: Type.Optional(Type.String()),
+    licenseNumber: Type.Optional(Type.String()),
+    lineNumberText: Type.String({ minLength: 1 }),
     operator: Type.Ref('DataCodeModel'),
-    addOrRemoveStation: Type.Ref('ToggleModel', { description: '1 = Remove, 2 = Add' }),
-    driverName: Type.String(),
-    licenseNum: Type.String(),
-    eventDate: dateStringSchema(),
-    eventHour: hourStringSchema(['08:00']),
-    fromHour: hourStringSchema(['07:00']),
-    toHour: hourStringSchema(['09:00']),
-    fillByMakatOrAddress: Type.Ref('ToggleModel', { description: '1 = Makat Station, 2 = Line Number' }),
-    makatStation: Type.String(),
-    lineNumberText: Type.String(),
-    lineNumberFromList: Type.Ref('DataCodeModel'),
     direction: Type.Ref('DataCodeModel'),
     raisingStation: Type.Ref('DataCodeModel'),
-    applyContent: Type.String({ minLength: 10, maxLength: 1000 }),
-    busDirectionFrom: Type.String(),
-    busDirectionTo: Type.String(),
-    raisingStationCity: Type.Ref('DataCodeModel'),
-    destinationStationCity: Type.Ref('DataCodeModel'),
-    raisingStationAddress: Type.String(),
-    cityId: Type.String(),
-    cityName: Type.String(),
-    originCityCode: Type.String(),
-    originCityName: Type.String(),
-    destinationCityCode: Type.String(),
-    destinationCityText: Type.String(),
-    directionCode: Type.String(),
-    stationName: Type.String(),
-    lineCode: Type.String(),
-    firstDeclaration: Type.Boolean(),
-    secondDeclaration: Type.Boolean(),
   },
-  { $id: 'BusAndOtherSchema' },
+  { $id: 'BusSchema' },
 );
 
-export const trainSchema = optionalObject(
+export const trainSchema = Type.Object(
   {
-    trainType: Type.Ref('ToggleModel', { description: '1 = Israel Train, 2 = Light Train' }),
-    eventDate: dateStringSchema(),
-    eventHour: hourStringSchema(['08:00']),
+    trainType: Type.String({ enum: ['1', '2', '3'], description: '1 = Israel Train, 2 = Jerusalem Light Train, 3 = Gush Dan Light Train (Dankal)' }),
     startStation: Type.Ref('DataCodeModel'),
     destinationStation: Type.Ref('DataCodeModel'),
-    number: Type.String(),
-    applyContent: Type.String({ minLength: 10, maxLength: 1000 }),
+    eventStation: Type.String({ enum: ['start', 'destination'] }),
+    trainNumber: Type.Optional(Type.String()),
   },
   { $id: 'TrainSchema' },
-);
-
-export const taxiSchema = optionalObject(
-  {
-    eventDetails: Type.String(),
-    invoice: Type.String(),
-    evidence: Type.String(),
-    otherFactors: Type.String(),
-    taxiType: Type.Ref('ToggleModel', { description: '1 = Taxi, 2 = Service Taxi' }),
-    driverName: Type.String(),
-    licenseNum: Type.String(),
-    cap: Type.String(),
-    eventDate: dateStringSchema(),
-    eventHour: hourStringSchema(['08:00']),
-    eventLocation: Type.String(),
-    firstDeclaration: Type.Boolean(),
-    secondDeclaration: Type.Boolean(),
-    applyContent: Type.String({ minLength: 10, maxLength: 1000 }),
-  },
-  { $id: 'TaxiSchema' },
 );
 
 export const documentsList = Type.Array(
@@ -109,26 +41,65 @@ export const documentsList = Type.Array(
   { $id: 'DocumentsList' },
 );
 
-const complaintVariant = (transport: string) =>
-  optionalObject({
-    personalDetails: Type.Ref('PersonalDetailsSchema'),
-    title: Type.String(),
-    requestSubject: Type.Ref('RequestSubjectSchema'),
-    [transport]: Type.Ref(`${transport[0].toUpperCase()}${transport.slice(1)}Schema`),
-    documentsList: Type.Ref('DocumentsList'),
-  });
-
-export const complaintFormSchema = Type.Union([complaintVariant('busAndOther'), complaintVariant('train'), complaintVariant('taxi')], {
-  $id: 'ComplaintFormSchema',
-});
+export const complaintFormSchema = Type.Object(
+  {
+    firstName: Type.String({ minLength: 1, maxLength: 100, examples: ['פרטי'] }),
+    lastName: Type.String({ minLength: 1, maxLength: 100, examples: ['משפחה'] }),
+    id: Type.Optional(
+      Type.Union([Type.String({ minLength: 9, maxLength: 9, pattern: numberOnly.source, examples: ['123456782'] }), Type.Literal(''), Type.Null()]),
+    ),
+    passport: Type.Optional(Type.Union([Type.String({ maxLength: 10 }), Type.Null()])),
+    email: Type.String({ format: 'email', examples: ['email@gmail.com'] }),
+    mobile: Type.String({ ...mobileSchema(), examples: ['050-2345678'] }),
+    ravkav: Type.Optional(Type.String({ minLength: 11, maxLength: 11, pattern: numberOnly.source })),
+    eventHour: hourStringSchema(['08:00']),
+    fromHour: Type.Optional(hourStringSchema(['07:00'])),
+    toHour: Type.Optional(hourStringSchema(['09:00'])),
+    eventDate: dateStringSchema(),
+    details: Type.String({ minLength: 5, maxLength: 400, pattern: '^[^&<>]*$' }),
+    lang: Type.Optional(
+      Type.String({ enum: ['he', 'en', 'ru', 'ar'], description: 'Preferred user language; defaults to Hebrew (he) when omitted.' }),
+    ),
+    transport: Type.Ref('DataCodeModel'),
+    subject: Type.Ref('DataCodeModel'),
+    bus: Type.Optional(Type.Ref('BusSchema')),
+    train: Type.Optional(Type.Ref('TrainSchema')),
+  },
+  {
+    $id: 'ComplaintFormSchema',
+    allOf: [
+      { oneOf: [{ required: ['bus'] }, { required: ['train'] }] },
+      {
+        if: { properties: { lang: { const: 'he' } } },
+        then: { properties: { firstName: Type.String({ pattern: hebrewName.source }), lastName: Type.String({ pattern: hebrewName.source }) } },
+        else: {
+          properties: { firstName: Type.String({ pattern: multilingualName.source }), lastName: Type.String({ pattern: multilingualName.source }) },
+        },
+      },
+    ],
+    oneOf: [
+      { required: ['passport'], properties: { passport: { type: 'string', pattern: '\\S' } } },
+      { required: ['id'], properties: { id: { type: 'string', minLength: 1 } } },
+    ],
+  },
+);
 
 export const sendComplaintSchema = {
   tags: ['Complaints'],
   summary: 'Send a complaint',
-  description: 'Complaint submission is not available yet',
-  body: optionalObject({ data: Type.Ref('ComplaintFormSchema') }),
+  description: 'Queues a complaint and submits its email to Resend. Repeat requests with the same UUID and email return the cached status.',
+  headers: Type.Object({
+    'pair-key': Type.String({ pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$' }),
+  }),
+  body: Type.Object({
+    debug: Type.Optional(Type.Boolean({ default: false, examples: [true] })),
+    data: Type.Ref('ComplaintFormSchema'),
+  }),
   response: {
+    200: Type.Object({ success: Type.Boolean(), state: Type.String(), messageId: Type.String(), emailId: Type.String() }),
+    202: Type.Object({ success: Type.Boolean(), state: Type.String() }),
     400: Type.Ref('ErrorResponseModel'),
-    501: Type.Ref('ErrorResponseModel'),
+    502: Type.Object({ success: Type.Boolean(), state: Type.String(), messageId: Type.String() }),
+    503: Type.Object({ success: Type.Boolean(), state: Type.String(), error: Type.String(), message: Type.String() }),
   },
 };
