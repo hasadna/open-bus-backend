@@ -8,5 +8,5 @@
   "sortImports": {
     "groups": [["builtin", "external"], ["internal", "subpath"], ["parent", "sibling", "index"], "unknown"]
   },
-  "ignorePatterns": ["dist/**", "coverage/**", "gov_api/**"]
+  "ignorePatterns": ["dist/**", "coverage/**", "gov_api/**", "{drizzle,src/db}/relations.ts", "{drizzle,src/db}/schema.ts"]
 }

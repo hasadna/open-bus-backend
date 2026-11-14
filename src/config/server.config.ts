@@ -2,6 +2,7 @@ import cors from '@fastify/cors';
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import f from 'fastify';
 
+import drizzlePlugin from '../plugins/drizzle.js';
 import { swaggerConfig, swaggerUIConfig } from './swagger.config.js';
 
 export async function createServer() {
@@ -32,6 +33,10 @@ export async function createServer() {
 
   // Register Cors Origin requests from all origins
   await fastify.register(cors, { origin: '*' });
+
+  await fastify.register(drizzlePlugin, {
+    connectionString: process.env.DATABASE_URL!,
+  });
 
   return fastify;
 }

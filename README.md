@@ -40,7 +40,24 @@ LOG_LEVEL=info
 GITHUB_TOKEN=your_github_token
 GITHUB_OWNER=your_github_username
 GITHUB_REPO=your_repository_name
+
+# Postgres DB
+DATABASE_URL=postgres://<username>:<password>@<host>:<port>/<db_name>
 ```
+
+## Database schema
+
+This project follows a SQL-first workflow. Database schema changes are managed in [open-bus-stride-db](https://github.com/hasadna/open-bus-stride-db).
+the Drizzle schema here is introspected from the database for type-safe access.
+
+With `DATABASE_URL` set in your environment, refresh the local schema:
+
+```bash
+npm run db:pull
+```
+
+This introspects the database, copies the generated TypeScript files into `src/db`.
+Manage SQL changes in the database repository, then pull the updated schema here.
 
 ## 🚀 Running the Server
 
