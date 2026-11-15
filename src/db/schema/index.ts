@@ -1,0 +1,20 @@
+import gtfsRide from './gtfs_ride.js';
+import gtfsRideStop from './gtfs_ride_stop.js';
+import gtfsRoute from './gtfs_route.js';
+import gtfsStop from './gtfs_stop.js';
+import siriRide from './siri_ride.js';
+import siriRideDurations from './siri_ride_durations.js';
+import siriRideGtfsRide from './siri_ride_gtfs_ride.js';
+import siriRideStopGtfsStop from './siri_ride_stop_gtfs_stop.js';
+import siriVehicleLocation from './siri_vehicle_location.js';
+import siriDistance from './siri_vehicle_location_distance_from_gtfs_stop.js';
+
+export { gtfsRide, gtfsRideStop, gtfsRoute, gtfsStop, siriRide, siriVehicleLocation };
+export const rideDurations = siriRideDurations.table;
+export const rideDurationsRefresh = siriRideDurations.refresh;
+export const rideGtfsRide = siriRideGtfsRide.table;
+export const rideGtfsRideRefresh = siriRideGtfsRide.refresh;
+export const rideStopGtfsStop = siriRideStopGtfsStop.table;
+export const rideStopGtfsStopRefresh = siriRideStopGtfsStop.refresh;
+export const distance = siriDistance.table;
+export const distanceRefresh = siriDistance.refresh;

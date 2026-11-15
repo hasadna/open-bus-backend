@@ -1,24 +1,15 @@
+import { existsSync } from 'node:fs';
+import { loadEnvFile } from 'node:process';
+
 import { defineConfig } from '@chkit/core';
-import { pull } from '@chkit/plugin-pull';
 
-function required(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`Set ${name} to the supplied connection value`);
-  return value;
-}
+import { getConnectionConfig } from './src/db/config.js';
 
-const database = required('CLICKHOUSE_DB');
-const password = process.env.CLICKHOUSE_PASSWORD;
-if (password === undefined) throw new Error('Set CLICKHOUSE_PASSWORD (explicitly empty if supplied that way)');
+if (existsSync('.env')) loadEnvFile('.env');
+const clickhouse = getConnectionConfig();
 
 export default defineConfig({
-  schema: './src/db/schema/**/*.ts',
+  entry: './src/db/schema/index.ts',
   outDir: './chkit',
-  clickhouse: {
-    url: required('CLICKHOUSE_URL'),
-    username: required('CLICKHOUSE_USER'),
-    password,
-    database,
-  },
-  plugins: [pull({ databases: [database], outFile: './src/db/schema/pulled.ts' })],
+  clickhouse,
 });
