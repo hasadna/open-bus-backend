@@ -1,0 +1,17 @@
+services:
+  clickhouse:
+    # pulled Sep 15, 2026
+    image: clickhouse:latest
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_USER: openbus
+      CLICKHOUSE_PASSWORD: backend
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ports:
+      - 8123:8123
+      - 9000:9000
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+
+volumes:
+  clickhouse_data:

@@ -10,6 +10,6 @@
     "sourceMap": true,
     "skipLibCheck": true
   },
-  "include": ["index.ts", "src/**/*.ts"],
+  "include": ["*.ts", "src/**/*.ts"],
   "exclude": ["dist", "node_modules"]
 }
