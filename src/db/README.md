@@ -53,6 +53,22 @@ of null values. Stop matching first groups GTFS rows by day and code; comparing
 the minimum and maximum IDs detects ambiguity with constant-size aggregate state
 and reduces the number of rows entering the join.
 
+### TODO: Fix ride duration calculation
+
+Yes—the current value measures tracking duration, which can differ from the actual ride duration.
+
+- Before the first stop or after the last: those observations are included. They can inflate the duration. Missing observations near either endpoint can shorten it.
+- Crossing midnight: full timestamps handle this correctly—23:50 to 00:30 is 40 minutes. However, the ride can split if data_frame_ref changes, because it forms part of siri_ride_id.
+
+A better calculation would:
+
+1. Match the SIRI ride to its GTFS trip.
+2. Identify departure from the first stop and arrival at the last, using coordinates and stop progression.
+3. Keep the same trip identity across midnight.
+4. Return NULL or mark the result incomplete when either endpoint lacks enough evidence.
+
+I’d preserve the current value as observed tracking duration and calculate estimated trip duration separately. Stop proximity alone cannot establish an exact departure or arrival time
+
 ## Configuration and queries
 
 Set the following in `.env` or the process environment:
