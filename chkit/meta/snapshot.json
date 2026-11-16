@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-15T21:59:26.293Z",
+  "generatedAt": "2026-11-16T09:50:07.505Z",
   "definitions": [
     {
       "name": "gtfs_ride",
@@ -40,12 +40,8 @@
       ],
       "database": "default",
       "engine": "MergeTree()",
-      "primaryKey": [
-        "id"
-      ],
-      "orderBy": [
-        "id"
-      ],
+      "primaryKey": ["id"],
+      "orderBy": ["id"],
       "kind": "table",
       "settings": {
         "index_granularity": 8192
@@ -96,12 +92,8 @@
       ],
       "database": "default",
       "engine": "MergeTree()",
-      "primaryKey": [
-        "id"
-      ],
-      "orderBy": [
-        "id"
-      ],
+      "primaryKey": ["id"],
+      "orderBy": ["id"],
       "kind": "table",
       "settings": {
         "index_granularity": 8192
@@ -158,12 +150,8 @@
       ],
       "database": "default",
       "engine": "MergeTree()",
-      "primaryKey": [
-        "id"
-      ],
-      "orderBy": [
-        "id"
-      ],
+      "primaryKey": ["id"],
+      "orderBy": ["id"],
       "kind": "table",
       "settings": {
         "index_granularity": 8192
@@ -204,12 +192,8 @@
       ],
       "database": "default",
       "engine": "MergeTree()",
-      "primaryKey": [
-        "id"
-      ],
-      "orderBy": [
-        "id"
-      ],
+      "primaryKey": ["id"],
+      "orderBy": ["id"],
       "kind": "table",
       "settings": {
         "index_granularity": 8192
@@ -248,14 +232,10 @@
           "type": "DateTime"
         }
       ],
-      "orderBy": [
-        "siri_ride_id"
-      ],
+      "orderBy": ["siri_ride_id"],
       "database": "default",
       "engine": "ReplacingMergeTree(calculated_at)",
-      "primaryKey": [
-        "siri_ride_id"
-      ],
+      "primaryKey": ["siri_ride_id"],
       "kind": "table",
       "settings": {
         "index_granularity": 8192
@@ -278,14 +258,10 @@
           "type": "DateTime"
         }
       ],
-      "orderBy": [
-        "siri_ride_id"
-      ],
+      "orderBy": ["siri_ride_id"],
       "database": "default",
       "engine": "ReplacingMergeTree(calculated_at)",
-      "primaryKey": [
-        "siri_ride_id"
-      ],
+      "primaryKey": ["siri_ride_id"],
       "kind": "table",
       "settings": {
         "index_granularity": 8192
@@ -308,14 +284,10 @@
           "type": "DateTime"
         }
       ],
-      "orderBy": [
-        "siri_ride_stop_id"
-      ],
+      "orderBy": ["siri_ride_stop_id"],
       "database": "default",
       "engine": "ReplacingMergeTree(calculated_at)",
-      "primaryKey": [
-        "siri_ride_stop_id"
-      ],
+      "primaryKey": ["siri_ride_stop_id"],
       "kind": "table",
       "settings": {
         "index_granularity": 8192
@@ -446,13 +418,9 @@
         }
       ],
       "engine": "MergeTree()",
-      "partitionBy": "format('{0}/{1}', splitByChar('/', siri_snapshot_id)[1], splitByChar('/', siri_snapshot_id)[2])",
-      "primaryKey": [
-        "recorded_at_time"
-      ],
-      "orderBy": [
-        "recorded_at_time"
-      ],
+      "partitionBy": "format('{0}/{1}/{2}', splitByChar('/', siri_snapshot_id)[1], splitByChar('/', siri_snapshot_id)[2], splitByChar('/', siri_snapshot_id)[3])",
+      "primaryKey": ["recorded_at_time"],
+      "orderBy": ["recorded_at_time"],
       "settings": {
         "default_compression_codec": "'ZSTD(1)'",
         "index_granularity": 8192
@@ -492,18 +460,10 @@
           "type": "DateTime"
         }
       ],
-      "orderBy": [
-        "siri_ride_stop_id",
-        "vehicle_location_latitude",
-        "vehicle_location_longitude"
-      ],
+      "orderBy": ["siri_ride_stop_id", "vehicle_location_latitude", "vehicle_location_longitude"],
       "database": "default",
       "engine": "ReplacingMergeTree(calculated_at)",
-      "primaryKey": [
-        "siri_ride_stop_id",
-        "vehicle_location_latitude",
-        "vehicle_location_longitude"
-      ],
+      "primaryKey": ["siri_ride_stop_id", "vehicle_location_latitude", "vehicle_location_longitude"],
       "kind": "table",
       "settings": {
         "index_granularity": 8192

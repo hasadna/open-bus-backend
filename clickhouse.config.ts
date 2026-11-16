@@ -1,7 +1,6 @@
+import { defineConfig } from '@chkit/core';
 import { existsSync } from 'node:fs';
 import { loadEnvFile } from 'node:process';
-
-import { defineConfig } from '@chkit/core';
 
 import { getConnectionConfig } from './src/db/config.js';
 

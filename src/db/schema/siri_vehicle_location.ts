@@ -56,7 +56,8 @@ const definition = table({
   comment: 'Raw SIRI vehicle observations partitioned by snapshot, with derived route, ride, stop, and observation identifiers.',
   columns: [...columns],
   engine: 'MergeTree',
-  partitionBy: "format('{0}/{1}', splitByChar('/', siri_snapshot_id)[1], splitByChar('/', siri_snapshot_id)[2])",
+  partitionBy:
+    "format('{0}/{1}/{2}', splitByChar('/', siri_snapshot_id)[1], splitByChar('/', siri_snapshot_id)[2], splitByChar('/', siri_snapshot_id)[3])",
   primaryKey: ['recorded_at_time'],
   orderBy: ['recorded_at_time'],
   // chkit renders setting values as SQL, so string literals need SQL quotes.

@@ -1,5 +1,4 @@
 import { refreshableModel } from '../models.js';
-
 import stopMatches from './siri_ride_stop_gtfs_stop.js';
 
 export default refreshableModel({
