@@ -15,10 +15,11 @@
     "test:mocha": "mocha",
     "test:coverage": "c8 --reporter=lcov --reporter=text mocha",
     "lint:fix": "oxlint --fix && oxfmt --write .",
-    "build": "tsc",
+    "build": "tsc && node -e \"require('node:fs').cpSync('src/db/sql', 'dist/src/db/sql', { recursive: true })\"",
     "typecheck": "tsc --noEmit",
     "db:generate": "npx chkit generate",
-    "db:migrate": "npx chkit migrate --apply"
+    "db:migrate": "npx chkit migrate --apply",
+    "db:ingest:siri": "tsx --env-file-if-exists=.env src/db/ingest-siri.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.4.2",

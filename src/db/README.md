@@ -122,3 +122,114 @@ Without `RUN_CLICKHOUSE_TESTS=1`, the database tests are skipped.
 The `optimize_siri_joins` migration recreates the two affected views and retains
 their target tables. Applying it briefly interrupts those views; review and apply
 it through the normal migration workflow.
+
+## SIRI archive ingestion
+
+Ingestion lives in `src/db/ingest-siri.ts`; its database transformation is
+`src/db/sql/ingest-siri.sql`. Its typed schema and two `ARRAY JOIN`s follow the
+[upstream STRIDE ingestion macro](https://github.com/hasadna/open-bus-stride-clickhouse/blob/main/stride_dbt/macros/ingest_siri_vehicle_location.sql),
+adapted to standalone SQL without dbt. The CLI uses Hypequery's exported
+`ClickHouseConnection` to create its underlying official ClickHouse client,
+executes the SQL with `client.command()` and native query parameters, and closes
+that client in `finally`. No additional dependency is needed. Use Node 22+ and
+the four `CLICKHOUSE_*` settings above.
+The existing `siri_vehicle_location` table must exist. Ingestion works with the
+original monthly partitions and does not require a partition migration.
+
+```sh
+npm run db:ingest:siri -- 2026-11-11
+npm run db:ingest:siri -- 2026-11-11 2026-11-14
+```
+
+The first date is required; the end date is optional and defaults to the first
+date. Dates are inclusive UTC archive dates, irrespective of the local timezone. Like
+the upstream macro, each date gets one `INSERT ... SELECT FROM url(...)`, with:
+
+```text
+https://openbus-stride-public.s3.eu-west-1.amazonaws.com/stride-siri-requester/YYYY/MM/DD/{00..23}/{00..59}.br
+```
+
+ClickHouse expands the hours and minutes itself and inserts missing observations directly
+to `siri_vehicle_location`. The CLI only validates dates and submits SQL. It has no
+minute option or minute loop. The command does not create tables, replace
+partitions, or delete existing rows.
+
+ClickHouse downloads and decompresses Brotli in its own memory, reads each document
+with a typed nested `JSONEachRow` schema, validates timestamps, and expands visits
+into observations. The backend only sends SQL and receives results; it never
+receives archive bytes or saves archive files. ClickHouse needs outbound HTTPS and
+permission to use `url`; ingestion needs SELECT and INSERT on the existing table, without
+CREATE, DROP or ALTER privileges. Public HTTP reads do not require credentials or
+bucket listing. MergeTree persists the resulting rows normally.
+
+SQL uses at most two processing/download threads and 1 GiB of tracked query memory.
+The anti join compares incoming observations with rows stored for the same archive
+day. `max_bytes_before_external_join` triggers spilling at 256 MiB, while
+`max_bytes_in_join = 0` disables the separate hard join cap. ClickHouse partitions
+the join and spills to its own temporary storage; archive bytes never pass through
+the backend. The 1 GiB overall query memory limit still applies.
+Each daily query has a one-hour client timeout and requests progress headers every
+10 seconds to help keep long-running HTTP connections alive. Timestamp offsets are parsed into
+UTC. New snapshot IDs use `YYYY/MM/DD/HH/mm`, without `.br`. Existing IDs ending
+in `.br` are recognized by the duplicate check without rewriting those stored rows.
+ClickHouse computes alias columns;
+missing vehicle coordinates remain empty strings, matching the string payload
+contract.
+
+### Failed imports
+
+A failed query is logged on stderr with its date and error. The command continues
+with later dates and exits nonzero if any date failed. Success prints a JSON line
+with `day` and `status: "inserted"`. ClickHouse handles transport retries; the CLI
+never automatically resubmits an INSERT after a failed or uncertain response.
+
+Unlike upstream's unconditional append, this SQL uses a `LEFT ANTI JOIN` over all
+16 input columns. Repeating a date or overlapping date ranges skips observations
+already present. A failed daily query can leave committed rows; rerunning it fills
+the missing observations without duplicating those rows, including when only part
+of a snapshot was imported. Archives are still fetched on reruns. Modified payloads
+are new rows, not updates. Existing duplicates are not removed.
+
+The CLI uses a shared ClickHouse HTTP session per database. Concurrent CLI queries
+using the same server and database user are rejected with a session-lock error
+rather than inserting simultaneously; rerun a rejected command after the active
+import finishes. Direct SQL calls and writers using other sessions or users must
+be serialized separately, since MergeTree does not enforce a uniqueness constraint.
+No additional tables or schema changes are needed.
+
+### Compiled CLI and direct SQL
+
+```sh
+npm run build
+node --env-file-if-exists=.env dist/src/db/ingest-siri.js 2026-11-11 2026-11-14
+node --env-file-if-exists=.env dist/src/db/ingest-siri.js 2026-11-11
+```
+
+The build copies SQL assets into `dist/src/db/sql`. The same SQL can import a day
+directly, without a local data file, dbt or the Node CLI:
+
+```sh
+clickhouse-client --database default --param_database=default \
+  --param_source_url='https://openbus-stride-public.s3.eu-west-1.amazonaws.com/stride-siri-requester/2026/11/11/{00..23}/{00..59}.br' \
+  --queries-file src/db/sql/ingest-siri.sql
+```
+
+### Verification
+
+```sh
+RUN_CLICKHOUSE_TESTS=1 npm run test:mocha
+```
+
+Integration tests create and drop an isolated test database with the original
+monthly source table. An HTTP fixture server serves real Brotli bytes from memory;
+ClickHouse fetches and parses them. Tests cover URL glob expansion, individual
+file errors, UTC timestamps, aliases, direct SQL, empty snapshots, repeated and
+overlapping imports, partial snapshots, legacy `.br` IDs and concurrent CLI calls.
+A separate test checks that the CLI submits one query per date and
+continues after a failed date, only contacting ClickHouse. Production ingestion
+creates no tables.
+
+The default fixture hostname is `host.docker.internal`. Set
+`CLICKHOUSE_TEST_HTTP_HOST=127.0.0.1` when ClickHouse runs on the test host, or another
+address reachable from ClickHouse as needed. Existing derived models process only
+the recent 9–10 days; importing older raw rows does not rebuild older derived history.
