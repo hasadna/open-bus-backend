@@ -139,6 +139,80 @@ The `optimize_siri_joins` migration recreates the two affected views and retains
 their target tables. Applying it briefly interrupts those views; review and apply
 it through the normal migration workflow.
 
+## GTFS archive ingestion
+
+```sh
+npm run db:ingest:gtfs -- 2025-12-30
+```
+
+The single argument is the archive date, used to construct
+`https://openbus-stride-public.s3.eu-west-1.amazonaws.com/gtfs_archive/YYYY/MM/DD/israel-public-transportation.zip`.
+The imported service date is the earliest enabled weekday in `calendar.txt`
+referenced by a trip, which can differ from the archive date. Only that service
+day is imported. Calendar exception files are outside this six-file loader.
+
+ClickHouse reads `agency.txt`, `calendar.txt`, `routes.txt`, `stops.txt`,
+`trips.txt`, and `stop_times.txt` directly from the ZIP through unsigned `s3`
+queries. These files contain CSV; explicit string schemas and skipped headers
+handle UTF-8 BOMs without relying on schema inference. No archive bytes pass
+through Node and no local download or extraction is needed. ClickHouse must
+support remote ZIP members and have outbound HTTP access to S3.
+
+The importer stages a complete replacement before modifying the four existing
+GTFS tables. Trips are filtered by calendar range and weekday; their routes and
+stops are pruned accordingly. Duplicate stop codes remain separate stops, joined
+by the original stop ID. Times beyond 24:00 advance the Israel local calendar
+date before conversion to UTC. Ride endpoints use the first departure and last
+arrival ordered by stop sequence.
+
+Rerunning replaces the selected day rather than appending duplicates. IDs may
+change. Other service days remain unchanged. The three affected SIRI refreshes
+are stopped while GTFS rows and their ride/stop matches and distances are
+replaced. Affected SIRI identities are rebuilt from stored observations,
+including historical dates outside the regular refresh window. Previously
+enabled refreshes restart after a successful rebuild; unrelated duration
+refreshes are untouched.
+
+Run only one GTFS importer or other GTFS writer at a time per database. The
+HTTP session prevents overlapping queries from the same user, but does not
+lock the entire multi-query operation. Also serialize SIRI ingestion during
+replacement so its affected observation set remains stable. Replacement spans
+multiple tables and is not an atomic transaction: readers may see incomplete
+data until completion. Schedule it during a maintenance window when necessary.
+
+The `gtfs_ingest_state` table records the archive date, selected service date,
+refresh state, and completion state. Other `gtfs_ingest_*` tables hold raw data,
+prepared rows, generated IDs, and the IDs to replace. Completed runs remove
+these work tables and retain only the small state record. The existing target
+schemas do not change and no migration is required.
+
+On failure, the CLI exits nonzero and logs a JSON error with the failed step.
+Rerun the same archive date. Failures before preparation simply restart staging;
+failures during replacement reuse the prepared data and IDs without downloading
+again. Recovery first deletes both old and partially inserted replacement rows,
+then reinserts the staged data and rebuilds SIRI mappings. A different archive
+date is rejected while replacement is unfinished. Do not remove work tables or
+modify destination tables during recovery. Refreshes remain stopped after a
+replacement failure until recovery succeeds. ClickHouse restarts reset stopped
+refresh state, so rerun recovery promptly after a server restart.
+
+The configured user needs SELECT, INSERT, CREATE TABLE, DROP TABLE, TRUNCATE,
+ALTER DELETE, and SYSTEM STOP/START VIEW permissions in the selected database,
+plus read access to `system.view_refreshes` and use of the `s3` table function.
+Destination tables and SIRI refresh views should already be migrated. Statements
+use two processing/download threads, 1 GiB of tracked memory, spillable joins,
+and synchronous deletions; staging and spill files use ClickHouse disk space.
+
+```sh
+npm run build
+node --env-file-if-exists=.env dist/src/db/ingest-gtfs.js 2025-12-30
+```
+
+Integration tests create isolated databases and serve a real deflated ZIP from
+an in-memory HTTP fixture. Set `RUN_CLICKHOUSE_TESTS=1` and use
+`CLICKHOUSE_TEST_HTTP_HOST` for an address the ClickHouse server can reach;
+the default is `host.docker.internal`.
+
 ## SIRI archive ingestion
 
 Ingestion lives in `src/db/ingest-siri.ts`; its database transformation is

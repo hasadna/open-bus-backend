@@ -19,7 +19,8 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "npx chkit generate",
     "db:migrate": "npx chkit migrate --apply",
-    "db:ingest:siri": "tsx --env-file-if-exists=.env src/db/ingest-siri.ts"
+    "db:ingest:siri": "tsx --env-file-if-exists=.env src/db/ingest-siri.ts",
+    "db:ingest:gtfs": "tsx --env-file-if-exists=.env src/db/ingest-gtfs.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.4.2",
