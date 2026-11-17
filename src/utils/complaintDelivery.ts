@@ -1,51 +1,54 @@
-import { Resend } from 'resend';
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
 import { complaintTemplate } from '../templates/complaint.js';
 import { resolveLanguage } from '../templates/shared.js';
 import type { ComplaintData } from '../types.js';
 
-export const emailAddress = {
-  onboarding: 'onboarding@resend.dev',
-  // sender email
-  delivered: 'delivered@resend.dev',
-  // successfully delivered
-  bounced: 'bounced@resend.dev',
-  // provider rejected your email
-  complained: 'complained@resend.dev',
-  // marked as spam
-  suppressed: 'suppressed@resend.dev',
-  // suppressed
-};
+export const ses = new SESClient({ maxAttempts: 1 });
+export const simulatorRecipients = {
+  success: 'success@simulator.amazonses.com',
+  bounce: 'bounce@simulator.amazonses.com',
+  complaint: 'complaint@simulator.amazonses.com',
+  suppressionList: 'suppressionlist@simulator.amazonses.com',
+  outOfOffice: 'ooto@simulator.amazonses.com',
+} as const;
+export const simulatorRecipient = simulatorRecipients.success;
 
-export async function sendComplaintEmail(data: ComplaintData, idempotencyKey: string, debug = false) {
-  const RESEND_API_KEY = process.env?.RESEND_API_KEY;
-  const from = debug === true ? emailAddress.onboarding : process.env.RESEND_EMAIL;
-  const recipient = debug === true ? emailAddress.delivered : process.env.RESEND_COMPLAINTS_EMAIL;
+export async function sendEmail(
+  recipient: string,
+  template: { subject: string; html: string; text: string },
+  tags: Record<string, string>,
+  replyTo?: string,
+) {
+  const from = process.env.SES_EMAIL;
+  const configurationSet = process.env.SES_CONFIGURATION_SET;
+  if (!from || !recipient) throw new Error('Complaint email configuration is incomplete');
 
-  if (!RESEND_API_KEY || !from || !recipient) {
-    throw new Error('Complaint email configuration is incomplete');
-  }
-
-  const resend = new Resend(RESEND_API_KEY);
-  const { data: result, error } = await resend.emails.send(
-    {
-      from,
-      replyTo: data.email,
-      to: [recipient],
-      ...complaintTemplate(data),
-      tags: [
-        { name: 'purpose', value: 'complaint' },
-        ...(debug === true ? [{ name: 'debug', value: 'true' }] : []),
-        { name: 'lang', value: resolveLanguage(data.lang) },
-      ],
-    },
-    { idempotencyKey },
+  const result = await ses.send(
+    new SendEmailCommand({
+      Source: from,
+      Destination: { ToAddresses: [recipient] },
+      ...(replyTo ? { ReplyToAddresses: [replyTo] } : {}),
+      Message: {
+        Subject: { Data: template.subject, Charset: 'UTF-8' },
+        Body: { Html: { Data: template.html, Charset: 'UTF-8' }, Text: { Data: template.text, Charset: 'UTF-8' } },
+      },
+      Tags: Object.entries(tags).map(([Name, Value]) => ({ Name, Value })),
+      ...(configurationSet ? { ConfigurationSetName: configurationSet } : {}),
+    }),
+    { abortSignal: AbortSignal.timeout(15_000) },
   );
+  if (!result.MessageId) throw new Error('SES response omitted email ID');
+  return result.MessageId;
+}
 
-  if (error) {
-    throw new Error(`Resend rejected complaint email (${error.statusCode}): ${error.message}`);
-  }
-
-  if (!result?.id) throw new Error('Resend response omitted email ID');
-  return result.id;
+export async function sendComplaintEmail(data: ComplaintData, debug = false) {
+  const recipient = debug ? simulatorRecipient : process.env.SES_COMPLAINTS_EMAIL;
+  if (!recipient) throw new Error('Complaint email configuration is incomplete');
+  return sendEmail(
+    recipient,
+    complaintTemplate(data),
+    { purpose: 'complaint', lang: resolveLanguage(data.lang), ...(debug ? { debug: 'true' } : {}) },
+    data.email,
+  );
 }

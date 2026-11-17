@@ -87,7 +87,8 @@ export const complaintFormSchema = Type.Object(
 export const sendComplaintSchema = {
   tags: ['Complaints'],
   summary: 'Send a complaint',
-  description: 'Queues a complaint and submits its email to Resend. Repeat requests with the same UUID and email return the cached status.',
+  description:
+    'Queues a complaint for background SES delivery. Repeat requests with the same UUID, email, and debug flag return the cached acceptance.',
   headers: Type.Object({
     'pair-key': Type.String({ pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$' }),
   }),
@@ -96,10 +97,8 @@ export const sendComplaintSchema = {
     data: Type.Ref('ComplaintFormSchema'),
   }),
   response: {
-    200: Type.Object({ success: Type.Boolean(), state: Type.String(), messageId: Type.String(), emailId: Type.String() }),
-    202: Type.Object({ success: Type.Boolean(), state: Type.String() }),
+    202: Type.Object({ success: Type.Boolean(), state: Type.String(), messageId: Type.String() }),
     400: Type.Ref('ErrorResponseModel'),
-    502: Type.Object({ success: Type.Boolean(), state: Type.String(), messageId: Type.String() }),
     503: Type.Object({ success: Type.Boolean(), state: Type.String(), error: Type.String(), message: Type.String() }),
   },
 };

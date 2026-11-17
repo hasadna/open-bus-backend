@@ -2,6 +2,7 @@
 import { createServer } from './src/config/index.js';
 import { globalErrorHandler, notFoundHandler } from './src/middleware/index.js';
 import { registerRoutes } from './src/routes/index.js';
+import { startComplaintWorkers } from './src/utils/complaintWorker.js';
 import { setupGracefulShutdown } from './src/utils/index.js';
 
 const HOST = process.env.HOST || '0.0.0.0';
@@ -22,6 +23,8 @@ async function start() {
 
     // Setup graceful shutdown handlers
     setupGracefulShutdown(fastify);
+
+    await startComplaintWorkers(fastify);
 
     // Start listening
     await fastify.listen({ host: HOST, port: PORT });

@@ -1,18 +1,13 @@
 import { SendMessageCommand } from '@aws-sdk/client-sqs';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { LRUCache } from 'lru-cache';
-import { createHash } from 'node:crypto';
 
 import { complaintTitle } from '../templates/complaint.js';
 import type { ComplaintBody, ComplaintHeaders } from '../types.js';
-import { sendComplaintEmail, getComplaintDLQUrl, getComplaintQueueUrl, sqs } from '../utils/index.js';
+import { getComplaintQueueUrl, sqs } from '../utils/complaintQueue.js';
 
-type CachedComplaintStatus = {
-  httpStatus: 200 | 202;
-  response: { success: boolean; state: string; messageId?: string; emailId?: string };
-};
-
-const cache = new LRUCache<string, CachedComplaintStatus>({ max: 1000, ttl: 60 * 60 * 1000 });
+type QueuedComplaint = { success: true; state: 'PROCESSING'; messageId: string };
+const cache = new LRUCache<string, Promise<QueuedComplaint>>({ max: 1000, ttl: 60 * 60 * 1000 });
 export function clearComplaintStatusCache() {
   cache.clear();
 }
@@ -24,41 +19,22 @@ export async function sendComplaint(request: FastifyRequest<{ Body: ComplaintBod
 
   const debug = request.body.debug === true;
   const key = `${pairKey.toLowerCase()}:${email?.trim().toLowerCase()}${debug ? ':debug' : ''}`;
-  const cached = cache.get(key);
-  if (cached) {
-    return reply.status(cached.httpStatus).send(cached.response);
+  let pending = cache.get(key);
+  if (!pending) {
+    pending = Promise.resolve().then(async (): Promise<QueuedComplaint> => {
+      const QueueUrl = await getComplaintQueueUrl();
+      const result = await sqs.send(new SendMessageCommand({ QueueUrl, MessageBody: JSON.stringify({ email, pairKey, data, debug }) }));
+      if (!result.MessageId) throw new Error('SQS response omitted message ID');
+      return { success: true, state: 'PROCESSING', messageId: result.MessageId };
+    });
+    cache.set(key, pending);
   }
-
-  cache.set(key, { httpStatus: 202, response: { success: true, state: 'PROCESSING' } });
-
-  let messageId;
   try {
-    const QueueUrl = await getComplaintQueueUrl();
-    const result = await sqs.send(new SendMessageCommand({ QueueUrl, MessageBody: JSON.stringify({ email, pairKey, data }) }));
-    messageId = result.MessageId;
+    return reply.status(202).send(await pending);
   } catch (error) {
+    if (cache.get(key) === pending) cache.delete(key);
     request.log.error({ err: error }, 'Failed to queue complaint');
     const response = { success: false, state: 'FAILED', error: 'Queue error', message: 'Unable to queue complaint' };
-    cache.delete(key);
     return reply.status(503).send(response);
-  }
-
-  try {
-    const idempotencyKey = `complaint/${createHash('sha256').update(key).digest('hex')}`;
-    const emailId = await sendComplaintEmail(data, idempotencyKey, debug);
-    const response = { success: true, state: 'SENT', messageId, emailId };
-    cache.set(key, { httpStatus: 200, response });
-    return reply.status(200).send(response);
-  } catch (error) {
-    request.log.error({ err: error, messageId }, 'Failed to submit complaint email');
-    try {
-      const QueueUrl = await getComplaintDLQUrl();
-      await sqs.send(new SendMessageCommand({ QueueUrl, MessageBody: JSON.stringify({ pairKey, messageId, data }) }));
-    } catch (dlqError) {
-      request.log.error({ err: dlqError, messageId }, 'Failed to record complaint in dead-letter queue');
-    }
-    const response = { success: false, state: 'FAILED', messageId };
-    cache.delete(key);
-    return reply.status(502).send(response);
   }
 }
