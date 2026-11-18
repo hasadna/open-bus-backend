@@ -1,0 +1,3338 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Open Bus Stride API",
+    "description": "### Follow planned and real-time bus statistics 🚌\n\nWelcome to The Public Knowledge Workshop's Stride project. We provide usable and accurate data about the Israeli public transportation system.\n\nFor background on the project and some more detailed documentation and usage guides, see [STRIDE.md](https://github.com/hasadna/open-bus-pipelines/blob/main/STRIDE.md).\n\nLooking for a specific use-case?\n\n* Take a look at the **user cases** APIs below.\n* Try one of our existing [jupyter notebooks](https://github.com/hasadna/open-bus-stride-client/blob/main/README.md#using-the-interactive-jupyter-notebooks).\n* Don't see your use-case covered here? Please [open us a ticket](https://github.com/login?return_to=https%3A%2F%2Fgithub.com%2Fhasadna%2Fopen-bus%2Fissues%2Fnew)!\n\nQueries are by default limited to 100 results per query, this limit can be increased up to 500,000 results.\nPlease try to set appropriate query parameters to limit the results to reduce load on our DB.\nIf you do need to get large number of results (up to 500,000) it's recommended to use one of these methods:\n\n1. Use HTTP streaming and JSON streaming decoder, this method is most efficient and provide accurate results.\n   Our [Stride Python Client iterate method](https://github.com/hasadna/open-bus-stride-client#usage) uses this method.\n2. Use combination of limit / offset parameters to get results by page. This method may be less accurate because\n   it depends on data remaining unchanged between requests.\n\nFor more advanced usage-\n\n* Use **gtfs** for data about the planned lines timetables. \n* Use **siri** for data about lines real-time\n* See [Open Bus Stride Data Model](https://github.com/hasadna/open-bus-stride-db/blob/main/DATA_MODEL.md) for description of field and table names.\n* See [Open Bus Stride ETL Processes](https://github.com/hasadna/open-bus-pipelines/blob/main/STRIDE_ETL_PROCESSES.md) for description of the ETL processes which fetch and aggregate the data.\n* See [MOT Developer Information](https://www.gov.il/BlobFolder/generalpage/gtfs_general_transit_feed_specifications/he/GTFS%20-%20Developer%20Information.pdf) for description of the source fields as published by the Israel Ministry of Transportation.\n",
+    "version": "6bda55d25d1b155383da485f09a607d086866a3f"
+  },
+  "paths": {
+    "/route_timetable/list": {
+      "get": {
+        "tags": ["user cases"],
+        "summary": "List ",
+        "description": "List of the stops timetable of a given bus.\nCurrently, only planned time (gtfs) is returned for every stop.",
+        "operationId": "list__route_timetable_list_get",
+        "parameters": [
+          {
+            "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results."
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results."
+            },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+            "required": false,
+            "schema": {
+              "title": "Get Count",
+              "type": "boolean",
+              "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+              "default": false
+            },
+            "name": "get_count",
+            "in": "query"
+          },
+          {
+            "description": "Set a time range to get the timetable of a specific ride\n\nFilter by planned_start_time. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Planned Start Time Date From",
+              "type": "string",
+              "description": "Set a time range to get the timetable of a specific ride\n\nFilter by planned_start_time. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "planned_start_time_date_from",
+            "in": "query"
+          },
+          {
+            "description": "Set a time range to get the time table of a specific ride\n\nFilter by planned_start_time. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Planned Start Time Date To",
+              "type": "string",
+              "description": "Set a time range to get the time table of a specific ride\n\nFilter by planned_start_time. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "planned_start_time_date_to",
+            "in": "query"
+          },
+          {
+            "description": "To get a line ref, first query gtfs_routes\n\nFilter by line_ref. Comma-separated list of values.",
+            "required": false,
+            "schema": {
+              "title": "Line Refs",
+              "type": "string",
+              "description": "To get a line ref, first query gtfs_routes\n\nFilter by line_ref. Comma-separated list of values."
+            },
+            "name": "line_refs",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List  Route Timetable List Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/RouteTimetablePydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/stop_arrivals/list": {
+      "get": {
+        "tags": ["user cases"],
+        "summary": "List ",
+        "description": "List of the actual arrival times to a specific stop.\nCurrently, only planned time (gtfs) is returned for every stop.",
+        "operationId": "list__stop_arrivals_list_get",
+        "parameters": [
+          {
+            "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results."
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results."
+            },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+            "required": false,
+            "schema": {
+              "title": "Get Count",
+              "type": "boolean",
+              "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+              "default": false
+            },
+            "name": "get_count",
+            "in": "query"
+          },
+          {
+            "description": "To get a line ref, first query gtfs_routes\n\nFilter by gtfs_stop_id. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Stop Id",
+              "type": "integer",
+              "description": "To get a line ref, first query gtfs_routes\n\nFilter by gtfs_stop_id. Only return items which exactly match given string."
+            },
+            "name": "gtfs_stop_id",
+            "in": "query"
+          },
+          {
+            "description": "To get a line ref, first query gtfs_routes\n\nFilter by line_ref. Comma-separated list of values.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Ride Ids",
+              "type": "string",
+              "description": "To get a line ref, first query gtfs_routes\n\nFilter by line_ref. Comma-separated list of values."
+            },
+            "name": "gtfs_ride_ids",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List  Stop Arrivals List Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/StopArrivalPydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/rides_execution/list": {
+      "get": {
+        "tags": ["user cases"],
+        "summary": "List ",
+        "description": "List of A comparison between the planned and actual rides of a specific route between the given dates.\nCurrently, the \"actual_rides_count\", will be either None (no actual ride) or equal to the \"planned_rides_count.",
+        "operationId": "list__rides_execution_list_get",
+        "parameters": [
+          {
+            "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results."
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results."
+            },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+            "required": false,
+            "schema": {
+              "title": "Get Count",
+              "type": "boolean",
+              "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+              "default": false
+            },
+            "name": "get_count",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": true,
+            "schema": {
+              "title": "Date From",
+              "type": "string",
+              "description": "\n\nFilter by date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "date_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": true,
+            "schema": {
+              "title": "Date To",
+              "type": "string",
+              "description": "\n\nFilter by date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "date_to",
+            "in": "query"
+          },
+          {
+            "description": "Line operator ref.\n\nFilter by operator_ref. Only return items which exactly match given string.",
+            "required": true,
+            "schema": {
+              "title": "Operator Ref",
+              "type": "integer",
+              "description": "Line operator ref.\n\nFilter by operator_ref. Only return items which exactly match given string."
+            },
+            "name": "operator_ref",
+            "in": "query"
+          },
+          {
+            "description": "Line ref.\n\nFilter by line_ref. Only return items which exactly match given string.",
+            "required": true,
+            "schema": {
+              "title": "Line Ref",
+              "type": "integer",
+              "description": "Line ref.\n\nFilter by line_ref. Only return items which exactly match given string."
+            },
+            "name": "line_ref",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List  Rides Execution List Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/RideExecutionPydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/siri_routes/list": {
+      "get": {
+        "tags": ["siri"],
+        "summary": "List ",
+        "description": "List of siri routes.",
+        "operationId": "list__siri_routes_list_get",
+        "parameters": [
+          {
+            "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results."
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results."
+            },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+            "required": false,
+            "schema": {
+              "title": "Get Count",
+              "type": "boolean",
+              "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+              "default": false
+            },
+            "name": "get_count",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by line ref. Comma-separated list of values.",
+            "required": false,
+            "schema": { "title": "Line Refs", "type": "string", "description": "\n\nFilter by line ref. Comma-separated list of values." },
+            "name": "line_refs",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by operator ref. Comma-separated list of values.",
+            "required": false,
+            "schema": { "title": "Operator Refs", "type": "string", "description": "\n\nFilter by operator ref. Comma-separated list of values." },
+            "name": "operator_refs",
+            "in": "query"
+          },
+          {
+            "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+            "required": false,
+            "schema": {
+              "title": "Order By",
+              "type": "string",
+              "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+              "default": "id asc"
+            },
+            "name": "order_by",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List  Siri Routes List Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/SiriRoutePydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/siri_routes/get": {
+      "get": {
+        "tags": ["siri"],
+        "summary": "Get ",
+        "description": "Return a single siri route based on id",
+        "operationId": "get__siri_routes_get_get",
+        "parameters": [
+          {
+            "description": "siri route id to get",
+            "required": true,
+            "schema": { "title": "Id", "type": "integer", "description": "siri route id to get" },
+            "name": "id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SiriRoutePydanticModel" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/siri_rides/list": {
+      "get": {
+        "tags": ["siri"],
+        "summary": "List ",
+        "description": "List of siri rides.",
+        "operationId": "list__siri_rides_list_get",
+        "parameters": [
+          {
+            "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results."
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results."
+            },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+            "required": false,
+            "schema": {
+              "title": "Get Count",
+              "type": "boolean",
+              "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+              "default": false
+            },
+            "name": "get_count",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Date From",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "gtfs_route__date_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Date To",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "gtfs_route__date_to",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's line ref. Comma-separated list of values.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Line Refs",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's line ref. Comma-separated list of values."
+            },
+            "name": "gtfs_route__line_refs",
+            "in": "query"
+          },
+          {
+            "description": "Agency identifier. To get it, first query gtfs_agencies.\n\nFilter by related gtfs route's operator ref. Comma-separated list of values.\n\nExample: 3 for Eged",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Operator Refs",
+              "type": "string",
+              "description": "Agency identifier. To get it, first query gtfs_agencies.\n\nFilter by related gtfs route's operator ref. Comma-separated list of values.\n\nExample: 3 for Eged"
+            },
+            "name": "gtfs_route__operator_refs",
+            "in": "query"
+          },
+          {
+            "description": "Line number.\n\nFilter by related gtfs route's route short name. Only return items which exactly match given string.\n\nExample: 480",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Short Name",
+              "type": "string",
+              "description": "Line number.\n\nFilter by related gtfs route's route short name. Only return items which exactly match given string.\n\nExample: 480"
+            },
+            "name": "gtfs_route__route_short_name",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's route long name. Only return items which contain given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Long Name Contains",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's route long name. Only return items which contain given string."
+            },
+            "name": "gtfs_route__route_long_name_contains",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's route mkt. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Mkt",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's route mkt. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route__route_mkt",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's route direction. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Direction",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's route direction. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route__route_direction",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's route alternative. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Alternative",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's route alternative. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route__route_alternative",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's agency name. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Agency Name",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's agency name. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route__agency_name",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's route type. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Type",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's route type. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route__route_type",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs ride's gtfs route id. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Ride  Gtfs Route Id",
+              "type": "integer",
+              "description": "\n\nFilter by related gtfs ride's gtfs route id. Only return items which exactly match given string."
+            },
+            "name": "gtfs_ride__gtfs_route_id",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs ride's journey ref prefix. Only return items which start with given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Ride  Journey Ref Prefix",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs ride's journey ref prefix. Only return items which start with given string."
+            },
+            "name": "gtfs_ride__journey_ref_prefix",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs ride's start time from. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Ride  Start Time From",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs ride's start time from. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "gtfs_ride__start_time_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs ride's start time to. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Ride  Start Time To",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs ride's start time to. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "gtfs_ride__start_time_to",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri route ids. Comma-separated list of values.",
+            "required": false,
+            "schema": { "title": "Siri Route Ids", "type": "string", "description": "\n\nFilter by siri route ids. Comma-separated list of values." },
+            "name": "siri_route_ids",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri route line refs. Comma-separated list of values.",
+            "required": false,
+            "schema": {
+              "title": "Siri Route  Line Refs",
+              "type": "string",
+              "description": "\n\nFilter by siri route line refs. Comma-separated list of values."
+            },
+            "name": "siri_route__line_refs",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri route operator refs. Comma-separated list of values.",
+            "required": false,
+            "schema": {
+              "title": "Siri Route  Operator Refs",
+              "type": "string",
+              "description": "\n\nFilter by siri route operator refs. Comma-separated list of values."
+            },
+            "name": "siri_route__operator_refs",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by journey ref prefix. Only return items which start with given string.",
+            "required": false,
+            "schema": {
+              "title": "Journey Ref Prefix",
+              "type": "string",
+              "description": "\n\nFilter by journey ref prefix. Only return items which start with given string."
+            },
+            "name": "journey_ref_prefix",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by journey ref. Comma-separated list of values.",
+            "required": false,
+            "schema": { "title": "Journey Refs", "type": "string", "description": "\n\nFilter by journey ref. Comma-separated list of values." },
+            "name": "journey_refs",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by vehicle ref. Comma-separated list of values.",
+            "required": false,
+            "schema": { "title": "Vehicle Refs", "type": "string", "description": "\n\nFilter by vehicle ref. Comma-separated list of values." },
+            "name": "vehicle_refs",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by scheduled start time. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Scheduled Start Time From",
+              "type": "string",
+              "description": "\n\nFilter by scheduled start time. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "scheduled_start_time_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by scheduled start time. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Scheduled Start Time To",
+              "type": "string",
+              "description": "\n\nFilter by scheduled start time. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "scheduled_start_time_to",
+            "in": "query"
+          },
+          {
+            "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+            "required": false,
+            "schema": {
+              "title": "Order By",
+              "type": "string",
+              "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+              "default": "id asc"
+            },
+            "name": "order_by",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List  Siri Rides List Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/SiriRideWithRelatedPydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/siri_rides/get": {
+      "get": {
+        "tags": ["siri"],
+        "summary": "Get ",
+        "description": "Return a single siri ride based on id",
+        "operationId": "get__siri_rides_get_get",
+        "parameters": [
+          {
+            "description": "siri ride id to get",
+            "required": true,
+            "schema": { "title": "Id", "type": "integer", "description": "siri ride id to get" },
+            "name": "id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SiriRidePydanticModel" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/siri_stops/list": {
+      "get": {
+        "tags": ["siri"],
+        "summary": "List ",
+        "description": "List of siri stops.",
+        "operationId": "list__siri_stops_list_get",
+        "parameters": [
+          {
+            "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results."
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results."
+            },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+            "required": false,
+            "schema": {
+              "title": "Get Count",
+              "type": "boolean",
+              "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+              "default": false
+            },
+            "name": "get_count",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by stop code. Comma-separated list of values.",
+            "required": false,
+            "schema": { "title": "Codes", "type": "string", "description": "\n\nFilter by stop code. Comma-separated list of values." },
+            "name": "codes",
+            "in": "query"
+          },
+          {
+            "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+            "required": false,
+            "schema": {
+              "title": "Order By",
+              "type": "string",
+              "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+              "default": "id asc"
+            },
+            "name": "order_by",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List  Siri Stops List Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/SiriStopPydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/siri_stops/get": {
+      "get": {
+        "tags": ["siri"],
+        "summary": "Get ",
+        "description": "Return a single siri stop based on id",
+        "operationId": "get__siri_stops_get_get",
+        "parameters": [
+          {
+            "description": "siri stop id to get",
+            "required": true,
+            "schema": { "title": "Id", "type": "integer", "description": "siri stop id to get" },
+            "name": "id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SiriStopPydanticModel" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/siri_ride_stops/list": {
+      "get": {
+        "tags": ["siri"],
+        "summary": "List ",
+        "description": "List of siri ride stops.",
+        "operationId": "list__siri_ride_stops_list_get",
+        "parameters": [
+          {
+            "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results."
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results."
+            },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+            "required": false,
+            "schema": {
+              "title": "Get Count",
+              "type": "boolean",
+              "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+              "default": false
+            },
+            "name": "get_count",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri stop id. Comma-separated list of values.",
+            "required": false,
+            "schema": { "title": "Siri Stop Ids", "type": "string", "description": "\n\nFilter by siri stop id. Comma-separated list of values." },
+            "name": "siri_stop_ids",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri ride id. Comma-separated list of values.",
+            "required": false,
+            "schema": { "title": "Siri Ride Ids", "type": "string", "description": "\n\nFilter by siri ride id. Comma-separated list of values." },
+            "name": "siri_ride_ids",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri vehicle location lon. Only return items which have a numeric value greater than or equal to given value\n\nExample: 34.808",
+            "required": false,
+            "schema": {
+              "title": "Siri Vehicle Location  Lon  Greater Or Equal",
+              "type": "number",
+              "description": "\n\nFilter by siri vehicle location lon. Only return items which have a numeric value greater than or equal to given value\n\nExample: 34.808"
+            },
+            "name": "siri_vehicle_location__lon__greater_or_equal",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri vehicle location lon. Only return items which have a numeric value lower than or equal to given value\n\nExample: 34.808",
+            "required": false,
+            "schema": {
+              "title": "Siri Vehicle Location  Lon  Lower Or Equal",
+              "type": "number",
+              "description": "\n\nFilter by siri vehicle location lon. Only return items which have a numeric value lower than or equal to given value\n\nExample: 34.808"
+            },
+            "name": "siri_vehicle_location__lon__lower_or_equal",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri vehicle location lat. Only return items which have a numeric value greater than or equal to given value\n\nExample: 31.961",
+            "required": false,
+            "schema": {
+              "title": "Siri Vehicle Location  Lat  Greater Or Equal",
+              "type": "number",
+              "description": "\n\nFilter by siri vehicle location lat. Only return items which have a numeric value greater than or equal to given value\n\nExample: 31.961"
+            },
+            "name": "siri_vehicle_location__lat__greater_or_equal",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri vehicle location lat. Only return items which have a numeric value lower than or equal to given value\n\nExample: 31.961",
+            "required": false,
+            "schema": {
+              "title": "Siri Vehicle Location  Lat  Lower Or Equal",
+              "type": "number",
+              "description": "\n\nFilter by siri vehicle location lat. Only return items which have a numeric value lower than or equal to given value\n\nExample: 31.961"
+            },
+            "name": "siri_vehicle_location__lat__lower_or_equal",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri vehicle location recorded at time. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Siri Vehicle Location  Recorded At Time From",
+              "type": "string",
+              "description": "\n\nFilter by siri vehicle location recorded at time. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "siri_vehicle_location__recorded_at_time_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri vehicle location recorded at time. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Siri Vehicle Location  Recorded At Time To",
+              "type": "string",
+              "description": "\n\nFilter by siri vehicle location recorded at time. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "siri_vehicle_location__recorded_at_time_to",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri ride scheduled start time. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Siri Ride  Scheduled Start Time From",
+              "type": "string",
+              "description": "\n\nFilter by siri ride scheduled start time. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "siri_ride__scheduled_start_time_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri ride scheduled start time. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Siri Ride  Scheduled Start Time To",
+              "type": "string",
+              "description": "\n\nFilter by siri ride scheduled start time. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "siri_ride__scheduled_start_time_to",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by gtfs stop lat. Only return items which have a numeric value greater than or equal to given value\n\nExample: 31.961",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Stop  Lat  Greater Or Equal",
+              "type": "number",
+              "description": "\n\nFilter by gtfs stop lat. Only return items which have a numeric value greater than or equal to given value\n\nExample: 31.961"
+            },
+            "name": "gtfs_stop__lat__greater_or_equal",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by gtfs stop lat. Only return items which have a numeric value lower than or equal to given value\n\nExample: 31.961",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Stop  Lat  Lower Or Equal",
+              "type": "number",
+              "description": "\n\nFilter by gtfs stop lat. Only return items which have a numeric value lower than or equal to given value\n\nExample: 31.961"
+            },
+            "name": "gtfs_stop__lat__lower_or_equal",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by gtfs stop lon. Only return items which have a numeric value greater than or equal to given value\n\nExample: 34.808",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Stop  Lon  Greater Or Equal",
+              "type": "number",
+              "description": "\n\nFilter by gtfs stop lon. Only return items which have a numeric value greater than or equal to given value\n\nExample: 34.808"
+            },
+            "name": "gtfs_stop__lon__greater_or_equal",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by gtfs stop lon. Only return items which have a numeric value lower than or equal to given value\n\nExample: 34.808",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Stop  Lon  Lower Or Equal",
+              "type": "number",
+              "description": "\n\nFilter by gtfs stop lon. Only return items which have a numeric value lower than or equal to given value\n\nExample: 34.808"
+            },
+            "name": "gtfs_stop__lon__lower_or_equal",
+            "in": "query"
+          },
+          {
+            "description": "filter all gtfs related records on this date\n\nFilter by gtfs date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Date From",
+              "type": "string",
+              "description": "filter all gtfs related records on this date\n\nFilter by gtfs date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "gtfs_date_from",
+            "in": "query"
+          },
+          {
+            "description": "filter all gtfs related records on this date\n\nFilter by gtfs date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Date To",
+              "type": "string",
+              "description": "filter all gtfs related records on this date\n\nFilter by gtfs date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "gtfs_date_to",
+            "in": "query"
+          },
+          {
+            "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+            "required": false,
+            "schema": {
+              "title": "Order By",
+              "type": "string",
+              "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+              "default": ""
+            },
+            "name": "order_by",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List  Siri Ride Stops List Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/SiriRideStopWithRelatedPydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/siri_ride_stops/get": {
+      "get": {
+        "tags": ["siri"],
+        "summary": "Get ",
+        "description": "Return a single siri ride stop based on id",
+        "operationId": "get__siri_ride_stops_get_get",
+        "parameters": [
+          {
+            "description": "siri ride stop id to get",
+            "required": true,
+            "schema": { "title": "Id", "type": "integer", "description": "siri ride stop id to get" },
+            "name": "id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SiriRideStopPydanticModel" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/siri_vehicle_locations/list": {
+      "get": {
+        "tags": ["siri"],
+        "summary": "List ",
+        "description": "List of siri vehicle locations.",
+        "operationId": "list__siri_vehicle_locations_list_get",
+        "parameters": [
+          {
+            "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results."
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results."
+            },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+            "required": false,
+            "schema": {
+              "title": "Get Count",
+              "type": "boolean",
+              "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+              "default": false
+            },
+            "name": "get_count",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri vehicle location id. Comma-separated list of values.",
+            "required": false,
+            "schema": {
+              "title": "Siri Vehicle Location Ids",
+              "type": "string",
+              "description": "\n\nFilter by siri vehicle location id. Comma-separated list of values."
+            },
+            "name": "siri_vehicle_location_ids",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri snapshot id. Comma-separated list of values.",
+            "required": false,
+            "schema": {
+              "title": "Siri Snapshot Ids",
+              "type": "string",
+              "description": "\n\nFilter by siri snapshot id. Comma-separated list of values."
+            },
+            "name": "siri_snapshot_ids",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri ride stop id. Comma-separated list of values.",
+            "required": false,
+            "schema": {
+              "title": "Siri Ride Stop Ids",
+              "type": "string",
+              "description": "\n\nFilter by siri ride stop id. Comma-separated list of values."
+            },
+            "name": "siri_ride_stop_ids",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by recorded at time. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Recorded At Time From",
+              "type": "string",
+              "description": "\n\nFilter by recorded at time. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "recorded_at_time_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by recorded at time. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Recorded At Time To",
+              "type": "string",
+              "description": "\n\nFilter by recorded at time. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "recorded_at_time_to",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by lon. Only return items which have a numeric value greater than or equal to given value\n\nExample: 34.808",
+            "required": false,
+            "schema": {
+              "title": "Lon  Greater Or Equal",
+              "type": "number",
+              "description": "\n\nFilter by lon. Only return items which have a numeric value greater than or equal to given value\n\nExample: 34.808"
+            },
+            "name": "lon__greater_or_equal",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by lon. Only return items which have a numeric value lower than or equal to given value\n\nExample: 34.808",
+            "required": false,
+            "schema": {
+              "title": "Lon  Lower Or Equal",
+              "type": "number",
+              "description": "\n\nFilter by lon. Only return items which have a numeric value lower than or equal to given value\n\nExample: 34.808"
+            },
+            "name": "lon__lower_or_equal",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by lat. Only return items which have a numeric value greater than or equal to given value\n\nExample: 31.961",
+            "required": false,
+            "schema": {
+              "title": "Lat  Greater Or Equal",
+              "type": "number",
+              "description": "\n\nFilter by lat. Only return items which have a numeric value greater than or equal to given value\n\nExample: 31.961"
+            },
+            "name": "lat__greater_or_equal",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by lat. Only return items which have a numeric value lower than or equal to given value\n\nExample: 31.961",
+            "required": false,
+            "schema": {
+              "title": "Lat  Lower Or Equal",
+              "type": "number",
+              "description": "\n\nFilter by lat. Only return items which have a numeric value lower than or equal to given value\n\nExample: 31.961"
+            },
+            "name": "lat__lower_or_equal",
+            "in": "query"
+          },
+          {
+            "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+            "required": false,
+            "schema": {
+              "title": "Order By",
+              "type": "string",
+              "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+              "default": "id asc"
+            },
+            "name": "order_by",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri route line ref. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Siri Routes  Line Ref",
+              "type": "string",
+              "description": "\n\nFilter by siri route line ref. Only return items which exactly match given string."
+            },
+            "name": "siri_routes__line_ref",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri ride vehicle ref. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Siri Ride  Vehicle Ref",
+              "type": "string",
+              "description": "\n\nFilter by siri ride vehicle ref. Only return items which exactly match given string."
+            },
+            "name": "siri_ride__vehicle_ref",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri route operator ref. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Siri Routes  Operator Ref",
+              "type": "string",
+              "description": "\n\nFilter by siri route operator ref. Only return items which exactly match given string."
+            },
+            "name": "siri_routes__operator_ref",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri ride id. Comma-separated list of values.",
+            "required": false,
+            "schema": { "title": "Siri Rides  Ids", "type": "string", "description": "\n\nFilter by siri ride id. Comma-separated list of values." },
+            "name": "siri_rides__ids",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by siri route id. Comma-separated list of values.",
+            "required": false,
+            "schema": {
+              "title": "Siri Routes  Ids",
+              "type": "string",
+              "description": "\n\nFilter by siri route id. Comma-separated list of values."
+            },
+            "name": "siri_routes__ids",
+            "in": "query"
+          },
+          {
+            "description": "[DEPRECATED] Misspelled parameter name, kept for backward compatibility. Use \"siri_rides__scheduled_start_time_from\" instead.\n\nFilter by siri ride scheduled start time. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Siri Rides  Schedualed Start Time From",
+              "type": "string",
+              "description": "[DEPRECATED] Misspelled parameter name, kept for backward compatibility. Use \"siri_rides__scheduled_start_time_from\" instead.\n\nFilter by siri ride scheduled start time. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "siri_rides__schedualed_start_time_from",
+            "in": "query"
+          },
+          {
+            "description": "[DEPRECATED] Misspelled parameter name, kept for backward compatibility. Use \"siri_rides__scheduled_start_time_to\" instead.\n\nFilter by siri ride scheduled start time. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Siri Rides  Schedualed Start Time To",
+              "type": "string",
+              "description": "[DEPRECATED] Misspelled parameter name, kept for backward compatibility. Use \"siri_rides__scheduled_start_time_to\" instead.\n\nFilter by siri ride scheduled start time. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "siri_rides__schedualed_start_time_to",
+            "in": "query"
+          },
+          {
+            "description": "Preferred parameter. Replaces the deprecated \"siri_rides__schedualed_start_time_from\".\n\nFilter by siri ride scheduled start time. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Siri Rides  Scheduled Start Time From",
+              "type": "string",
+              "description": "Preferred parameter. Replaces the deprecated \"siri_rides__schedualed_start_time_from\".\n\nFilter by siri ride scheduled start time. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "siri_rides__scheduled_start_time_from",
+            "in": "query"
+          },
+          {
+            "description": "Preferred parameter. Replaces the deprecated \"siri_rides__schedualed_start_time_to\".\n\nFilter by siri ride scheduled start time. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Siri Rides  Scheduled Start Time To",
+              "type": "string",
+              "description": "Preferred parameter. Replaces the deprecated \"siri_rides__schedualed_start_time_to\".\n\nFilter by siri ride scheduled start time. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "siri_rides__scheduled_start_time_to",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List  Siri Vehicle Locations List Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/SiriVehicleLocationWithRelatedPydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/siri_vehicle_locations/get": {
+      "get": {
+        "tags": ["siri"],
+        "summary": "Get ",
+        "description": "Return a single siri vehicle location based on id",
+        "operationId": "get__siri_vehicle_locations_get_get",
+        "parameters": [
+          {
+            "description": "siri vehicle location id to get",
+            "required": true,
+            "schema": { "title": "Id", "type": "integer", "description": "siri vehicle location id to get" },
+            "name": "id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SiriVehicleLocationPydanticModel" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/siri_snapshots/list": {
+      "get": {
+        "tags": ["siri"],
+        "summary": "List ",
+        "description": "List of siri snapshots.",
+        "operationId": "list__siri_snapshots_list_get",
+        "parameters": [
+          {
+            "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results."
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results."
+            },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+            "required": false,
+            "schema": {
+              "title": "Get Count",
+              "type": "boolean",
+              "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+              "default": false
+            },
+            "name": "get_count",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by snapshot id prefix. Only return items which start with given string.",
+            "required": false,
+            "schema": {
+              "title": "Snapshot Id Prefix",
+              "type": "string",
+              "description": "\n\nFilter by snapshot id prefix. Only return items which start with given string."
+            },
+            "name": "snapshot_id_prefix",
+            "in": "query"
+          },
+          {
+            "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+            "required": false,
+            "schema": {
+              "title": "Order By",
+              "type": "string",
+              "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+              "default": "id asc"
+            },
+            "name": "order_by",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List  Siri Snapshots List Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/SiriSnapshotPydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/siri_snapshots/get": {
+      "get": {
+        "tags": ["siri"],
+        "summary": "Get ",
+        "description": "Return a single siri snapshot based on id",
+        "operationId": "get__siri_snapshots_get_get",
+        "parameters": [
+          {
+            "description": "siri snapshot id to get",
+            "required": true,
+            "schema": { "title": "Id", "type": "integer", "description": "siri snapshot id to get" },
+            "name": "id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SiriSnapshotPydanticModel" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/siri_velocity_aggregation/siri_velocity_aggregation": {
+      "get": {
+        "tags": ["siri"],
+        "summary": "Siri Velocity Aggregation",
+        "operationId": "siri_velocity_aggregation_siri_velocity_aggregation_siri_velocity_aggregation_get",
+        "parameters": [
+          {
+            "description": "start of recorded_at_time range, inclusive",
+            "required": true,
+            "schema": {
+              "title": "Recorded From",
+              "type": "string",
+              "description": "start of recorded_at_time range, inclusive",
+              "format": "date-time"
+            },
+            "name": "recorded_from",
+            "in": "query"
+          },
+          {
+            "description": "minimum longitude bound",
+            "required": false,
+            "schema": { "title": "Lon Min", "type": "number", "description": "minimum longitude bound", "default": 34.25 },
+            "name": "lon_min",
+            "in": "query"
+          },
+          {
+            "description": "maximum longitude bound",
+            "required": false,
+            "schema": { "title": "Lon Max", "type": "number", "description": "maximum longitude bound", "default": 35.7 },
+            "name": "lon_max",
+            "in": "query"
+          },
+          {
+            "description": "minimum latitude bound",
+            "required": false,
+            "schema": { "title": "Lat Min", "type": "number", "description": "minimum latitude bound", "default": 29.5 },
+            "name": "lat_min",
+            "in": "query"
+          },
+          {
+            "description": "maximum latitude bound",
+            "required": false,
+            "schema": { "title": "Lat Max", "type": "number", "description": "maximum latitude bound", "default": 33.33 },
+            "name": "lat_max",
+            "in": "query"
+          },
+          {
+            "description": "lon/lat scaling factor, in powers of 2",
+            "required": false,
+            "schema": {
+              "title": "Rounding Precision",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "integer",
+              "description": "lon/lat scaling factor, in powers of 2",
+              "default": 2
+            },
+            "name": "rounding_precision",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Siri Velocity Aggregation Siri Velocity Aggregation Siri Velocity Aggregation Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/SiriVelocityAggregationPydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/gtfs_routes/list": {
+      "get": {
+        "tags": ["gtfs"],
+        "summary": "List ",
+        "description": "List of gtfs routes.",
+        "operationId": "list__gtfs_routes_list_get",
+        "parameters": [
+          {
+            "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results."
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results."
+            },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+            "required": false,
+            "schema": {
+              "title": "Get Count",
+              "type": "boolean",
+              "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+              "default": false
+            },
+            "name": "get_count",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Date From",
+              "type": "string",
+              "description": "\n\nFilter by date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "date_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Date To",
+              "type": "string",
+              "description": "\n\nFilter by date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "date_to",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by line ref. Comma-separated list of values.",
+            "required": false,
+            "schema": { "title": "Line Refs", "type": "string", "description": "\n\nFilter by line ref. Comma-separated list of values." },
+            "name": "line_refs",
+            "in": "query"
+          },
+          {
+            "description": "Agency identifier. To get it, first query gtfs_agencies.\n\nFilter by operator ref. Comma-separated list of values.\n\nExample: 3 for Eged",
+            "required": false,
+            "schema": {
+              "title": "Operator Refs",
+              "type": "string",
+              "description": "Agency identifier. To get it, first query gtfs_agencies.\n\nFilter by operator ref. Comma-separated list of values.\n\nExample: 3 for Eged"
+            },
+            "name": "operator_refs",
+            "in": "query"
+          },
+          {
+            "description": "Line number.\n\nFilter by route short name. Only return items which exactly match given string.\n\nExample: 480",
+            "required": false,
+            "schema": {
+              "title": "Route Short Name",
+              "type": "string",
+              "description": "Line number.\n\nFilter by route short name. Only return items which exactly match given string.\n\nExample: 480"
+            },
+            "name": "route_short_name",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by route long name. Only return items which contain given string.",
+            "required": false,
+            "schema": {
+              "title": "Route Long Name Contains",
+              "type": "string",
+              "description": "\n\nFilter by route long name. Only return items which contain given string."
+            },
+            "name": "route_long_name_contains",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by route mkt. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Route Mkt",
+              "type": "string",
+              "description": "\n\nFilter by route mkt. Only return items which exactly match given string."
+            },
+            "name": "route_mkt",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by route direction. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Route Direction",
+              "type": "string",
+              "description": "\n\nFilter by route direction. Only return items which exactly match given string."
+            },
+            "name": "route_direction",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by route alternative. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Route Alternative",
+              "type": "string",
+              "description": "\n\nFilter by route alternative. Only return items which exactly match given string."
+            },
+            "name": "route_alternative",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by agency name. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Agency Name",
+              "type": "string",
+              "description": "\n\nFilter by agency name. Only return items which exactly match given string."
+            },
+            "name": "agency_name",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by route type. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Route Type",
+              "type": "string",
+              "description": "\n\nFilter by route type. Only return items which exactly match given string."
+            },
+            "name": "route_type",
+            "in": "query"
+          },
+          {
+            "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+            "required": false,
+            "schema": {
+              "title": "Order By",
+              "type": "string",
+              "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+              "default": "id asc"
+            },
+            "name": "order_by",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List  Gtfs Routes List Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/GtfsRoutePydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/gtfs_routes/get": {
+      "get": {
+        "tags": ["gtfs"],
+        "summary": "Get ",
+        "description": "Return a single gtfs route based on id",
+        "operationId": "get__gtfs_routes_get_get",
+        "parameters": [
+          {
+            "description": "gtfs route id to get",
+            "required": true,
+            "schema": { "title": "Id", "type": "integer", "description": "gtfs route id to get" },
+            "name": "id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GtfsRoutePydanticModel" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/gtfs_stops/list": {
+      "get": {
+        "tags": ["gtfs"],
+        "summary": "List ",
+        "description": "List of gtfs stops.",
+        "operationId": "list__gtfs_stops_list_get",
+        "parameters": [
+          {
+            "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results."
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results."
+            },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+            "required": false,
+            "schema": {
+              "title": "Get Count",
+              "type": "boolean",
+              "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+              "default": false
+            },
+            "name": "get_count",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Date From",
+              "type": "string",
+              "description": "\n\nFilter by date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "date_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Date To",
+              "type": "string",
+              "description": "\n\nFilter by date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "date_to",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by code. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Code",
+              "type": "integer",
+              "description": "\n\nFilter by code. Only return items which exactly match given string."
+            },
+            "name": "code",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by city. Only return items which exactly match given string.",
+            "required": false,
+            "schema": { "title": "City", "type": "string", "description": "\n\nFilter by city. Only return items which exactly match given string." },
+            "name": "city",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List  Gtfs Stops List Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/GtfsStopPydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/gtfs_stops/get": {
+      "get": {
+        "tags": ["gtfs"],
+        "summary": "Get ",
+        "description": "Return a single gtfs stop based on id",
+        "operationId": "get__gtfs_stops_get_get",
+        "parameters": [
+          {
+            "description": "gtfs stop id to get",
+            "required": true,
+            "schema": { "title": "Id", "type": "integer", "description": "gtfs stop id to get" },
+            "name": "id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GtfsStopPydanticModel" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/gtfs_rides/list": {
+      "get": {
+        "tags": ["gtfs"],
+        "summary": "List ",
+        "description": "List of gtfs rides.",
+        "operationId": "list__gtfs_rides_list_get",
+        "parameters": [
+          {
+            "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results."
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results."
+            },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+            "required": false,
+            "schema": {
+              "title": "Get Count",
+              "type": "boolean",
+              "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+              "default": false
+            },
+            "name": "get_count",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by gtfs route id. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route Id",
+              "type": "integer",
+              "description": "\n\nFilter by gtfs route id. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route_id",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by journey ref prefix. Only return items which start with given string.",
+            "required": false,
+            "schema": {
+              "title": "Journey Ref Prefix",
+              "type": "string",
+              "description": "\n\nFilter by journey ref prefix. Only return items which start with given string."
+            },
+            "name": "journey_ref_prefix",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by start time from. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Start Time From",
+              "type": "string",
+              "description": "\n\nFilter by start time from. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "start_time_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by start time to. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Start Time To",
+              "type": "string",
+              "description": "\n\nFilter by start time to. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "start_time_to",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Date From",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "gtfs_route__date_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Date To",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "gtfs_route__date_to",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's line ref. Comma-separated list of values.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Line Refs",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's line ref. Comma-separated list of values."
+            },
+            "name": "gtfs_route__line_refs",
+            "in": "query"
+          },
+          {
+            "description": "Agency identifier. To get it, first query gtfs_agencies.\n\nFilter by related gtfs route's operator ref. Comma-separated list of values.\n\nExample: 3 for Eged",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Operator Refs",
+              "type": "string",
+              "description": "Agency identifier. To get it, first query gtfs_agencies.\n\nFilter by related gtfs route's operator ref. Comma-separated list of values.\n\nExample: 3 for Eged"
+            },
+            "name": "gtfs_route__operator_refs",
+            "in": "query"
+          },
+          {
+            "description": "Line number.\n\nFilter by related gtfs route's route short name. Only return items which exactly match given string.\n\nExample: 480",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Short Name",
+              "type": "string",
+              "description": "Line number.\n\nFilter by related gtfs route's route short name. Only return items which exactly match given string.\n\nExample: 480"
+            },
+            "name": "gtfs_route__route_short_name",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's route long name. Only return items which contain given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Long Name Contains",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's route long name. Only return items which contain given string."
+            },
+            "name": "gtfs_route__route_long_name_contains",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's route mkt. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Mkt",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's route mkt. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route__route_mkt",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's route direction. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Direction",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's route direction. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route__route_direction",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's route alternative. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Alternative",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's route alternative. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route__route_alternative",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's agency name. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Agency Name",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's agency name. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route__agency_name",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's route type. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Type",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's route type. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route__route_type",
+            "in": "query"
+          },
+          {
+            "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+            "required": false,
+            "schema": {
+              "title": "Order By",
+              "type": "string",
+              "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+              "default": "id asc"
+            },
+            "name": "order_by",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List  Gtfs Rides List Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/GtfsRideWithRelatedPydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/gtfs_rides/get": {
+      "get": {
+        "tags": ["gtfs"],
+        "summary": "Get ",
+        "description": "Return a single gtfs ride based on id",
+        "operationId": "get__gtfs_rides_get_get",
+        "parameters": [
+          {
+            "description": "gtfs ride id to get",
+            "required": true,
+            "schema": { "title": "Id", "type": "integer", "description": "gtfs ride id to get" },
+            "name": "id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GtfsRidePydanticModel" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/gtfs_agencies/list": {
+      "get": {
+        "tags": ["gtfs"],
+        "summary": "List ",
+        "description": "List of gtfs agencies.",
+        "operationId": "list__gtfs_agencies_list_get",
+        "parameters": [
+          {
+            "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results."
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results."
+            },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Date From",
+              "type": "string",
+              "description": "\n\nFilter by date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "date_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Date To",
+              "type": "string",
+              "description": "\n\nFilter by date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "date_to",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List  Gtfs Agencies List Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/GtfsAgencyPydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/gtfs_ride_stops/list": {
+      "get": {
+        "tags": ["gtfs"],
+        "summary": "List ",
+        "description": "List of gtfs ride stops.\n\nDue to large number of items in the table, you must filter the results by at least one of the following:\n\n1. gtfs_ride_ids - containing a single gtfs ride id.\n2. arrival_time_from and arrival_time_to - containing a time range.\n\nAdditional filters can be applied in addition to one of the above options to narrow down the results.",
+        "operationId": "list__gtfs_ride_stops_list_get",
+        "parameters": [
+          {
+            "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "description": "Limit the number of returned results. If not specified will limit to 100 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results."
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results."
+            },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+            "required": false,
+            "schema": {
+              "title": "Get Count",
+              "type": "boolean",
+              "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+              "default": false
+            },
+            "name": "get_count",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by arrival time from. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Arrival Time From",
+              "type": "string",
+              "description": "\n\nFilter by arrival time from. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "arrival_time_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by arrival time to. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Arrival Time To",
+              "type": "string",
+              "description": "\n\nFilter by arrival time to. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "arrival_time_to",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by gtfs stop id. Comma-separated list of values.",
+            "required": false,
+            "schema": { "title": "Gtfs Stop Ids", "type": "string", "description": "\n\nFilter by gtfs stop id. Comma-separated list of values." },
+            "name": "gtfs_stop_ids",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by gtfs ride id. Comma-separated list of values.",
+            "required": false,
+            "schema": { "title": "Gtfs Ride Ids", "type": "string", "description": "\n\nFilter by gtfs ride id. Comma-separated list of values." },
+            "name": "gtfs_ride_ids",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs ride's gtfs route id. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Ride  Gtfs Route Id",
+              "type": "integer",
+              "description": "\n\nFilter by related gtfs ride's gtfs route id. Only return items which exactly match given string."
+            },
+            "name": "gtfs_ride__gtfs_route_id",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs ride's journey ref prefix. Only return items which start with given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Ride  Journey Ref Prefix",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs ride's journey ref prefix. Only return items which start with given string."
+            },
+            "name": "gtfs_ride__journey_ref_prefix",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs ride's start time from. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Ride  Start Time From",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs ride's start time from. Only return items which have date/time after or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "gtfs_ride__start_time_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs ride's start time to. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Ride  Start Time To",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs ride's start time to. Only return items which have date/time before or equals to given value. Format: \"YYYY-MM-DDTHH:MM:SS+Z\", e.g. \"2021-11-03T15:48:49+02:00\". Note that all date/times must have a timezone specification.",
+              "format": "date-time"
+            },
+            "name": "gtfs_ride__start_time_to",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs stop's date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Stop  Date From",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs stop's date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "gtfs_stop__date_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs stop's date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Stop  Date To",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs stop's date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "gtfs_stop__date_to",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs stop's code. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Stop  Code",
+              "type": "integer",
+              "description": "\n\nFilter by related gtfs stop's code. Only return items which exactly match given string."
+            },
+            "name": "gtfs_stop__code",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs stop's city. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Stop  City",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs stop's city. Only return items which exactly match given string."
+            },
+            "name": "gtfs_stop__city",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Date From",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "gtfs_route__date_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Date To",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "gtfs_route__date_to",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's line ref. Comma-separated list of values.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Line Refs",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's line ref. Comma-separated list of values."
+            },
+            "name": "gtfs_route__line_refs",
+            "in": "query"
+          },
+          {
+            "description": "Agency identifier. To get it, first query gtfs_agencies.\n\nFilter by related gtfs route's operator ref. Comma-separated list of values.\n\nExample: 3 for Eged",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Operator Refs",
+              "type": "string",
+              "description": "Agency identifier. To get it, first query gtfs_agencies.\n\nFilter by related gtfs route's operator ref. Comma-separated list of values.\n\nExample: 3 for Eged"
+            },
+            "name": "gtfs_route__operator_refs",
+            "in": "query"
+          },
+          {
+            "description": "Line number.\n\nFilter by related gtfs route's route short name. Only return items which exactly match given string.\n\nExample: 480",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Short Name",
+              "type": "string",
+              "description": "Line number.\n\nFilter by related gtfs route's route short name. Only return items which exactly match given string.\n\nExample: 480"
+            },
+            "name": "gtfs_route__route_short_name",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's route long name. Only return items which contain given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Long Name Contains",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's route long name. Only return items which contain given string."
+            },
+            "name": "gtfs_route__route_long_name_contains",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's route mkt. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Mkt",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's route mkt. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route__route_mkt",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's route direction. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Direction",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's route direction. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route__route_direction",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's route alternative. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Alternative",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's route alternative. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route__route_alternative",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's agency name. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Agency Name",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's agency name. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route__agency_name",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by related gtfs route's route type. Only return items which exactly match given string.",
+            "required": false,
+            "schema": {
+              "title": "Gtfs Route  Route Type",
+              "type": "string",
+              "description": "\n\nFilter by related gtfs route's route type. Only return items which exactly match given string."
+            },
+            "name": "gtfs_route__route_type",
+            "in": "query"
+          },
+          {
+            "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+            "required": false,
+            "schema": {
+              "title": "Order By",
+              "type": "string",
+              "description": "Order of the results. Comma-separated list of fields and direction. e.g. \"field1 asc,field2 desc\".",
+              "default": "id asc"
+            },
+            "name": "order_by",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List  Gtfs Ride Stops List Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/GtfsRideStopWithRelatedPydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/gtfs_ride_stops/get": {
+      "get": {
+        "tags": ["gtfs"],
+        "summary": "Get ",
+        "description": "Return a single gtfs ride stop based on id",
+        "operationId": "get__gtfs_ride_stops_get_get",
+        "parameters": [
+          {
+            "description": "gtfs ride stop id to get",
+            "required": true,
+            "schema": { "title": "Id", "type": "integer", "description": "gtfs ride stop id to get" },
+            "name": "id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GtfsRideStopPydanticModel" } } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/gtfs_rides_agg/list": {
+      "get": {
+        "tags": ["aggregations"],
+        "summary": "List ",
+        "description": "List of gtfs rides aggregations.",
+        "operationId": "list__gtfs_rides_agg_list_get",
+        "parameters": [
+          {
+            "description": "Limit the number of returned results. If not specified will limit to 1000 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "description": "Limit the number of returned results. If not specified will limit to 1000 results. To get more results, you can either use the offset param, alternatively - set the limit to -1 and use http streaming with compatible json streaming decoder to get all results, this method can fetch up to a maximum of 500000 results."
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results.",
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "description": "Item number to start returning results from. Use in combination with limit for pagination, alternatively, don't set offset, set limit to -1 and use http streaming with compatible json streaming decoder to get all results up to a maximum of 500000 results."
+            },
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+            "required": false,
+            "schema": {
+              "title": "Get Count",
+              "type": "boolean",
+              "description": "Set to \"true\" to only get the total number of results for given filters. limit/offset/order parameters will be ignored.",
+              "default": false
+            },
+            "name": "get_count",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": true,
+            "schema": {
+              "title": "Date From",
+              "type": "string",
+              "description": "\n\nFilter by date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "date_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": true,
+            "schema": {
+              "title": "Date To",
+              "type": "string",
+              "description": "\n\nFilter by date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "date_to",
+            "in": "query"
+          },
+          {
+            "description": "Hours to exclude from search, currently used to filter out edge cases.\n\nFilter by hour. Only return items which have an hour date after or equals to given value. Format: 0(12AM)-23",
+            "required": false,
+            "schema": {
+              "title": "Exclude Hours From",
+              "type": "integer",
+              "description": "Hours to exclude from search, currently used to filter out edge cases.\n\nFilter by hour. Only return items which have an hour date after or equals to given value. Format: 0(12AM)-23"
+            },
+            "name": "exclude_hours_from",
+            "in": "query"
+          },
+          {
+            "description": "Hours to exclude from search, currently used to filter out edge cases.\n\nFilter by hour. Only return items which have a date before or equals to given value. Format: 0(12AM)-23",
+            "required": false,
+            "schema": {
+              "title": "Exclude Hours To",
+              "type": "integer",
+              "description": "Hours to exclude from search, currently used to filter out edge cases.\n\nFilter by hour. Only return items which have a date before or equals to given value. Format: 0(12AM)-23"
+            },
+            "name": "exclude_hours_to",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List  Gtfs Rides Agg List Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/GtfsRidesAggPydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    },
+    "/gtfs_rides_agg/group_by": {
+      "get": {
+        "tags": ["aggregations"],
+        "summary": "Group By ",
+        "description": "gtfs rides aggregation grouped by given fields.",
+        "operationId": "group_by__gtfs_rides_agg_group_by_get",
+        "parameters": [
+          {
+            "description": "\n\nFilter by date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": true,
+            "schema": {
+              "title": "Date From",
+              "type": "string",
+              "description": "\n\nFilter by date. Only return items which have a date after or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "date_from",
+            "in": "query"
+          },
+          {
+            "description": "\n\nFilter by date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+            "required": true,
+            "schema": {
+              "title": "Date To",
+              "type": "string",
+              "description": "\n\nFilter by date. Only return items which have a date before or equals to given value. Format: \"YYYY-MM-DD\", e.g. \"2021-11-03\".",
+              "format": "date"
+            },
+            "name": "date_to",
+            "in": "query"
+          },
+          {
+            "description": "Hours to exclude from search, currently used to filter out edge cases.\n\nFilter by hour. Only return items which have an hour date after or equals to given value. Format: 0(12AM)-23",
+            "required": false,
+            "schema": {
+              "title": "Exclude Hours From",
+              "type": "integer",
+              "description": "Hours to exclude from search, currently used to filter out edge cases.\n\nFilter by hour. Only return items which have an hour date after or equals to given value. Format: 0(12AM)-23"
+            },
+            "name": "exclude_hours_from",
+            "in": "query"
+          },
+          {
+            "description": "Hours to exclude from search, currently used to filter out edge cases.\n\nFilter by hour. Only return items which have a date before or equals to given value. Format: 0(12AM)-23",
+            "required": false,
+            "schema": {
+              "title": "Exclude Hours To",
+              "type": "integer",
+              "description": "Hours to exclude from search, currently used to filter out edge cases.\n\nFilter by hour. Only return items which have a date before or equals to given value. Format: 0(12AM)-23"
+            },
+            "name": "exclude_hours_to",
+            "in": "query"
+          },
+          {
+            "description": "Comma-separated list of fields to group by. Valid values: gtfs_route_date, gtfs_route_hour, operator_ref, day_of_week, line_ref.",
+            "required": true,
+            "schema": {
+              "title": "Group By",
+              "type": "string",
+              "description": "Comma-separated list of fields to group by. Valid values: gtfs_route_date, gtfs_route_hour, operator_ref, day_of_week, line_ref."
+            },
+            "name": "group_by",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Group By  Gtfs Rides Agg Group By Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/GtfsRidesAggGroupByPydanticModel" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HTTPValidationError" } } }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "GtfsAgencyPydanticModel": {
+        "title": "GtfsAgencyPydanticModel",
+        "required": ["date", "operator_ref", "agency_name"],
+        "type": "object",
+        "properties": {
+          "date": { "title": "Date", "type": "string", "format": "date" },
+          "operator_ref": { "title": "Operator Ref", "type": "integer" },
+          "agency_name": { "title": "Agency Name", "type": "string" }
+        }
+      },
+      "GtfsRidePydanticModel": {
+        "title": "GtfsRidePydanticModel",
+        "required": ["id", "gtfs_route_id"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "gtfs_route_id": { "title": "Gtfs Route Id", "type": "integer" },
+          "journey_ref": { "title": "Journey Ref", "type": "string" },
+          "start_time": { "title": "Start Time", "type": "string", "format": "date-time" },
+          "end_time": { "title": "End Time", "type": "string", "format": "date-time" }
+        }
+      },
+      "GtfsRideStopPydanticModel": {
+        "title": "GtfsRideStopPydanticModel",
+        "required": ["id", "gtfs_stop_id", "gtfs_ride_id"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "gtfs_stop_id": { "title": "Gtfs Stop Id", "type": "integer" },
+          "gtfs_ride_id": { "title": "Gtfs Ride Id", "type": "integer" },
+          "arrival_time": { "title": "Arrival Time", "type": "string", "format": "date-time" },
+          "departure_time": { "title": "Departure Time", "type": "string", "format": "date-time" },
+          "stop_sequence": { "title": "Stop Sequence", "type": "integer" },
+          "pickup_type": { "title": "Pickup Type", "type": "integer" },
+          "drop_off_type": { "title": "Drop Off Type", "type": "integer" },
+          "shape_dist_traveled": { "title": "Shape Dist Traveled", "type": "integer" }
+        }
+      },
+      "GtfsRideStopWithRelatedPydanticModel": {
+        "title": "GtfsRideStopWithRelatedPydanticModel",
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "gtfs_stop_id": { "title": "Gtfs Stop Id", "type": "integer" },
+          "gtfs_ride_id": { "title": "Gtfs Ride Id", "type": "integer" },
+          "arrival_time": { "title": "Arrival Time", "type": "string", "format": "date-time" },
+          "departure_time": { "title": "Departure Time", "type": "string", "format": "date-time" },
+          "stop_sequence": { "title": "Stop Sequence", "type": "integer" },
+          "pickup_type": { "title": "Pickup Type", "type": "integer" },
+          "drop_off_type": { "title": "Drop Off Type", "type": "integer" },
+          "shape_dist_traveled": { "title": "Shape Dist Traveled", "type": "integer" },
+          "gtfs_ride__gtfs_route_id": { "title": "Gtfs Ride  Gtfs Route Id", "type": "integer" },
+          "gtfs_ride__journey_ref": { "title": "Gtfs Ride  Journey Ref", "type": "string" },
+          "gtfs_ride__start_time": { "title": "Gtfs Ride  Start Time", "type": "string", "format": "date-time" },
+          "gtfs_ride__end_time": { "title": "Gtfs Ride  End Time", "type": "string", "format": "date-time" },
+          "gtfs_stop__date": { "title": "Gtfs Stop  Date", "type": "string", "format": "date" },
+          "gtfs_stop__code": { "title": "Gtfs Stop  Code", "type": "integer" },
+          "gtfs_stop__lat": { "title": "Gtfs Stop  Lat", "type": "number" },
+          "gtfs_stop__lon": { "title": "Gtfs Stop  Lon", "type": "number" },
+          "gtfs_stop__name": { "title": "Gtfs Stop  Name", "type": "string" },
+          "gtfs_stop__city": { "title": "Gtfs Stop  City", "type": "string" },
+          "gtfs_route__date": { "title": "Gtfs Route  Date", "type": "string", "format": "date" },
+          "gtfs_route__line_ref": { "title": "Gtfs Route  Line Ref", "type": "integer" },
+          "gtfs_route__operator_ref": { "title": "Gtfs Route  Operator Ref", "type": "integer" },
+          "gtfs_route__route_short_name": { "title": "Gtfs Route  Route Short Name", "type": "string" },
+          "gtfs_route__route_long_name": { "title": "Gtfs Route  Route Long Name", "type": "string" },
+          "gtfs_route__route_mkt": { "title": "Gtfs Route  Route Mkt", "type": "string" },
+          "gtfs_route__route_direction": { "title": "Gtfs Route  Route Direction", "type": "string" },
+          "gtfs_route__route_alternative": { "title": "Gtfs Route  Route Alternative", "type": "string" },
+          "gtfs_route__agency_name": { "title": "Gtfs Route  Agency Name", "type": "string" },
+          "gtfs_route__route_type": { "title": "Gtfs Route  Route Type", "type": "string" }
+        }
+      },
+      "GtfsRideWithRelatedPydanticModel": {
+        "title": "GtfsRideWithRelatedPydanticModel",
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "gtfs_route_id": { "title": "Gtfs Route Id", "type": "integer" },
+          "journey_ref": { "title": "Journey Ref", "type": "string" },
+          "start_time": { "title": "Start Time", "type": "string", "format": "date-time" },
+          "end_time": { "title": "End Time", "type": "string", "format": "date-time" },
+          "gtfs_route__date": { "title": "Gtfs Route  Date", "type": "string", "format": "date" },
+          "gtfs_route__line_ref": { "title": "Gtfs Route  Line Ref", "type": "integer" },
+          "gtfs_route__operator_ref": { "title": "Gtfs Route  Operator Ref", "type": "integer" },
+          "gtfs_route__route_short_name": { "title": "Gtfs Route  Route Short Name", "type": "string" },
+          "gtfs_route__route_long_name": { "title": "Gtfs Route  Route Long Name", "type": "string" },
+          "gtfs_route__route_mkt": { "title": "Gtfs Route  Route Mkt", "type": "string" },
+          "gtfs_route__route_direction": { "title": "Gtfs Route  Route Direction", "type": "string" },
+          "gtfs_route__route_alternative": { "title": "Gtfs Route  Route Alternative", "type": "string" },
+          "gtfs_route__agency_name": { "title": "Gtfs Route  Agency Name", "type": "string" },
+          "gtfs_route__route_type": { "title": "Gtfs Route  Route Type", "type": "string" }
+        }
+      },
+      "GtfsRidesAggGroupByPydanticModel": {
+        "title": "GtfsRidesAggGroupByPydanticModel",
+        "required": ["total_routes", "total_planned_rides", "total_actual_rides"],
+        "type": "object",
+        "properties": {
+          "gtfs_route_date": { "title": "Gtfs Route Date", "type": "string", "format": "date" },
+          "gtfs_route_hour": { "title": "Gtfs Route Hour", "type": "string", "format": "date" },
+          "operator_ref": { "title": "Operator Ref", "type": "integer" },
+          "day_of_week": { "title": "Day Of Week", "type": "string" },
+          "line_ref": { "title": "Line Ref", "type": "integer" },
+          "route_short_name": { "title": "Route Short Name", "type": "string" },
+          "route_long_name": { "title": "Route Long Name", "type": "string" },
+          "total_routes": { "title": "Total Routes", "type": "integer" },
+          "total_planned_rides": { "title": "Total Planned Rides", "type": "integer" },
+          "total_actual_rides": { "title": "Total Actual Rides", "type": "integer" }
+        }
+      },
+      "GtfsRidesAggPydanticModel": {
+        "title": "GtfsRidesAggPydanticModel",
+        "required": ["gtfs_route_id", "gtfs_route_hour", "num_planned_rides", "num_actual_rides", "operator_ref"],
+        "type": "object",
+        "properties": {
+          "gtfs_route_id": { "title": "Gtfs Route Id", "type": "integer" },
+          "gtfs_route_hour": { "title": "Gtfs Route Hour", "type": "string", "format": "date" },
+          "num_planned_rides": { "title": "Num Planned Rides", "type": "integer" },
+          "num_actual_rides": { "title": "Num Actual Rides", "type": "integer" },
+          "operator_ref": { "title": "Operator Ref", "type": "integer" }
+        }
+      },
+      "GtfsRoutePydanticModel": {
+        "title": "GtfsRoutePydanticModel",
+        "required": ["id", "date", "line_ref", "operator_ref"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "date": { "title": "Date", "type": "string", "format": "date" },
+          "line_ref": { "title": "Line Ref", "type": "integer" },
+          "operator_ref": { "title": "Operator Ref", "type": "integer" },
+          "route_short_name": { "title": "Route Short Name", "type": "string" },
+          "route_long_name": { "title": "Route Long Name", "type": "string" },
+          "route_mkt": { "title": "Route Mkt", "type": "string" },
+          "route_direction": { "title": "Route Direction", "type": "string" },
+          "route_alternative": { "title": "Route Alternative", "type": "string" },
+          "agency_name": { "title": "Agency Name", "type": "string" },
+          "route_type": { "title": "Route Type", "type": "string" }
+        }
+      },
+      "GtfsStopPydanticModel": {
+        "title": "GtfsStopPydanticModel",
+        "required": ["id", "date", "code"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "date": { "title": "Date", "type": "string", "format": "date" },
+          "code": { "title": "Code", "type": "integer" },
+          "lat": { "title": "Lat", "type": "number" },
+          "lon": { "title": "Lon", "type": "number" },
+          "name": { "title": "Name", "type": "string" },
+          "city": { "title": "City", "type": "string" }
+        }
+      },
+      "HTTPValidationError": {
+        "title": "HTTPValidationError",
+        "type": "object",
+        "properties": { "detail": { "title": "Detail", "type": "array", "items": { "$ref": "#/components/schemas/ValidationError" } } }
+      },
+      "RideExecutionPydanticModel": {
+        "title": "RideExecutionPydanticModel",
+        "type": "object",
+        "properties": {
+          "planned_start_time": { "title": "Planned Start Time", "type": "string", "format": "date-time" },
+          "actual_start_time": { "title": "Actual Start Time", "type": "string", "format": "date-time" },
+          "gtfs_ride_id": { "title": "Gtfs Ride Id", "type": "integer" }
+        }
+      },
+      "RouteTimetablePydanticModel": {
+        "title": "RouteTimetablePydanticModel",
+        "required": ["id"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "name": { "title": "Name", "type": "string" },
+          "city": { "title": "City", "type": "string" },
+          "lon": { "title": "Lon", "type": "number" },
+          "lat": { "title": "Lat", "type": "number" },
+          "planned_arrival_time": { "title": "Planned Arrival Time", "type": "string", "format": "date-time" },
+          "gtfs_line_ref": { "title": "Gtfs Line Ref", "type": "string" },
+          "gtfs_line_start_time": { "title": "Gtfs Line Start Time", "type": "string", "format": "date-time" },
+          "gtfs_ride_id": { "title": "Gtfs Ride Id", "type": "string" }
+        }
+      },
+      "SiriRidePydanticModel": {
+        "title": "SiriRidePydanticModel",
+        "required": ["id", "siri_route_id", "journey_ref", "scheduled_start_time"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "siri_route_id": { "title": "Siri Route Id", "type": "integer" },
+          "journey_ref": { "title": "Journey Ref", "type": "string" },
+          "scheduled_start_time": { "title": "Scheduled Start Time", "type": "string", "format": "date-time" },
+          "vehicle_ref": { "title": "Vehicle Ref", "type": "string" },
+          "updated_first_last_vehicle_locations": { "title": "Updated First Last Vehicle Locations", "type": "string", "format": "date-time" },
+          "first_vehicle_location_id": { "title": "First Vehicle Location Id", "type": "integer" },
+          "last_vehicle_location_id": { "title": "Last Vehicle Location Id", "type": "integer" },
+          "updated_duration_minutes": { "title": "Updated Duration Minutes", "type": "string", "format": "date-time" },
+          "duration_minutes": { "title": "Duration Minutes", "type": "integer" },
+          "journey_gtfs_ride_id": { "title": "Journey Gtfs Ride Id", "type": "integer" },
+          "route_gtfs_ride_id": { "title": "Route Gtfs Ride Id", "type": "integer" },
+          "gtfs_ride_id": { "title": "Gtfs Ride Id", "type": "integer" }
+        }
+      },
+      "SiriRideStopPydanticModel": {
+        "title": "SiriRideStopPydanticModel",
+        "required": ["id", "siri_stop_id", "siri_ride_id", "order"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "siri_stop_id": { "title": "Siri Stop Id", "type": "integer" },
+          "siri_ride_id": { "title": "Siri Ride Id", "type": "integer" },
+          "order": { "title": "Order", "type": "integer" },
+          "gtfs_stop_id": { "title": "Gtfs Stop Id", "type": "integer" },
+          "nearest_siri_vehicle_location_id": { "title": "Nearest Siri Vehicle Location Id", "type": "integer" }
+        }
+      },
+      "SiriRideStopWithRelatedPydanticModel": {
+        "title": "SiriRideStopWithRelatedPydanticModel",
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "siri_stop_id": { "title": "Siri Stop Id", "type": "integer" },
+          "siri_ride_id": { "title": "Siri Ride Id", "type": "integer" },
+          "order": { "title": "Order", "type": "integer" },
+          "gtfs_stop_id": { "title": "Gtfs Stop Id", "type": "integer" },
+          "nearest_siri_vehicle_location_id": { "title": "Nearest Siri Vehicle Location Id", "type": "integer" },
+          "siri_stop__code": { "title": "Siri Stop  Code", "type": "integer" },
+          "siri_ride__siri_route_id": { "title": "Siri Ride  Siri Route Id", "type": "integer" },
+          "siri_ride__journey_ref": { "title": "Siri Ride  Journey Ref", "type": "string" },
+          "siri_ride__scheduled_start_time": { "title": "Siri Ride  Scheduled Start Time", "type": "string", "format": "date-time" },
+          "siri_ride__vehicle_ref": { "title": "Siri Ride  Vehicle Ref", "type": "string" },
+          "siri_ride__updated_first_last_vehicle_locations": {
+            "title": "Siri Ride  Updated First Last Vehicle Locations",
+            "type": "string",
+            "format": "date-time"
+          },
+          "siri_ride__first_vehicle_location_id": { "title": "Siri Ride  First Vehicle Location Id", "type": "integer" },
+          "siri_ride__last_vehicle_location_id": { "title": "Siri Ride  Last Vehicle Location Id", "type": "integer" },
+          "siri_ride__updated_duration_minutes": { "title": "Siri Ride  Updated Duration Minutes", "type": "string", "format": "date-time" },
+          "siri_ride__duration_minutes": { "title": "Siri Ride  Duration Minutes", "type": "integer" },
+          "siri_ride__journey_gtfs_ride_id": { "title": "Siri Ride  Journey Gtfs Ride Id", "type": "integer" },
+          "siri_ride__route_gtfs_ride_id": { "title": "Siri Ride  Route Gtfs Ride Id", "type": "integer" },
+          "siri_ride__gtfs_ride_id": { "title": "Siri Ride  Gtfs Ride Id", "type": "integer" },
+          "gtfs_stop__date": { "title": "Gtfs Stop  Date", "type": "string", "format": "date" },
+          "gtfs_stop__code": { "title": "Gtfs Stop  Code", "type": "integer" },
+          "gtfs_stop__lat": { "title": "Gtfs Stop  Lat", "type": "number" },
+          "gtfs_stop__lon": { "title": "Gtfs Stop  Lon", "type": "number" },
+          "gtfs_stop__name": { "title": "Gtfs Stop  Name", "type": "string" },
+          "gtfs_stop__city": { "title": "Gtfs Stop  City", "type": "string" },
+          "nearest_siri_vehicle_location__siri_snapshot_id": { "title": "Nearest Siri Vehicle Location  Siri Snapshot Id", "type": "integer" },
+          "nearest_siri_vehicle_location__siri_ride_stop_id": { "title": "Nearest Siri Vehicle Location  Siri Ride Stop Id", "type": "integer" },
+          "nearest_siri_vehicle_location__recorded_at_time": {
+            "title": "Nearest Siri Vehicle Location  Recorded At Time",
+            "type": "string",
+            "format": "date-time"
+          },
+          "nearest_siri_vehicle_location__lon": { "title": "Nearest Siri Vehicle Location  Lon", "type": "number" },
+          "nearest_siri_vehicle_location__lat": { "title": "Nearest Siri Vehicle Location  Lat", "type": "number" },
+          "nearest_siri_vehicle_location__bearing": { "title": "Nearest Siri Vehicle Location  Bearing", "type": "integer" },
+          "nearest_siri_vehicle_location__velocity": { "title": "Nearest Siri Vehicle Location  Velocity", "type": "integer" },
+          "nearest_siri_vehicle_location__distance_from_journey_start": {
+            "title": "Nearest Siri Vehicle Location  Distance From Journey Start",
+            "type": "integer"
+          },
+          "nearest_siri_vehicle_location__distance_from_siri_ride_stop_meters": {
+            "title": "Nearest Siri Vehicle Location  Distance From Siri Ride Stop Meters",
+            "type": "integer"
+          },
+          "gtfs_ride_stop__gtfs_stop_id": { "title": "Gtfs Ride Stop  Gtfs Stop Id", "type": "integer" },
+          "gtfs_ride_stop__gtfs_ride_id": { "title": "Gtfs Ride Stop  Gtfs Ride Id", "type": "integer" },
+          "gtfs_ride_stop__arrival_time": { "title": "Gtfs Ride Stop  Arrival Time", "type": "string", "format": "date-time" },
+          "gtfs_ride_stop__departure_time": { "title": "Gtfs Ride Stop  Departure Time", "type": "string", "format": "date-time" },
+          "gtfs_ride_stop__stop_sequence": { "title": "Gtfs Ride Stop  Stop Sequence", "type": "integer" },
+          "gtfs_ride_stop__pickup_type": { "title": "Gtfs Ride Stop  Pickup Type", "type": "integer" },
+          "gtfs_ride_stop__drop_off_type": { "title": "Gtfs Ride Stop  Drop Off Type", "type": "integer" },
+          "gtfs_ride_stop__shape_dist_traveled": { "title": "Gtfs Ride Stop  Shape Dist Traveled", "type": "integer" },
+          "gtfs_ride__gtfs_route_id": { "title": "Gtfs Ride  Gtfs Route Id", "type": "integer" },
+          "gtfs_ride__journey_ref": { "title": "Gtfs Ride  Journey Ref", "type": "string" },
+          "gtfs_ride__start_time": { "title": "Gtfs Ride  Start Time", "type": "string", "format": "date-time" },
+          "gtfs_ride__end_time": { "title": "Gtfs Ride  End Time", "type": "string", "format": "date-time" },
+          "gtfs_route__date": { "title": "Gtfs Route  Date", "type": "string", "format": "date" },
+          "gtfs_route__line_ref": { "title": "Gtfs Route  Line Ref", "type": "integer" },
+          "gtfs_route__operator_ref": { "title": "Gtfs Route  Operator Ref", "type": "integer" },
+          "gtfs_route__route_short_name": { "title": "Gtfs Route  Route Short Name", "type": "string" },
+          "gtfs_route__route_long_name": { "title": "Gtfs Route  Route Long Name", "type": "string" },
+          "gtfs_route__route_mkt": { "title": "Gtfs Route  Route Mkt", "type": "string" },
+          "gtfs_route__route_direction": { "title": "Gtfs Route  Route Direction", "type": "string" },
+          "gtfs_route__route_alternative": { "title": "Gtfs Route  Route Alternative", "type": "string" },
+          "gtfs_route__agency_name": { "title": "Gtfs Route  Agency Name", "type": "string" },
+          "gtfs_route__route_type": { "title": "Gtfs Route  Route Type", "type": "string" }
+        }
+      },
+      "SiriRideWithRelatedPydanticModel": {
+        "title": "SiriRideWithRelatedPydanticModel",
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "siri_route_id": { "title": "Siri Route Id", "type": "integer" },
+          "journey_ref": { "title": "Journey Ref", "type": "string" },
+          "scheduled_start_time": { "title": "Scheduled Start Time", "type": "string", "format": "date-time" },
+          "vehicle_ref": { "title": "Vehicle Ref", "type": "string" },
+          "updated_first_last_vehicle_locations": { "title": "Updated First Last Vehicle Locations", "type": "string", "format": "date-time" },
+          "first_vehicle_location_id": { "title": "First Vehicle Location Id", "type": "integer" },
+          "last_vehicle_location_id": { "title": "Last Vehicle Location Id", "type": "integer" },
+          "updated_duration_minutes": { "title": "Updated Duration Minutes", "type": "string", "format": "date-time" },
+          "duration_minutes": { "title": "Duration Minutes", "type": "integer" },
+          "journey_gtfs_ride_id": { "title": "Journey Gtfs Ride Id", "type": "integer" },
+          "route_gtfs_ride_id": { "title": "Route Gtfs Ride Id", "type": "integer" },
+          "gtfs_ride_id": { "title": "Gtfs Ride Id", "type": "integer" },
+          "siri_route__line_ref": { "title": "Siri Route  Line Ref", "type": "integer" },
+          "siri_route__operator_ref": { "title": "Siri Route  Operator Ref", "type": "integer" },
+          "gtfs_ride__gtfs_route_id": { "title": "Gtfs Ride  Gtfs Route Id", "type": "integer" },
+          "gtfs_ride__journey_ref": { "title": "Gtfs Ride  Journey Ref", "type": "string" },
+          "gtfs_ride__start_time": { "title": "Gtfs Ride  Start Time", "type": "string", "format": "date-time" },
+          "gtfs_ride__end_time": { "title": "Gtfs Ride  End Time", "type": "string", "format": "date-time" },
+          "gtfs_route__date": { "title": "Gtfs Route  Date", "type": "string", "format": "date" },
+          "gtfs_route__line_ref": { "title": "Gtfs Route  Line Ref", "type": "integer" },
+          "gtfs_route__operator_ref": { "title": "Gtfs Route  Operator Ref", "type": "integer" },
+          "gtfs_route__route_short_name": { "title": "Gtfs Route  Route Short Name", "type": "string" },
+          "gtfs_route__route_long_name": { "title": "Gtfs Route  Route Long Name", "type": "string" },
+          "gtfs_route__route_mkt": { "title": "Gtfs Route  Route Mkt", "type": "string" },
+          "gtfs_route__route_direction": { "title": "Gtfs Route  Route Direction", "type": "string" },
+          "gtfs_route__route_alternative": { "title": "Gtfs Route  Route Alternative", "type": "string" },
+          "gtfs_route__agency_name": { "title": "Gtfs Route  Agency Name", "type": "string" },
+          "gtfs_route__route_type": { "title": "Gtfs Route  Route Type", "type": "string" }
+        }
+      },
+      "SiriRoutePydanticModel": {
+        "title": "SiriRoutePydanticModel",
+        "required": ["id", "line_ref", "operator_ref"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "line_ref": { "title": "Line Ref", "type": "integer" },
+          "operator_ref": { "title": "Operator Ref", "type": "integer" }
+        }
+      },
+      "SiriSnapshotEtlStatusEnum": {
+        "title": "SiriSnapshotEtlStatusEnum",
+        "enum": ["pending", "loading", "loaded", "error", "deleted"],
+        "description": "An enumeration."
+      },
+      "SiriSnapshotPydanticModel": {
+        "title": "SiriSnapshotPydanticModel",
+        "required": ["id", "snapshot_id", "etl_status"],
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "snapshot_id": { "title": "Snapshot Id", "type": "string" },
+          "etl_status": { "$ref": "#/components/schemas/SiriSnapshotEtlStatusEnum" },
+          "etl_start_time": { "title": "Etl Start Time", "type": "string", "format": "date-time" },
+          "etl_end_time": { "title": "Etl End Time", "type": "string", "format": "date-time" },
+          "error": { "title": "Error", "type": "string" },
+          "num_successful_parse_vehicle_locations": { "title": "Num Successful Parse Vehicle Locations", "type": "integer" },
+          "num_failed_parse_vehicle_locations": { "title": "Num Failed Parse Vehicle Locations", "type": "integer" },
+          "num_added_siri_rides": { "title": "Num Added Siri Rides", "type": "integer" },
+          "num_added_siri_ride_stops": { "title": "Num Added Siri Ride Stops", "type": "integer" },
+          "num_added_siri_routes": { "title": "Num Added Siri Routes", "type": "integer" },
+          "num_added_siri_stops": { "title": "Num Added Siri Stops", "type": "integer" },
+          "last_heartbeat": { "title": "Last Heartbeat", "type": "string", "format": "date-time" },
+          "created_by": { "title": "Created By", "type": "string" }
+        }
+      },
+      "SiriStopPydanticModel": {
+        "title": "SiriStopPydanticModel",
+        "required": ["id", "code"],
+        "type": "object",
+        "properties": { "id": { "title": "Id", "type": "integer" }, "code": { "title": "Code", "type": "integer" } }
+      },
+      "SiriVehicleLocationPydanticModel": {
+        "title": "SiriVehicleLocationPydanticModel",
+        "required": [
+          "id",
+          "siri_snapshot_id",
+          "siri_ride_stop_id",
+          "recorded_at_time",
+          "lon",
+          "lat",
+          "bearing",
+          "velocity",
+          "distance_from_journey_start"
+        ],
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "siri_snapshot_id": { "title": "Siri Snapshot Id", "type": "integer" },
+          "siri_ride_stop_id": { "title": "Siri Ride Stop Id", "type": "integer" },
+          "recorded_at_time": { "title": "Recorded At Time", "type": "string", "format": "date-time" },
+          "lon": { "title": "Lon", "type": "number" },
+          "lat": { "title": "Lat", "type": "number" },
+          "bearing": { "title": "Bearing", "type": "integer" },
+          "velocity": { "title": "Velocity", "type": "integer" },
+          "distance_from_journey_start": { "title": "Distance From Journey Start", "type": "integer" },
+          "distance_from_siri_ride_stop_meters": { "title": "Distance From Siri Ride Stop Meters", "type": "integer" }
+        }
+      },
+      "SiriVehicleLocationWithRelatedPydanticModel": {
+        "title": "SiriVehicleLocationWithRelatedPydanticModel",
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "integer" },
+          "siri_snapshot_id": { "title": "Siri Snapshot Id", "type": "integer" },
+          "siri_ride_stop_id": { "title": "Siri Ride Stop Id", "type": "integer" },
+          "recorded_at_time": { "title": "Recorded At Time", "type": "string", "format": "date-time" },
+          "lon": { "title": "Lon", "type": "number" },
+          "lat": { "title": "Lat", "type": "number" },
+          "bearing": { "title": "Bearing", "type": "integer" },
+          "velocity": { "title": "Velocity", "type": "integer" },
+          "distance_from_journey_start": { "title": "Distance From Journey Start", "type": "integer" },
+          "distance_from_siri_ride_stop_meters": { "title": "Distance From Siri Ride Stop Meters", "type": "integer" },
+          "siri_snapshot__snapshot_id": { "title": "Siri Snapshot  Snapshot Id", "type": "string" },
+          "siri_route__id": { "title": "Siri Route  Id", "type": "integer" },
+          "siri_route__line_ref": { "title": "Siri Route  Line Ref", "type": "integer" },
+          "siri_route__operator_ref": { "title": "Siri Route  Operator Ref", "type": "integer" },
+          "siri_ride__id": { "title": "Siri Ride  Id", "type": "integer" },
+          "siri_ride__journey_ref": { "title": "Siri Ride  Journey Ref", "type": "string" },
+          "siri_ride__scheduled_start_time": { "title": "Siri Ride  Scheduled Start Time", "type": "string", "format": "date-time" },
+          "siri_ride__vehicle_ref": { "title": "Siri Ride  Vehicle Ref", "type": "string" },
+          "siri_ride__first_vehicle_location_id": { "title": "Siri Ride  First Vehicle Location Id", "type": "integer" },
+          "siri_ride__last_vehicle_location_id": { "title": "Siri Ride  Last Vehicle Location Id", "type": "integer" },
+          "siri_ride__duration_minutes": { "title": "Siri Ride  Duration Minutes", "type": "integer" },
+          "siri_ride__gtfs_ride_id": { "title": "Siri Ride  Gtfs Ride Id", "type": "integer" }
+        }
+      },
+      "SiriVelocityAggregationPydanticModel": {
+        "title": "SiriVelocityAggregationPydanticModel",
+        "required": ["rounded_lon", "rounded_lat", "total_sample_count"],
+        "type": "object",
+        "properties": {
+          "rounded_lon": { "title": "Rounded Lon", "type": "number" },
+          "rounded_lat": { "title": "Rounded Lat", "type": "number" },
+          "total_sample_count": { "title": "Total Sample Count", "type": "integer" },
+          "average_rolling_avg": { "title": "Average Rolling Avg", "type": "number" },
+          "stddev_rolling_avg": { "title": "Stddev Rolling Avg", "type": "number" }
+        }
+      },
+      "StopArrivalPydanticModel": {
+        "title": "StopArrivalPydanticModel",
+        "type": "object",
+        "properties": { "actual_arrival_time": { "title": "Actual Arrival Time", "type": "string", "format": "date-time" } }
+      },
+      "ValidationError": {
+        "title": "ValidationError",
+        "required": ["loc", "msg", "type"],
+        "type": "object",
+        "properties": {
+          "loc": { "title": "Location", "type": "array", "items": { "anyOf": [{ "type": "string" }, { "type": "integer" }] } },
+          "msg": { "title": "Message", "type": "string" },
+          "type": { "title": "Error Type", "type": "string" }
+        }
+      }
+    }
+  }
+}

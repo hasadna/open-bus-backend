@@ -1,7 +1,7 @@
 # 🚌 Open Bus Backend
 
 A backend service powering the Open-Bus platform.
-Provides APIs for health checks and GitHub issue creation. Complaint submission is planned for a future PR.
+Provides the full 27-endpoint STRIDE transit API against an externally managed ClickHouse database, health checks, and GitHub issue creation. Complaint submission is planned for a future PR.
 
 ## 📢 Get Involved
 
@@ -35,6 +35,12 @@ PORT=3001
 HOST=0.0.0.0
 NODE_ENV=development
 LOG_LEVEL=info
+
+# External ClickHouse (required)
+CLICKHOUSE_URL=https://your-clickhouse-host:8443
+CLICKHOUSE_USER=api_reader
+CLICKHOUSE_PASSWORD=your-password
+CLICKHOUSE_DB=stride
 
 # GitHub Configuration
 GITHUB_TOKEN=your_github_token
@@ -91,6 +97,10 @@ docker run -it -p 3001:3001 \
   -e GITHUB_TOKEN=your_github_token \
   -e GITHUB_OWNER=your_github_owner \
   -e GITHUB_REPO=your_github_repo \
+  -e CLICKHOUSE_URL=https://your-clickhouse-host:8443 \
+  -e CLICKHOUSE_USER=api_reader \
+  -e CLICKHOUSE_PASSWORD=your-password \
+  -e CLICKHOUSE_DB=stride \
   -e LOG_LEVEL=info \
   open-bus-backend
 ```
@@ -112,3 +122,9 @@ docker run -it -p 3001:3001 \
 - `POST /complaints/send` → Returns `501 Not Implemented` until complaint submission is added.
 
 Server will be available at: [http://localhost:3001](http://localhost:3001)
+
+## Transit API and database ownership
+
+All 27 STRIDE transit endpoints retain their original paths, including SIRI and GTFS list/get routes, route timetables, stop arrivals, ride execution, velocity aggregation, and GTFS ride aggregates. See `/docs` for the combined documentation and `/openapi.json` for the contract.
+
+This repository connects directly to an external ClickHouse database compatible with the pinned stride-lite schema. It does not provision a database, manage migrations, or ingest data. See [connection and compatibility requirements](src/db/README.md) and [upstream attribution](src/stride/README.md).

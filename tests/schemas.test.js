@@ -11,7 +11,15 @@ describe('TypeBox route schemas', () => {
     const app = f();
     try {
       await app.register(import('@fastify/swagger'), swaggerConfig);
-      registerRoutes(app);
+      registerRoutes(app, {
+        database: 'stride',
+        client: {
+          query: async () => {
+            throw new Error('Unexpected database access');
+          },
+          close: async () => {},
+        },
+      });
       await app.ready();
 
       const document = app.swagger();
@@ -64,7 +72,15 @@ describe('TypeBox route schemas', () => {
   it('validates complaint fields through registered model references', async () => {
     const app = f();
     try {
-      registerRoutes(app);
+      registerRoutes(app, {
+        database: 'stride',
+        client: {
+          query: async () => {
+            throw new Error('Unexpected database access');
+          },
+          close: async () => {},
+        },
+      });
       await app.ready();
       const response = await app.inject({
         method: 'POST',
