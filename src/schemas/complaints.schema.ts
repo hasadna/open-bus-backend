@@ -8,7 +8,7 @@ const fileType = /^.*\.(?<type>doc|docx|jpeg|jpg|pdf|gif|tiff|png)$/giu;
 
 const mobileSchema = () => Type.String({ pattern: mobileOnly.source });
 const dateStringSchema = () => Type.String({ format: 'date-time' });
-const hourStringSchema = (examples: string[]) => Type.String({ pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$', ...(examples && { examples }) });
+const hourStringSchema = (examples: string[]) => Type.String({ pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$', examples });
 
 export const busSchema = Type.Object(
   {
@@ -24,10 +24,13 @@ export const busSchema = Type.Object(
 
 export const trainSchema = Type.Object(
   {
-    trainType: Type.String({ enum: ['1', '2', '3'], description: '1 = Israel Train, 2 = Jerusalem Light Train, 3 = Gush Dan Light Train (Dankal)' }),
+    trainType: Type.Enum(['1', '2', '3'], {
+      type: 'string',
+      description: '1 = Israel Train, 2 = Jerusalem Light Train, 3 = Gush Dan Light Train (Dankal)',
+    }),
     startStation: Type.Ref('DataCodeModel'),
     destinationStation: Type.Ref('DataCodeModel'),
-    eventStation: Type.String({ enum: ['start', 'destination'] }),
+    eventStation: Type.Enum(['start', 'destination'], { type: 'string' }),
     trainNumber: Type.Optional(Type.String()),
   },
   { $id: 'TrainSchema' },
@@ -46,7 +49,9 @@ export const complaintFormSchema = Type.Object(
     firstName: Type.String({ minLength: 1, maxLength: 100, examples: ['פרטי'] }),
     lastName: Type.String({ minLength: 1, maxLength: 100, examples: ['משפחה'] }),
     id: Type.Optional(
-      Type.Union([Type.String({ minLength: 9, maxLength: 9, pattern: numberOnly.source, examples: ['123456782'] }), Type.Literal(''), Type.Null()]),
+      Type.Union([Type.String({ minLength: 9, maxLength: 9, pattern: numberOnly.source }), Type.Literal(''), Type.Null()], {
+        examples: ['123456782'],
+      }),
     ),
     passport: Type.Optional(Type.Union([Type.String({ maxLength: 10 }), Type.Null()])),
     email: Type.String({ format: 'email', examples: ['email@gmail.com'] }),
@@ -58,7 +63,7 @@ export const complaintFormSchema = Type.Object(
     eventDate: dateStringSchema(),
     details: Type.String({ minLength: 5, maxLength: 400, pattern: '^[^&<>]*$' }),
     lang: Type.Optional(
-      Type.String({ enum: ['he', 'en', 'ru', 'ar'], description: 'Preferred user language; defaults to Hebrew (he) when omitted.' }),
+      Type.Enum(['he', 'en', 'ru', 'ar'], { type: 'string', description: 'Preferred user language; defaults to Hebrew (he) when omitted.' }),
     ),
     transport: Type.Ref('DataCodeModel'),
     subject: Type.Ref('DataCodeModel'),
@@ -67,13 +72,20 @@ export const complaintFormSchema = Type.Object(
   },
   {
     $id: 'ComplaintFormSchema',
-    allOf: [
-      { oneOf: [{ required: ['bus'] }, { required: ['train'] }] },
+    anyOf: [
       {
-        if: { properties: { lang: { const: 'he' } } },
-        then: { properties: { firstName: Type.String({ pattern: hebrewName.source }), lastName: Type.String({ pattern: hebrewName.source }) } },
-        else: {
-          properties: { firstName: Type.String({ pattern: multilingualName.source }), lastName: Type.String({ pattern: multilingualName.source }) },
+        properties: {
+          lang: Type.String({ enum: ['he'] }),
+          firstName: Type.String({ pattern: hebrewName.source }),
+          lastName: Type.String({ pattern: hebrewName.source }),
+        },
+      },
+      {
+        required: ['lang'],
+        properties: {
+          lang: { not: Type.String({ enum: ['he'] }) },
+          firstName: Type.String({ pattern: multilingualName.source }),
+          lastName: Type.String({ pattern: multilingualName.source }),
         },
       },
     ],
