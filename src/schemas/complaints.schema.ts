@@ -123,6 +123,7 @@ export const complaintFormSchema = Type.Union([complaintVariant('busAndOther'), 
 });
 
 export const sendComplaintSchema = {
+  operationId: 'complaintsSendPost',
   tags: ['Complaints'],
   summary: 'Send a complaint',
   description: 'Complaint submission is not available yet',

@@ -18,8 +18,9 @@ describe('TypeBox route schemas', () => {
       const modelTitles = Object.values(document.components.schemas).map((schema) => schema.title);
       expect(modelTitles).to.include('ComplaintFormSchema');
       expect(modelTitles).to.include('GithubIssueModel');
-      expect(document.paths).to.have.property('/issues/create');
-      expect(document.paths).to.have.property('/complaints/send');
+      expect(document.paths['/'].get.operationId).to.equal('rootGet');
+      expect(document.paths['/issues/create'].post.operationId).to.equal('issuesCreatePost');
+      expect(document.paths['/complaints/send'].post.operationId).to.equal('complaintsSendPost');
     } finally {
       await app.close();
     }

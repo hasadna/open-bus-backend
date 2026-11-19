@@ -1,6 +1,7 @@
 import { optionalObject, Type } from './index.js';
 
 export const healthCheckSchema = {
+  operationId: 'healthGet',
   tags: ['Health'],
   summary: 'Health check endpoint',
   description: 'Returns the health status of the API',
