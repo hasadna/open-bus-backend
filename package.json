@@ -19,8 +19,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.1170.0",
-    "@aws-sdk/client-sqs": "^3.1168.0",
+    "@aws-sdk/client-sesv2": "^3.1172.0",
+    "@aws-sdk/client-sqs": "^3.172.0",
     "@fastify/cors": "^11.4.3",
     "@fastify/swagger": "^9.9.4",
     "@fastify/swagger-ui": "^6.1.3",

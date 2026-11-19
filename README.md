@@ -155,6 +155,19 @@ SQS provides at-least-once delivery. Process crashes, failed deletions, and unce
 
 ### Deploying the queue-driven flow
 
+For dev, [terraform/dev/main.tf](terraform/dev/main.tf) provisions the SQS queues and an IAM policy for the backend. Use a dedicated dev AWS account because the application uses the fixed queue names `complaints` and `complaints-dlq`.
+
+```sh
+terraform -chdir=terraform/dev init
+terraform -chdir=terraform/dev plan -var="aws_account_id=123456789012" -var="ses_identity=example.com"
+```
+
+Use your dev account ID and an existing verified SES email address or domain. Terraform defaults to `us-east-1`. Set `aws_region` and `ses_configuration_set` as needed to match the backend. If either queue already exists, import it by queue URL into `aws_sqs_queue.complaints` or `aws_sqs_queue.complaints_dlq` before planning. After applying, attach the policy from `backend_policy_arn` to the dev backend's AWS identity and configure the app using the environment variables above.
+
+Leave `ses_configuration_set` unset to create a Mail Manager archive with six months of retention and link it to the `open-bus-backend-dev-archive` SES configuration set. If you added `ses_archive_arn` to your Terraform variables earlier, remove it. Terraform now returns the new archive ARN as an output.
+
+After applying, set the backend's `SES_CONFIGURATION_SET` to the Terraform output `ses_configuration_set`. SES archives complaints and delivery-failure notifications sent with that configuration set, including debug messages. [SES email archiving](https://docs.aws.amazon.com/ses/latest/dg/eb-archiving.html)
+
 1. Before starting workers, review both existing queues. The previous implementation retained queued complaints after sending emails, so blindly consuming the backlog can resend already delivered complaints. Resolve the backlog explicitly; this change never purges queues automatically. Old messages without a debug flag are treated as production messages, so historical debug submissions require particular care.
 2. Grant the receive/delete IAM permissions above and deploy the server with its SES configuration. Update clients to treat `202 PROCESSING` as queue acceptance rather than completed delivery.
 3. Verify a debug submission and its queue deletion. In controlled staging, force SES API failures to verify five processing attempts, automatic DLQ redrive, and the user notification. Also fail the notification request and verify that its DLQ message is deleted.

@@ -3,3 +3,7 @@ coverage
 node_modules
 dist
 .raw
+terraform/dev/.terraform/
+terraform/dev/*.tfstate*
+terraform/dev/*.tfvars
+terraform/dev/*.tfvars.json

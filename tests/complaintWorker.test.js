@@ -1,4 +1,4 @@
-import { SendEmailCommand } from '@aws-sdk/client-ses';
+import { SendEmailCommand } from '@aws-sdk/client-sesv2';
 import { CreateQueueCommand, DeleteMessageCommand, GetQueueAttributesCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
 import { expect } from 'chai';
 import f from 'fastify';
@@ -48,7 +48,7 @@ describe('complaint queue workers', () => {
     expect(await processComplaintMessage(queued, false, log)).to.equal(queued);
     const command = sesSend.firstCall.args[0];
     expect(command).to.be.instanceOf(SendEmailCommand);
-    expect(command.input.Source).to.equal(process.env.SES_EMAIL);
+    expect(command.input.FromEmailAddress).to.equal(process.env.SES_EMAIL);
     expect(command.input.Destination.ToAddresses).to.deep.equal(['target@example.com']);
     expect(command.input.ReplyToAddresses).to.deep.equal([data.email]);
     expect(command.input).not.to.have.property('ConfigurationSetName');
@@ -67,14 +67,14 @@ describe('complaint queue workers', () => {
       const queued = message({ pairKey: randomUUID(), data: { ...data, lang } });
       await processComplaintMessage(queued, false, log);
       const target = sesSend.firstCall.args[0].input;
-      expect(target.Tags).to.deep.include({ Name: 'lang', Value: lang });
-      expect(target.Message.Body.Html.Data).to.include('lang="he" dir="rtl"');
+      expect(target.EmailTags).to.deep.include({ Name: 'lang', Value: lang });
+      expect(target.Content.Simple.Body.Html.Data).to.include('lang="he" dir="rtl"');
       await processComplaintMessage(queued, true, log);
       const notification = sesSend.secondCall.args[0].input;
       expect(notification.Destination.ToAddresses).to.deep.equal([data.email]);
-      expect(notification.Message.Body.Html.Data).to.include(`lang="${lang}"`);
-      expect(notification.Message.Body.Text.Data).to.include('message-123');
-      expect(notification.Tags).to.deep.include({ Name: 'purpose', Value: 'complaint_failure_notification' });
+      expect(notification.Content.Simple.Body.Html.Data).to.include(`lang="${lang}"`);
+      expect(notification.Content.Simple.Body.Text.Data).to.include('message-123');
+      expect(notification.EmailTags).to.deep.include({ Name: 'purpose', Value: 'complaint_failure_notification' });
     });
   }
 
@@ -84,7 +84,7 @@ describe('complaint queue workers', () => {
     await processComplaintMessage(queued, true, log);
     for (const call of sesSend.getCalls()) {
       expect(call.args[0].input.Destination.ToAddresses).to.deep.equal([simulatorRecipient]);
-      expect(call.args[0].input.Tags).to.deep.include({ Name: 'debug', Value: 'true' });
+      expect(call.args[0].input.EmailTags).to.deep.include({ Name: 'debug', Value: 'true' });
     }
   });
 

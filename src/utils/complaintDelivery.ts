@@ -1,10 +1,10 @@
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2';
 
 import { complaintTemplate } from '../templates/complaint.js';
 import { resolveLanguage } from '../templates/shared.js';
 import type { ComplaintData } from '../types.js';
 
-export const ses = new SESClient({ maxAttempts: 1 });
+export const ses = new SESv2Client({ maxAttempts: 1 });
 export const simulatorRecipients = {
   success: 'success@simulator.amazonses.com',
   bounce: 'bounce@simulator.amazonses.com',
@@ -26,14 +26,16 @@ export async function sendEmail(
 
   const result = await ses.send(
     new SendEmailCommand({
-      Source: from,
+      FromEmailAddress: from,
       Destination: { ToAddresses: [recipient] },
       ...(replyTo ? { ReplyToAddresses: [replyTo] } : {}),
-      Message: {
-        Subject: { Data: template.subject, Charset: 'UTF-8' },
-        Body: { Html: { Data: template.html, Charset: 'UTF-8' }, Text: { Data: template.text, Charset: 'UTF-8' } },
+      Content: {
+        Simple: {
+          Subject: { Data: template.subject, Charset: 'UTF-8' },
+          Body: { Html: { Data: template.html, Charset: 'UTF-8' }, Text: { Data: template.text, Charset: 'UTF-8' } },
+        },
       },
-      Tags: Object.entries(tags).map(([Name, Value]) => ({ Name, Value })),
+      EmailTags: Object.entries(tags).map(([Name, Value]) => ({ Name, Value })),
       ...(configurationSet ? { ConfigurationSetName: configurationSet } : {}),
     }),
     { abortSignal: AbortSignal.timeout(15_000) },
