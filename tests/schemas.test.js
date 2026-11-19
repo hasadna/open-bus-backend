@@ -15,19 +15,19 @@ describe('TypeBox route schemas', () => {
       await app.ready();
 
       const document = app.swagger();
-      const modelTitles = Object.values(document.components.schemas).map((schema) => schema.title);
-      expect(modelTitles).to.include('ComplaintFormSchema');
-      expect(modelTitles).to.include('GithubIssueModel');
-      const complaint = Object.values(document.components.schemas).find((schema) => schema.title === 'ComplaintFormSchema');
+      const { schemas } = document.components;
+      expect(schemas).to.have.property('ComplaintFormSchema');
+      const complaint = schemas.ComplaintFormSchema;
       for (const transport of ['bus', 'train']) {
         expect(complaint.required).not.to.include(transport);
-        const reference = complaint.properties[transport].$ref;
-        expect(reference).to.be.a('string');
-        const model = document.components.schemas[reference.split('/').at(-1)];
-        expect(model.title).to.equal(`${transport[0].toUpperCase()}${transport.slice(1)}Schema`);
+        const modelName = `${transport[0].toUpperCase()}${transport.slice(1)}Schema`;
+        expect(complaint.properties[transport].$ref).to.equal(`#/components/schemas/${modelName}`);
+        expect(schemas).to.have.property(modelName);
       }
-      expect(document.paths).to.have.property('/issues/create');
-      expect(document.paths).to.have.property('/complaints/send');
+      expect(schemas).to.have.property('GithubIssueModel');
+      expect(document.paths['/'].get.operationId).to.equal('healthGet');
+      expect(document.paths['/issues/create'].post.operationId).to.equal('issuesCreatePost');
+      expect(document.paths['/complaints/send'].post.operationId).to.equal('complaintsSendPost');
     } finally {
       await app.close();
     }
@@ -89,7 +89,6 @@ describe('TypeBox route schemas', () => {
             eventHour: '08:00',
             eventDate: '2026-10-09T08:00:00.000Z',
             details: 'Complaint',
-            title: 'Test',
             transport: {},
             subject: {},
             bus: {

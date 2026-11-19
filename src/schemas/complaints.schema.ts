@@ -85,6 +85,7 @@ export const complaintFormSchema = Type.Object(
 );
 
 export const sendComplaintSchema = {
+  operationId: 'complaintsSendPost',
   tags: ['Complaints'],
   summary: 'Send a complaint',
   description:

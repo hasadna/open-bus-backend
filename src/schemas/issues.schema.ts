@@ -36,6 +36,7 @@ export const githubIssueModel = optionalObject(
 );
 
 export const createIssueSchema = {
+  operationId: 'issuesCreatePost',
   tags: ['Issues'],
   summary: 'Create a GitHub issue',
   description: 'Creates a new GitHub issue with the provided information',
