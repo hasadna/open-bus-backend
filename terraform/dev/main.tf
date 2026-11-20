@@ -110,7 +110,7 @@ resource "aws_iam_policy" "backend" {
       {
         Effect = "Allow"
         Action = [
-          "sqs:CreateQueue",
+          "sqs:GetQueueUrl",
           "sqs:GetQueueAttributes",
           "sqs:ReceiveMessage",
           "sqs:DeleteMessage",

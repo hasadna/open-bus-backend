@@ -1,4 +1,4 @@
-import { CreateQueueCommand, GetQueueAttributesCommand, SendMessageCommand } from '@aws-sdk/client-sqs';
+import { GetQueueAttributesCommand, GetQueueUrlCommand, SendMessageCommand } from '@aws-sdk/client-sqs';
 import { expect } from 'chai';
 import f from 'fastify';
 import { randomUUID } from 'node:crypto';
@@ -8,7 +8,8 @@ import { clearComplaintStatusCache } from '../src/controllers/complaints.control
 import { registerRoutes } from '../src/routes/index.js';
 import { complaintTitle } from '../src/templates/complaint.js';
 import { ses } from '../src/utils/complaintDelivery.js';
-import { sqs } from '../src/utils/complaintQueue.js';
+import { clearComplaintQueueCache, sqs } from '../src/utils/complaintQueue.js';
+import { startComplaintWorkers } from '../src/utils/complaintWorker.js';
 import { data, train } from './complaintFixture.js';
 
 describe('sendComplaint', () => {
@@ -16,13 +17,21 @@ describe('sendComplaint', () => {
   let app;
   let sendMessage;
   let sesSend;
+  let lookup;
+  let sourceAttributes;
   beforeEach(async () => {
     clearComplaintStatusCache();
+    clearComplaintQueueCache();
     const send = sinon.stub(sqs, 'send');
-    send
-      .withArgs(sinon.match.instanceOf(CreateQueueCommand))
+    lookup = send
+      .withArgs(sinon.match.instanceOf(GetQueueUrlCommand))
       .callsFake((command) => Promise.resolve({ QueueUrl: command.input.QueueName === 'complaints-dlq' ? 'dlq' : 'complaints' }));
-    send.withArgs(sinon.match.instanceOf(GetQueueAttributesCommand)).resolves({ Attributes: { QueueArn: 'arn:dlq' } });
+    const dlqArn = 'arn:aws:sqs:us-east-1:123456789012:complaints-dlq';
+    const attributes = send.withArgs(sinon.match.instanceOf(GetQueueAttributesCommand));
+    attributes.callsFake((command) => {
+      return Promise.resolve(command.input.QueueUrl === 'dlq' ? { Attributes: { QueueArn: dlqArn } } : sourceAttributes);
+    });
+    sourceAttributes = { Attributes: { RedrivePolicy: JSON.stringify({ deadLetterTargetArn: dlqArn, maxReceiveCount: '5' }) } };
     sendMessage = send.withArgs(sinon.match.instanceOf(SendMessageCommand)).resolves({ MessageId: 'message-123' });
     sesSend = sinon.stub(ses, 'send').rejects(new Error('HTTP must not call SES'));
     app = f();
@@ -31,9 +40,44 @@ describe('sendComplaint', () => {
   });
   afterEach(async () => {
     await app.close();
+    clearComplaintQueueCache();
     sinon.restore();
   });
   const submit = (headers = { 'pair-key': uuid }, payload = { data }) => app.inject({ method: 'POST', url: '/complaints/send', headers, payload });
+
+  it('fails worker startup if the dead-letter queue URL is missing', async () => {
+    lookup.onSecondCall().resolves({});
+    const workerApp = f();
+    try {
+      await startComplaintWorkers(workerApp);
+      expect.fail('Expected worker startup to fail');
+    } catch (error) {
+      expect(error.message).to.equal('SQS response omitted queue URL for complaints-dlq');
+    } finally {
+      await workerApp.close();
+    }
+    expect(lookup.args.map(([command]) => command.input.QueueName)).to.deep.equal(['complaints', 'complaints-dlq']);
+    expect(sqs.send.callCount).to.equal(2);
+  });
+
+  for (const [description, policy] of [
+    ['missing', undefined],
+    ['pointing at another queue', { deadLetterTargetArn: 'other-arn', maxReceiveCount: 5 }],
+    ['using the wrong receive limit', { deadLetterTargetArn: 'arn:aws:sqs:us-east-1:123456789012:complaints-dlq', maxReceiveCount: 4 }],
+  ]) {
+    it(`fails worker startup with a redrive policy that is ${description}`, async () => {
+      sourceAttributes = { Attributes: { RedrivePolicy: JSON.stringify(policy) } };
+      const workerApp = f();
+      try {
+        await startComplaintWorkers(workerApp);
+        expect.fail('Expected worker startup to fail');
+      } catch (error) {
+        expect(error.message).to.equal('SQS complaints queue must redrive to complaints-dlq with maxReceiveCount 5');
+      } finally {
+        await workerApp.close();
+      }
+    });
+  }
 
   it('queues and caches acceptance without sending email', async () => {
     const first = await submit();

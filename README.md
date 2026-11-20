@@ -134,8 +134,8 @@ Server will be available at: [http://localhost:3001](http://localhost:3001)
 
 The server runs two independent long-polling workers using [`sqs-consumer`](https://bbc.github.io/sqs-consumer/), which handles polling, acknowledgements, message deletion, and shutdown:
 
-1. `POST /complaints/send ? complaints ? server worker ? SES target`.
-2. After five unsuccessful processing attempts, SQS redrives the message: `complaints-dlq ? server worker ? SES user`.
+1. `POST /complaints/send → complaints → server worker → SES target`.
+2. After five unsuccessful processing attempts, SQS redrives the message: `complaints-dlq → server worker → SES user`.
 
 The main worker sends from the verified `SES_EMAIL` identity to `SES_COMPLAINTS_EMAIL`, with the submitter as Reply-To. It deletes the SQS message only after SES returns a message ID. Failed sends, missing SES IDs, and malformed messages remain for retries and automatic redrive under the queue's `maxReceiveCount: 5` policy. A successful SES request means acceptance, not confirmed delivery. Later bounces are not processed; there is no SNS subscription or webhook.
 
@@ -149,7 +149,7 @@ Use a verified `SES_EMAIL` identity and configure `SES_COMPLAINTS_EMAIL`. `SES_C
 
 Requests with `debug: true` send both target emails and failure notifications to `success@simulator.amazonses.com`. A verified sender is still required. The delivery utility also exports `simulatorRecipients` for controlled SES tests. A simulated bounce occurs after SES acceptance and will not exercise SQS redrive; inject a failed SES API request to test that path.
 
-The application identity requires `ses:SendEmail` for the configured identity (and configuration set, if used), plus `sqs:CreateQueue`, `sqs:GetQueueAttributes`, `sqs:SendMessage`, `sqs:ReceiveMessage`, and `sqs:DeleteMessage` for the complaint queues. The existing `complaints` and `complaints-dlq` queues are created or reused during startup. Queue URLs and the DLQ ARN must be present before workers start; queue initialization errors fail startup.
+The application identity requires `ses:SendEmail` for the configured identity (and configuration set, if used), plus `sqs:GetQueueUrl`, `sqs:GetQueueAttributes`, `sqs:SendMessage`, `sqs:ReceiveMessage`, and `sqs:DeleteMessage` for the complaint queues. Provision both queues before starting the backend. The backend looks them up by name in its configured AWS account and region. Startup requires both queue URLs and a redrive policy on `complaints` that targets `complaints-dlq` with `maxReceiveCount` set to 5.
 
 SQS provides at-least-once delivery. Process crashes, failed deletions, and uncertain SES request outcomes can cause duplicate target emails or failure notifications. Terminal notification handling does not guarantee exactly-once delivery across redeliveries or restarts. See [SQS visibility behavior](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html) and [SES sending behavior](https://docs.aws.amazon.com/ses/latest/dg/send-email-concepts-process.html).
 

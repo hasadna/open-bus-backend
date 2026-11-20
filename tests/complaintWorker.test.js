@@ -1,5 +1,5 @@
 import { SendEmailCommand } from '@aws-sdk/client-sesv2';
-import { CreateQueueCommand, DeleteMessageCommand, GetQueueAttributesCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
+import { DeleteMessageCommand, GetQueueAttributesCommand, GetQueueUrlCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
 import { expect } from 'chai';
 import f from 'fastify';
 import { randomUUID } from 'node:crypto';
@@ -7,7 +7,7 @@ import { once } from 'node:events';
 import sinon from 'sinon';
 
 import { ses, simulatorRecipient } from '../src/utils/complaintDelivery.js';
-import { sqs } from '../src/utils/complaintQueue.js';
+import { clearComplaintQueueCache, sqs } from '../src/utils/complaintQueue.js';
 import { processComplaintMessage, startComplaintWorkers } from '../src/utils/complaintWorker.js';
 import { data } from './complaintFixture.js';
 
@@ -22,6 +22,7 @@ describe('complaint queue workers', () => {
     Body: JSON.stringify(payload),
   });
   beforeEach(() => {
+    clearComplaintQueueCache();
     originalEnv = { ...process.env };
     process.env.SES_EMAIL = 'complaints@verified.example';
     process.env.SES_COMPLAINTS_EMAIL = 'target@example.com';
@@ -29,13 +30,21 @@ describe('complaint queue workers', () => {
     send = sinon.stub(sqs, 'send');
     send.withArgs(sinon.match.instanceOf(DeleteMessageCommand)).resolves({});
     send
-      .withArgs(sinon.match.instanceOf(CreateQueueCommand))
+      .withArgs(sinon.match.instanceOf(GetQueueUrlCommand))
       .callsFake((command) => Promise.resolve({ QueueUrl: command.input.QueueName === 'complaints-dlq' ? 'dlq' : 'complaints' }));
-    send.withArgs(sinon.match.instanceOf(GetQueueAttributesCommand)).resolves({ Attributes: { QueueArn: 'arn:dlq' } });
+    const dlqArn = 'arn:aws:sqs:us-east-1:123456789012:complaints-dlq';
+    send.withArgs(sinon.match.instanceOf(GetQueueAttributesCommand)).callsFake((command) => {
+      const Attributes =
+        command.input.QueueUrl === 'dlq'
+          ? { QueueArn: dlqArn }
+          : { RedrivePolicy: JSON.stringify({ deadLetterTargetArn: dlqArn, maxReceiveCount: 5 }) };
+      return Promise.resolve({ Attributes });
+    });
     sesSend = sinon.stub(ses, 'send').resolves({ MessageId: 'email-123' });
     log = { error: sinon.stub() };
   });
   afterEach(() => {
+    clearComplaintQueueCache();
     sinon.restore();
     for (const name of ['SES_EMAIL', 'SES_COMPLAINTS_EMAIL', 'SES_CONFIGURATION_SET']) {
       if (originalEnv[name] === undefined) delete process.env[name];
