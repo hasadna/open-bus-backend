@@ -12,7 +12,6 @@ export const simulatorRecipients = {
   suppressionList: 'suppressionlist@simulator.amazonses.com',
   outOfOffice: 'ooto@simulator.amazonses.com',
 } as const;
-export const simulatorRecipient = simulatorRecipients.success;
 
 export async function sendEmail(
   recipient: string,
@@ -45,7 +44,7 @@ export async function sendEmail(
 }
 
 export async function sendComplaintEmail(data: ComplaintData, debug: boolean | 'bounce' = false) {
-  const recipient = debug ? simulatorRecipients[debug === 'bounce' ? 'bounce' : 'success'] : process.env.SES_COMPLAINTS_EMAIL;
+  const recipient = debug === true ? data.email : debug === 'bounce' ? simulatorRecipients.bounce : process.env.SES_COMPLAINTS_EMAIL;
   if (!recipient) throw new Error('Complaint email configuration is incomplete');
   return sendEmail(
     recipient,

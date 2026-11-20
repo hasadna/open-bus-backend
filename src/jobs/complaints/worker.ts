@@ -9,7 +9,6 @@ import { dataCodeModel } from '../../schemas/index.js';
 import { sendComplaintEmail, sendEmail } from './delivery.js';
 import { getComplaintDLQUrl, getComplaintQueueUrl, sqs } from './queue.js';
 import { deliveryFailureTemplate } from './templates/deliveryFailure.js';
-import { deliverySuccessTemplate } from './templates/deliverySuccess.js';
 
 const models = { DataCodeModel: dataCodeModel, BusSchema: busSchema, TrainSchema: trainSchema, ComplaintFormSchema: complaintFormSchema };
 const queuedComplaintSchema = Type.Object({
@@ -35,18 +34,8 @@ export async function processComplaintMessage(message: Message, deadLetter: bool
       });
     } else {
       await sendComplaintEmail(data, debug);
-      // SES accepts the request before generating a bounce. Simulate a processing failure for SQS redrive.
-      if (debug === 'bounce') throw new Error('Simulated complaint delivery failure');
-      if (debug === true) {
-        try {
-          await sendEmail(data.email, deliverySuccessTemplate(message.MessageId, data.lang), {
-            purpose: 'complaint_success_notification',
-            debug: 'true',
-          });
-        } catch (error) {
-          log.error({ err: error, messageId: message.MessageId }, 'Failed to send complaint success notification');
-        }
-      }
+      // SES accepts the request before generating a bounce. Leave the message unacknowledged for SQS redrive.
+      if (debug === 'bounce') return undefined;
     }
   } catch (error) {
     log.error({ err: error, messageId: message.MessageId, deadLetter }, 'Failed to process complaint');

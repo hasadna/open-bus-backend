@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import sinon from 'sinon';
 
-import { ses, simulatorRecipient, simulatorRecipients } from '../src/jobs/complaints/delivery.js';
+import { ses, simulatorRecipients } from '../src/jobs/complaints/delivery.js';
 import { clearComplaintQueueCache, sqs } from '../src/jobs/complaints/queue.js';
 import { processComplaintMessage, startComplaintWorkers } from '../src/jobs/complaints/worker.js';
 import { data } from './complaintFixture.js';
@@ -37,7 +37,7 @@ describe('complaint queue workers', () => {
       const Attributes =
         command.input.QueueUrl === 'dlq'
           ? { QueueArn: dlqArn }
-          : { RedrivePolicy: JSON.stringify({ deadLetterTargetArn: dlqArn, maxReceiveCount: 5 }) };
+          : { RedrivePolicy: JSON.stringify({ deadLetterTargetArn: dlqArn, maxReceiveCount: 1 }) };
       return Promise.resolve({ Attributes });
     });
     sesSend = sinon.stub(ses, 'send').resolves({ MessageId: 'email-123' });
@@ -87,33 +87,31 @@ describe('complaint queue workers', () => {
     });
   }
 
-  it('sends the debug complaint to the success simulator and notifies the submitter', async () => {
+  it('sends the debug complaint directly to the submitter in one SES request', async () => {
     const queued = message({ pairKey: randomUUID(), data, debug: true });
     expect(await processComplaintMessage(queued, false, log)).to.equal(queued);
-    expect(sesSend.firstCall.args[0].input.Destination.ToAddresses).to.deep.equal([simulatorRecipient]);
-    const confirmation = sesSend.secondCall.args[0].input;
-    expect(confirmation.Destination.ToAddresses).to.deep.equal([data.email]);
-    expect(confirmation.EmailTags).to.deep.include({ Name: 'purpose', Value: 'complaint_success_notification' });
-    expect(confirmation.Content.Simple.Body.Text.Data).to.include(queued.MessageId);
-    await processComplaintMessage(queued, true, log);
-    expect(sesSend.thirdCall.args[0].input.Destination.ToAddresses).to.deep.equal([data.email]);
-    for (const call of sesSend.getCalls()) {
-      expect(call.args[0].input.EmailTags).to.deep.include({ Name: 'debug', Value: 'true' });
-    }
+    expect(sesSend.calledOnce).to.equal(true);
+    const complaint = sesSend.firstCall.args[0].input;
+    expect(complaint.Destination.ToAddresses).to.deep.equal([data.email]);
+    expect(complaint.EmailTags).to.deep.include({ Name: 'purpose', Value: 'complaint' });
+    expect(complaint.EmailTags).to.deep.include({ Name: 'debug', Value: 'true' });
+    expect(complaint.Content.Simple.Body.Text.Data).to.include(data.details);
   });
 
-  it('acknowledges a successful debug complaint even if its confirmation fails', async () => {
-    sesSend.onSecondCall().rejects(new Error('SES unavailable'));
+  it('leaves a failed debug complaint for redrive and notifies the submitter from the DLQ', async () => {
+    sesSend.onFirstCall().rejects(new Error('SES unavailable'));
     const queued = message({ pairKey: randomUUID(), data, debug: true });
-    expect(await processComplaintMessage(queued, false, log)).to.equal(queued);
+    await expectFailure(processComplaintMessage(queued, false, log));
     expect(log.error.calledOnce).to.equal(true);
+    expect(await processComplaintMessage(queued, true, log)).to.equal(queued);
+    expect(sesSend.secondCall.args[0].input.Destination.ToAddresses).to.deep.equal([data.email]);
   });
 
   it('leaves a bounce debug complaint for redrive and sends its DLQ notification to the submitter', async () => {
     const queued = message({ pairKey: randomUUID(), data, debug: 'bounce' });
-    await expectFailure(processComplaintMessage(queued, false, log));
+    expect(await processComplaintMessage(queued, false, log)).to.equal(undefined);
     expect(sesSend.firstCall.args[0].input.Destination.ToAddresses).to.deep.equal([simulatorRecipients.bounce]);
-    expect(log.error.firstCall.args[0].err.message).to.equal('Simulated complaint delivery failure');
+    expect(log.error.called).to.equal(false);
     expect(await processComplaintMessage(queued, true, log)).to.equal(queued);
     const notification = sesSend.secondCall.args[0].input;
     expect(notification.Destination.ToAddresses).to.deep.equal([data.email]);
@@ -241,6 +239,23 @@ describe('complaint queue workers', () => {
     try {
       await failed;
       expect(send.calledWith(sinon.match.instanceOf(DeleteMessageCommand))).to.equal(false);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('leaves simulated bounces unacknowledged without emitting a processing error', async () => {
+    const queued = message({ pairKey: randomUUID(), data, debug: 'bounce' });
+    const { app, consumer, deliver } = await consumeOne(false, queued);
+    const processingError = sinon.spy();
+    consumer.on('processing_error', processingError);
+    const processed = once(consumer, 'response_processed');
+    deliver();
+    try {
+      await processed;
+      expect(sesSend.calledOnce).to.equal(true);
+      expect(send.calledWith(sinon.match.instanceOf(DeleteMessageCommand))).to.equal(false);
+      expect(processingError.called).to.equal(false);
     } finally {
       await app.close();
     }

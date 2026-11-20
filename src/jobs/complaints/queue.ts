@@ -24,8 +24,8 @@ async function discoverComplaintQueues(): Promise<[string, string]> {
   if (!dlqArn) throw new Error('SQS response omitted dead-letter queue ARN');
 
   const redrivePolicy = JSON.parse(source.Attributes?.RedrivePolicy ?? 'null');
-  if (redrivePolicy?.deadLetterTargetArn !== dlqArn || ![5, '5'].includes(redrivePolicy.maxReceiveCount)) {
-    throw new Error('SQS complaints queue must redrive to complaints-dlq with maxReceiveCount 5');
+  if (redrivePolicy?.deadLetterTargetArn !== dlqArn || ![1, '1'].includes(redrivePolicy.maxReceiveCount)) {
+    throw new Error('SQS complaints queue must redrive to complaints-dlq with maxReceiveCount 1');
   }
   return [queueUrl, dlqUrl];
 }

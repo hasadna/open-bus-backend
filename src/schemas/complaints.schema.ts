@@ -111,7 +111,7 @@ export const sendComplaintSchema = {
       Type.Union([Type.Literal('bounce'), Type.Boolean()], {
         default: false,
         examples: [true, 'bounce'],
-        description: 'Use true for the SES success simulator or "bounce" to exercise SQS redrive and the failure notification.',
+        description: 'Use true to send the complaint to data.email or "bounce" to exercise SQS redrive and the failure notification.',
       }),
     ),
     data: Type.Ref('ComplaintFormSchema'),
