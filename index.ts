@@ -19,12 +19,16 @@ async function start() {
     fastify.setNotFoundHandler(notFoundHandler);
 
     // Register all routes
-    registerRoutes(fastify);
+    let complaintWorkerStartupFailed = false;
+    registerRoutes(fastify, () => complaintWorkerStartupFailed);
 
     // Setup graceful shutdown handlers
     setupGracefulShutdown(fastify);
 
-    await startComplaintWorkers(fastify);
+    void startComplaintWorkers(fastify).catch((error) => {
+      complaintWorkerStartupFailed = true;
+      fastify.log.error({ err: error }, 'Failed to start complaint workers');
+    });
 
     // Start listening
     await fastify.listen({ host: HOST, port: PORT });

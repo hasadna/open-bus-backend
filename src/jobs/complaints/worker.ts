@@ -82,10 +82,10 @@ function createConsumer(queueUrl: string, deadLetter: boolean, log: FastifyBaseL
 
 // Explicit startup keeps route registration and tests free of background AWS calls.
 export async function startComplaintWorkers(fastify: FastifyInstance) {
-  const queueUrl = await getComplaintQueueUrl();
-  const dlqUrl = await getComplaintDLQUrl();
-  const consumers = [createConsumer(queueUrl, false, fastify.log), createConsumer(dlqUrl, true, fastify.log)];
+  const consumers: Consumer[] = [];
+  let closing = false;
   fastify.addHook('onClose', async () => {
+    closing = true;
     await Promise.all(
       consumers.map(
         (consumer) =>
@@ -97,6 +97,15 @@ export async function startComplaintWorkers(fastify: FastifyInstance) {
       ),
     );
   });
-  for (const consumer of consumers) consumer.start();
+
+  const queueUrl = await getComplaintQueueUrl();
+  const dlqUrl = await getComplaintDLQUrl();
+  if (closing) return consumers;
+
+  const queueConsumers = [createConsumer(queueUrl, false, fastify.log), createConsumer(dlqUrl, true, fastify.log)];
+  for (const consumer of queueConsumers) {
+    consumer.start();
+    consumers.push(consumer);
+  }
   return consumers;
 }

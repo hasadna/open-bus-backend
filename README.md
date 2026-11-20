@@ -160,10 +160,15 @@ SQS provides at-least-once delivery. Process crashes, failed deletions, and unce
 
 For dev, [terraform/dev/main.tf](terraform/dev/main.tf) provisions the SQS queues and an IAM policy for the backend. Use a dedicated dev AWS account because the application uses the fixed queue names `complaints` and `complaints-dlq`.
 
+Copy [terraform.tfvars.example](terraform/dev/terraform.tfvars.example) to `terraform/dev/terraform.tfvars` and fill in `aws_account_id` and `ses_identity`. Terraform also accepts `TF_VAR_*` variables exported in your shell. Configure AWS credentials through your shell environment or an AWS CLI profile.
+
 ```sh
-terraform -chdir=terraform/dev init
-terraform -chdir=terraform/dev plan -var="aws_account_id=123456789012" -var="ses_identity=example.com"
+npm run tf:init
+npm run tf:up
+npm run tf:down
 ```
+
+Run `tf:init` before first use and after changing provider or backend settings. Use `tf:up` to provision or update the dev resources and `tf:down` to destroy them. Terraform prompts for confirmation before making changes.
 
 Use your dev account ID and an existing verified SES email address or domain. Terraform defaults to `us-east-1`. Set `aws_region` and `ses_configuration_set` as needed to match the backend. If either queue already exists, import it by queue URL into `aws_sqs_queue.complaints` or `aws_sqs_queue.complaints_dlq` before planning. After applying, attach the policy from `backend_policy_arn` to the dev backend's AWS identity and configure the app using the environment variables above.
 

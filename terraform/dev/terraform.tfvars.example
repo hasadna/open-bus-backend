@@ -1,0 +1,5 @@
+aws_account_id = "123456789012"
+ses_identity   = "your-verified-domain.example"
+
+# aws_region            = "us-east-1"
+# ses_configuration_set = "complaints"
