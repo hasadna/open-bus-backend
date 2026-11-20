@@ -60,7 +60,7 @@ resource "aws_mailmanager_archive" "complaints" {
   name  = "open-bus-backend-dev-archive"
 
   retention {
-    retention_period = "SIX_MONTHS"
+    retention_period = "THREE_MONTHS"
   }
 }
 
@@ -138,8 +138,33 @@ resource "aws_iam_policy" "backend" {
   })
 }
 
+resource "aws_iam_user" "backend" {
+  name = "open-bus-backend-dev"
+}
+
+resource "aws_iam_user_policy_attachment" "backend" {
+  user       = aws_iam_user.backend.name
+  policy_arn = aws_iam_policy.backend.arn
+}
+
+resource "aws_iam_access_key" "backend" {
+  user = aws_iam_user.backend.name
+}
+
+output "backend_access_key_id" {
+  description = "Set AWS_ACCESS_KEY_ID to this value in the dev backend environment."
+  value       = aws_iam_access_key.backend.id
+  sensitive   = true
+}
+
+output "backend_secret_access_key" {
+  description = "Set AWS_SECRET_ACCESS_KEY to this value in the dev backend environment."
+  value       = aws_iam_access_key.backend.secret
+  sensitive   = true
+}
+
 output "backend_policy_arn" {
-  description = "Attach this policy to the dev backend's AWS identity."
+  description = "ARN of the policy attached to the dev backend IAM user."
   value       = aws_iam_policy.backend.arn
 }
 

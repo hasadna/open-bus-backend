@@ -12,7 +12,7 @@
     "dev": "tsx watch --env-file-if-exists=.env index.ts",
     "tf:init": "terraform -chdir=terraform/dev init",
     "tf:up": "terraform -chdir=terraform/dev apply",
-    "tf:down": "terraform -chdir=terraform/dev destroy",
+    "tf:down": "terraform -chdir=terraform/dev destroy -target=aws_cloudformation_stack.ses_archive -target=aws_iam_user.backend -target=aws_iam_access_key.backend -target=aws_iam_user_policy_attachment.backend -target=aws_iam_policy.backend -target=aws_sqs_queue.complaints -target=aws_sqs_queue.complaints_dlq",
     "test": "npm run typecheck && npm run test:lint && npm run test:mocha && npm run test:coverage",
     "test:lint": "oxlint --max-warnings 0 && oxfmt --check .",
     "test:mocha": "mocha",

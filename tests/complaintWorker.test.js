@@ -41,7 +41,7 @@ describe('complaint queue workers', () => {
       return Promise.resolve({ Attributes });
     });
     sesSend = sinon.stub(ses, 'send').resolves({ MessageId: 'email-123' });
-    log = { error: sinon.stub() };
+    log = { error: sinon.stub(), info: sinon.stub() };
   });
   afterEach(() => {
     clearComplaintQueueCache();

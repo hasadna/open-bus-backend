@@ -27,15 +27,22 @@ export async function processComplaintMessage(message: Message, deadLetter: bool
   if (!message.ReceiptHandle || !message.MessageId) throw new Error('SQS message omitted receipt handle or message ID');
   try {
     const { data, debug = false } = parseComplaint(message);
+    const context = { messageId: message.MessageId, deadLetter, debug };
+    log.info(context, 'Sending complaint email through SES');
     if (deadLetter) {
-      await sendEmail(data.email, deliveryFailureTemplate(message.MessageId, data.lang, Boolean(debug)), {
+      const sesMessageId = await sendEmail(data.email, deliveryFailureTemplate(message.MessageId, data.lang, Boolean(debug)), {
         purpose: 'complaint_failure_notification',
         ...(debug ? { debug: 'true' } : {}),
       });
+      log.info({ ...context, sesMessageId }, 'SES accepted complaint failure notification');
     } else {
-      await sendComplaintEmail(data, debug);
+      const sesMessageId = await sendComplaintEmail(data, debug);
+      log.info({ ...context, sesMessageId }, 'SES accepted complaint email');
       // SES accepts the request before generating a bounce. Leave the message unacknowledged for SQS redrive.
-      if (debug === 'bounce') return undefined;
+      if (debug === 'bounce') {
+        log.info(context, 'Leaving bounce simulation message for SQS redrive');
+        return undefined;
+      }
     }
   } catch (error) {
     log.error({ err: error, messageId: message.MessageId, deadLetter }, 'Failed to process complaint');
@@ -57,6 +64,15 @@ function createConsumer(queueUrl: string, deadLetter: boolean, log: FastifyBaseL
     pollingCompleteWaitTimeMs: 45_000,
     strictReturn: true,
     handleMessage: (message) => processComplaintMessage(message, deadLetter, log),
+  });
+  consumer.on('message_processed', (message) => {
+    log.info({ messageId: message.MessageId, deadLetter }, 'SQS acknowledged complaint message');
+  });
+  consumer.on('stopped', () => {
+    log.info({ deadLetter }, 'Complaint queue worker stopped');
+  });
+  consumer.on('started', () => {
+    log.info({ deadLetter }, 'Complaint queue worker started');
   });
   for (const event of ['error', 'processing_error', 'timeout_error'] as const) {
     consumer.on(event, (...[error, message]) => {

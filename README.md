@@ -168,9 +168,18 @@ npm run tf:up
 npm run tf:down
 ```
 
-Run `tf:init` before first use and after changing provider or backend settings. Use `tf:up` to provision or update the dev resources and `tf:down` to destroy them. Terraform prompts for confirmation before making changes.
+Run `tf:init` before first use and after changing provider or backend settings. Use `tf:up` to provision or update the dev resources. Use `tf:down` to delete the dev queues, backend IAM user and access key, IAM policy, and SES configuration set stack while keeping the Mail Manager archive in Terraform state for the next `tf:up`. Terraform prompts for confirmation before making changes.
 
-Use your dev account ID and an existing verified SES email address or domain. Terraform defaults to `us-east-1`. Set `aws_region` and `ses_configuration_set` as needed to match the backend. If either queue already exists, import it by queue URL into `aws_sqs_queue.complaints` or `aws_sqs_queue.complaints_dlq` before planning. After applying, attach the policy from `backend_policy_arn` to the dev backend's AWS identity and configure the app using the environment variables above.
+Use your dev account ID and an existing verified SES email address or domain. Terraform defaults to `us-east-1`. Set `aws_region` and `ses_configuration_set` as needed to match the backend. If either queue already exists, import it by queue URL into `aws_sqs_queue.complaints` or `aws_sqs_queue.complaints_dlq` before planning.
+
+Terraform creates the `open-bus-backend-dev` IAM user, attaches the backend policy, and generates an access key. After applying, use the following outputs for `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`, respectively.
+
+```sh
+terraform -chdir=terraform/dev output -raw backend_access_key_id
+terraform -chdir=terraform/dev output -raw backend_secret_access_key
+```
+
+These commands print credentials. The secret is also stored in Terraform state, so restrict access to the state and keep credentials out of version control.
 
 Leave `ses_configuration_set` unset to create a Mail Manager archive with six months of retention and link it to the `open-bus-backend-dev-archive` SES configuration set. If you added `ses_archive_arn` to your Terraform variables earlier, remove it. Terraform now returns the new archive ARN as an output.
 
