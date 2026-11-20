@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { complaintTemplate } from '../src/templates/complaint.js';
-import { deliveryFailureTemplate } from '../src/templates/deliveryFailure.js';
-import { resolveLanguage } from '../src/templates/shared.js';
+import { complaintTemplate } from '../src/jobs/complaints/templates/complaint.js';
+import { deliveryFailureTemplate } from '../src/jobs/complaints/templates/deliveryFailure.js';
+import { resolveLanguage } from '../src/jobs/complaints/templates/shared.js';
 
 describe('email templates', () => {
   const names = { he: 'עברית', en: 'אנגלית', ru: 'רוסית', ar: 'ערבית' };

@@ -4,11 +4,11 @@ import { Consumer } from 'sqs-consumer';
 import { Type } from 'typebox';
 import { Value } from 'typebox/value';
 
-import { busSchema, complaintFormSchema, sendComplaintSchema, trainSchema } from '../schemas/complaints.schema.js';
-import { dataCodeModel } from '../schemas/index.js';
-import { deliveryFailureTemplate } from '../templates/deliveryFailure.js';
-import { sendComplaintEmail, sendEmail, simulatorRecipient } from './complaintDelivery.js';
-import { getComplaintDLQUrl, getComplaintQueueUrl, sqs } from './complaintQueue.js';
+import { busSchema, complaintFormSchema, sendComplaintSchema, trainSchema } from '../../schemas/complaints.schema.js';
+import { dataCodeModel } from '../../schemas/index.js';
+import { sendComplaintEmail, sendEmail, simulatorRecipient } from './delivery.js';
+import { getComplaintDLQUrl, getComplaintQueueUrl, sqs } from './queue.js';
+import { deliveryFailureTemplate } from './templates/deliveryFailure.js';
 
 const models = { DataCodeModel: dataCodeModel, BusSchema: busSchema, TrainSchema: trainSchema, ComplaintFormSchema: complaintFormSchema };
 const queuedComplaintSchema = Type.Object({

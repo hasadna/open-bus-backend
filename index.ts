@@ -1,9 +1,9 @@
 // External dependencies
 import { createServer } from './src/config/index.js';
+import { startComplaintWorkers } from './src/jobs/complaints/worker.js';
 import { globalErrorHandler, notFoundHandler } from './src/middleware/index.js';
 import { registerRoutes } from './src/routes/index.js';
-import { startComplaintWorkers } from './src/utils/complaintWorker.js';
-import { setupGracefulShutdown } from './src/utils/index.js';
+import { setupGracefulShutdown } from './src/utils/gracefulShutdown.js';
 
 const HOST = process.env.HOST || '0.0.0.0';
 const PORT = Number(process.env.PORT || 3001);

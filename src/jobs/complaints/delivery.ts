@@ -1,8 +1,8 @@
 import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2';
 
-import { complaintTemplate } from '../templates/complaint.js';
-import { resolveLanguage } from '../templates/shared.js';
-import type { ComplaintData } from '../types.js';
+import type { ComplaintData } from '../../types.js';
+import { complaintTemplate } from './templates/complaint.js';
+import { resolveLanguage } from './templates/shared.js';
 
 export const ses = new SESv2Client({ maxAttempts: 1 });
 export const simulatorRecipients = {

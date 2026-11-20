@@ -5,11 +5,10 @@ import { randomUUID } from 'node:crypto';
 import sinon from 'sinon';
 
 import { clearComplaintStatusCache } from '../src/controllers/complaints.controller.js';
+import { ses } from '../src/jobs/complaints/delivery.js';
+import { clearComplaintQueueCache, sqs } from '../src/jobs/complaints/queue.js';
+import { startComplaintWorkers } from '../src/jobs/complaints/worker.js';
 import { registerRoutes } from '../src/routes/index.js';
-import { complaintTitle } from '../src/templates/complaint.js';
-import { ses } from '../src/utils/complaintDelivery.js';
-import { clearComplaintQueueCache, sqs } from '../src/utils/complaintQueue.js';
-import { startComplaintWorkers } from '../src/utils/complaintWorker.js';
 import { data, train } from './complaintFixture.js';
 
 describe('sendComplaint', () => {
@@ -89,7 +88,7 @@ describe('sendComplaint', () => {
     expect(JSON.parse(sendMessage.firstCall.args[0].input.MessageBody)).to.deep.equal({
       email: data.email,
       pairKey: uuid,
-      data: { ...data, title: complaintTitle(data) },
+      data,
       debug: false,
     });
   });
@@ -225,9 +224,7 @@ describe('sendComplaint', () => {
       },
     };
     expect((await submit(undefined, { data: payload })).statusCode).to.equal(202);
-    expect(JSON.parse(sendMessage.firstCall.args[0].input.MessageBody).data).to.deep.equal(
-      JSON.parse(JSON.stringify({ ...payload, title: complaintTitle(payload) })),
-    );
+    expect(JSON.parse(sendMessage.firstCall.args[0].input.MessageBody).data).to.deep.equal(JSON.parse(JSON.stringify(payload)));
   });
 
   it('accepts a train with the required fields', async () => {

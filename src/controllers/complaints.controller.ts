@@ -2,9 +2,8 @@ import { SendMessageCommand } from '@aws-sdk/client-sqs';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { LRUCache } from 'lru-cache';
 
-import { complaintTitle } from '../templates/complaint.js';
+import { getComplaintQueueUrl, sqs } from '../jobs/complaints/queue.js';
 import type { ComplaintBody, ComplaintHeaders } from '../types.js';
-import { getComplaintQueueUrl, sqs } from '../utils/complaintQueue.js';
 
 type QueuedComplaint = { success: true; state: 'PROCESSING'; messageId: string };
 const cache = new LRUCache<string, Promise<QueuedComplaint>>({ max: 1000, ttl: 60 * 60 * 1000 });
@@ -14,8 +13,8 @@ export function clearComplaintStatusCache() {
 
 export async function sendComplaint(request: FastifyRequest<{ Body: ComplaintBody; Headers: ComplaintHeaders }>, reply: FastifyReply) {
   const pairKey = request.headers['pair-key'];
-  const data = { ...request.body.data, title: complaintTitle(request.body.data) };
-  const { email } = data;
+  const data = request.body.data;
+  const email = data.email;
 
   const debug = request.body.debug === true;
   const key = `${pairKey.toLowerCase()}:${email?.trim().toLowerCase()}${debug ? ':debug' : ''}`;

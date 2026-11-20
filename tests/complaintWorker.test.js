@@ -6,9 +6,9 @@ import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import sinon from 'sinon';
 
-import { ses, simulatorRecipient } from '../src/utils/complaintDelivery.js';
-import { clearComplaintQueueCache, sqs } from '../src/utils/complaintQueue.js';
-import { processComplaintMessage, startComplaintWorkers } from '../src/utils/complaintWorker.js';
+import { ses, simulatorRecipient } from '../src/jobs/complaints/delivery.js';
+import { clearComplaintQueueCache, sqs } from '../src/jobs/complaints/queue.js';
+import { processComplaintMessage, startComplaintWorkers } from '../src/jobs/complaints/worker.js';
 import { data } from './complaintFixture.js';
 
 describe('complaint queue workers', () => {

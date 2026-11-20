@@ -1,4 +1,4 @@
-import type { ComplaintData, DataCode } from '../types.js';
+import type { ComplaintData, DataCode } from '../../../types.js';
 import { escapeHtml, languageNames, layout, resolveLanguage } from './shared.js';
 
 type FieldValue = string | number | null | undefined | DataCode;
@@ -14,7 +14,7 @@ const displayValue = (value: FieldValue) => {
   return value === undefined || value === null ? '' : String(value);
 };
 
-export function complaintTitle(data: ComplaintData) {
+function complaintTitle(data: ComplaintData) {
   const name = [data.firstName, data.lastName].filter(Boolean).join(' ').trim();
   let trip = '';
   if (data.train) {
