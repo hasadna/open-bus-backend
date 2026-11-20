@@ -93,6 +93,7 @@ export const complaintFormSchema = Type.Object(
       { required: ['passport'], properties: { passport: { type: 'string', pattern: '\\S' } } },
       { required: ['id'], properties: { id: { type: 'string', minLength: 1 } } },
     ],
+    allOf: [{ oneOf: [{ required: ['bus'] }, { required: ['train'] }] }],
   },
 );
 
