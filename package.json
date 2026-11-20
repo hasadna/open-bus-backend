@@ -15,7 +15,7 @@
     "test:mocha": "mocha",
     "test:coverage": "c8 --reporter=lcov --reporter=text mocha",
     "lint:fix": "oxlint --fix && oxfmt --write .",
-    "build": "tsc && node -e \"for (const file of ['openapi.json', 'LICENSE', 'README.md']) require('node:fs').copyFileSync('src/stride/' + file, 'dist/src/stride/' + file)\"",
+    "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

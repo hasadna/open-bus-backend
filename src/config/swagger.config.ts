@@ -1,8 +1,6 @@
 import type { SwaggerOptions } from '@fastify/swagger';
 import type { FastifySwaggerUiOptions } from '@fastify/swagger-ui';
 
-import { transitSpec } from '../stride/openapi.js';
-
 export const swaggerConfig: SwaggerOptions = {
   openapi: {
     info: {
@@ -23,19 +21,6 @@ export const swaggerConfig: SwaggerOptions = {
     buildLocalReference(schema, _baseUri, _fragment, index) {
       return typeof schema.$id === 'string' && schema.$id.length > 0 ? schema.$id : `def-${index}`;
     },
-  },
-  transform: ({ schema, url }) => ({ schema, url }),
-  transformObject: (document) => {
-    if (!('openapiObject' in document)) return document.swaggerObject;
-    const { openapiObject } = document;
-    return {
-      ...openapiObject,
-      paths: { ...openapiObject.paths, ...transitSpec.paths },
-      components: {
-        ...openapiObject.components,
-        schemas: { ...transitSpec.components?.schemas, ...openapiObject.components?.schemas },
-      },
-    };
   },
 };
 
