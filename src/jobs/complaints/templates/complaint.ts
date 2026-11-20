@@ -18,7 +18,7 @@ function complaintTitle(data: ComplaintData) {
   const name = [data.firstName, data.lastName].filter(Boolean).join(' ').trim();
   let trip = '';
   if (data.train) {
-    trip = data.train.trainNumber ? `מספר רכבת ${data.train.trainNumber}` : 'רכבת';
+    trip = data.train.trainNumber ? `רכבת ${data.train.trainNumber}` : 'רכבת';
   } else if (data.bus?.lineNumberText) {
     trip = `קו ${data.bus.lineNumberText}`;
   }
@@ -33,37 +33,40 @@ export function complaintTemplate(data: ComplaintData) {
   const eventStationNames: Record<string, string | undefined> = { start: 'תחנת מוצא', destination: 'תחנת יעד' };
   const rawSections: Section[] = [
     [
-      'פרטי הפנייה',
+      'פרטי הפונה',
       [
+        ['שם פרטי', data.firstName],
+        ['שם משפחה', data.lastName],
+        ['תעודת זהות', data.id],
+        ['דרכון', data.passport],
+        ['טלפון', data.mobile, true],
+        ['דואר אלקטרוני', data.email, true],
         ['שפת הפונה', languageNames[lang]],
-        ['אמצעי תחבורה', data.transport?.dataText],
-        ['נושא הפנייה', data.subject?.dataText],
-        ['תיאור', data.details],
+        ['מספר רב-קו', data.ravkav, true],
       ],
     ],
     [
-      'פרטי האירוע',
+      'פרטי הפנייה',
       [
-        ['תאריך', data.eventDate ? new Date(data.eventDate).toLocaleDateString('en-GB', { timeZone: 'Asia/Jerusalem' }) : '', true],
+        ['אמצעי תחבורה', data.transport?.dataText],
+        ['נושא הפנייה', data.subject?.dataText],
+        ['תאריך האירוע', data.eventDate ? new Date(data.eventDate).toLocaleDateString('en-GB', { timeZone: 'Asia/Jerusalem' }) : '', true],
         ['שעת האירוע', data.eventHour],
         ['משעה', data.fromHour],
         ['עד שעה', data.toHour],
       ],
     ],
     [
-      'פרטי התחבורה',
+      'פרטי הנסיעה',
       [
+        // Bus
         ['שם הנהג', data.bus?.driverName],
         ['מספר רישוי', data.bus?.licenseNumber],
         ['מספר קו', data.bus?.lineNumberText],
         ['מפעיל', data.bus?.operator?.dataText],
         ['מסלול/מק"ט', data.bus?.direction],
         ['תחנת עלייה/קוד תחנה', data.bus?.raisingStation],
-      ],
-    ],
-    [
-      'פרטי הרכבת',
-      [
+        // Train
         ['סוג רכבת', data.train ? trainNames[data.train.trainType] : undefined],
         ['תחנת מוצא/קוד תחנה', data.train?.startStation],
         ['תחנת יעד/קוד תחנה', data.train?.destinationStation],
@@ -71,18 +74,7 @@ export function complaintTemplate(data: ComplaintData) {
         ['מספר רכבת', data.train?.trainNumber],
       ],
     ],
-    [
-      'פרטי קשר',
-      [
-        ['שם פרטי', data.firstName],
-        ['שם משפחה', data.lastName],
-        ['תעודת זהות', data.id],
-        ['דרכון', data.passport],
-        ['דואר אלקטרוני', data.email, true],
-        ['טלפון', data.mobile, true],
-        ['מספר רב-קו', data.ravkav, true],
-      ],
-    ],
+    ['תיאור הפנייה', [['', data.details]]],
   ];
   const sections = rawSections
     .map<DisplaySection>(([title, fields]) => [
@@ -91,11 +83,13 @@ export function complaintTemplate(data: ComplaintData) {
     ])
     .filter(([, fields]) => fields.length);
   const subject = generatedTitle;
-  const text = sections.map(([title, fields]) => `${title}\n${fields.map(([label, value]) => `${label}: ${value}`).join('\n')}`).join('\n\n');
+  const text = sections
+    .map(([title, fields]) => `${title}\n${fields.map(([label, value]) => (label ? `${label}: ${value}` : value)).join('\n')}`)
+    .join('\n\n');
   const content = sections
     .map(
       ([title, fields]) =>
-        `<h2 style="font-size:18px;border-bottom:1px solid #dce3e8;padding-bottom:8px">${escapeHtml(title)}</h2>${fields.map(([label, value, ltr]) => `<p style="line-height:1.6;white-space:pre-wrap"><strong>${escapeHtml(label)}:</strong> <span${ltr ? ' dir="ltr" style="unicode-bidi:isolate;display:inline-block"' : ''}>${escapeHtml(value)}</span></p>`).join('')}`,
+        `<h2 style="font-size:18px;border-bottom:1px solid #dce3e8;padding-bottom:8px">${escapeHtml(title)}</h2>${fields.map(([label, value, ltr]) => `<p style="line-height:1.6;white-space:pre-wrap">${label ? `<strong>${escapeHtml(label)}:</strong> ` : ''}<span${ltr ? ' dir="ltr" style="unicode-bidi:isolate;display:inline-block"' : ''}>${escapeHtml(value)}</span></p>`).join('')}`,
     )
     .join('');
   return { subject, html: layout('he', generatedTitle, content), text };
