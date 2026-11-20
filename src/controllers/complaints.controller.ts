@@ -16,8 +16,8 @@ export async function sendComplaint(request: FastifyRequest<{ Body: ComplaintBod
   const data = request.body.data;
   const email = data.email;
 
-  const debug = request.body.debug === true;
-  const key = `${pairKey.toLowerCase()}:${email?.trim().toLowerCase()}${debug ? ':debug' : ''}`;
+  const debug = request.body.debug ?? false;
+  const key = `${pairKey.toLowerCase()}:${email?.trim().toLowerCase()}:${debug}`;
   let pending = cache.get(key);
   if (!pending) {
     pending = Promise.resolve().then(async (): Promise<QueuedComplaint> => {

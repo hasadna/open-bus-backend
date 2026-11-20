@@ -6,15 +6,16 @@ import { Value } from 'typebox/value';
 
 import { busSchema, complaintFormSchema, sendComplaintSchema, trainSchema } from '../../schemas/complaints.schema.js';
 import { dataCodeModel } from '../../schemas/index.js';
-import { sendComplaintEmail, sendEmail, simulatorRecipient } from './delivery.js';
+import { sendComplaintEmail, sendEmail } from './delivery.js';
 import { getComplaintDLQUrl, getComplaintQueueUrl, sqs } from './queue.js';
 import { deliveryFailureTemplate } from './templates/deliveryFailure.js';
+import { deliverySuccessTemplate } from './templates/deliverySuccess.js';
 
 const models = { DataCodeModel: dataCodeModel, BusSchema: busSchema, TrainSchema: trainSchema, ComplaintFormSchema: complaintFormSchema };
 const queuedComplaintSchema = Type.Object({
   pairKey: sendComplaintSchema.headers.properties['pair-key'],
   data: Type.Ref('ComplaintFormSchema'),
-  debug: Type.Optional(Type.Boolean()),
+  debug: sendComplaintSchema.body.properties.debug,
 });
 
 function parseComplaint(message: Message) {
@@ -28,12 +29,24 @@ export async function processComplaintMessage(message: Message, deadLetter: bool
   try {
     const { data, debug = false } = parseComplaint(message);
     if (deadLetter) {
-      await sendEmail(debug ? simulatorRecipient : data.email, deliveryFailureTemplate(message.MessageId, data.lang), {
+      await sendEmail(data.email, deliveryFailureTemplate(message.MessageId, data.lang, Boolean(debug)), {
         purpose: 'complaint_failure_notification',
         ...(debug ? { debug: 'true' } : {}),
       });
     } else {
       await sendComplaintEmail(data, debug);
+      // SES accepts the request before generating a bounce. Simulate a processing failure for SQS redrive.
+      if (debug === 'bounce') throw new Error('Simulated complaint delivery failure');
+      if (debug === true) {
+        try {
+          await sendEmail(data.email, deliverySuccessTemplate(message.MessageId, data.lang), {
+            purpose: 'complaint_success_notification',
+            debug: 'true',
+          });
+        } catch (error) {
+          log.error({ err: error, messageId: message.MessageId }, 'Failed to send complaint success notification');
+        }
+      }
     }
   } catch (error) {
     log.error({ err: error, messageId: message.MessageId, deadLetter }, 'Failed to process complaint');

@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import sinon from 'sinon';
 
-import { ses, simulatorRecipient } from '../src/jobs/complaints/delivery.js';
+import { ses, simulatorRecipient, simulatorRecipients } from '../src/jobs/complaints/delivery.js';
 import { clearComplaintQueueCache, sqs } from '../src/jobs/complaints/queue.js';
 import { processComplaintMessage, startComplaintWorkers } from '../src/jobs/complaints/worker.js';
 import { data } from './complaintFixture.js';
@@ -87,13 +87,48 @@ describe('complaint queue workers', () => {
     });
   }
 
-  it('routes debug complaints and failure notifications to the success simulator', async () => {
+  it('sends the debug complaint to the success simulator and notifies the submitter', async () => {
     const queued = message({ pairKey: randomUUID(), data, debug: true });
-    await processComplaintMessage(queued, false, log);
+    expect(await processComplaintMessage(queued, false, log)).to.equal(queued);
+    expect(sesSend.firstCall.args[0].input.Destination.ToAddresses).to.deep.equal([simulatorRecipient]);
+    const confirmation = sesSend.secondCall.args[0].input;
+    expect(confirmation.Destination.ToAddresses).to.deep.equal([data.email]);
+    expect(confirmation.EmailTags).to.deep.include({ Name: 'purpose', Value: 'complaint_success_notification' });
+    expect(confirmation.Content.Simple.Body.Text.Data).to.include(queued.MessageId);
     await processComplaintMessage(queued, true, log);
+    expect(sesSend.thirdCall.args[0].input.Destination.ToAddresses).to.deep.equal([data.email]);
     for (const call of sesSend.getCalls()) {
-      expect(call.args[0].input.Destination.ToAddresses).to.deep.equal([simulatorRecipient]);
       expect(call.args[0].input.EmailTags).to.deep.include({ Name: 'debug', Value: 'true' });
+    }
+  });
+
+  it('acknowledges a successful debug complaint even if its confirmation fails', async () => {
+    sesSend.onSecondCall().rejects(new Error('SES unavailable'));
+    const queued = message({ pairKey: randomUUID(), data, debug: true });
+    expect(await processComplaintMessage(queued, false, log)).to.equal(queued);
+    expect(log.error.calledOnce).to.equal(true);
+  });
+
+  it('leaves a bounce debug complaint for redrive and sends its DLQ notification to the submitter', async () => {
+    const queued = message({ pairKey: randomUUID(), data, debug: 'bounce' });
+    await expectFailure(processComplaintMessage(queued, false, log));
+    expect(sesSend.firstCall.args[0].input.Destination.ToAddresses).to.deep.equal([simulatorRecipients.bounce]);
+    expect(log.error.firstCall.args[0].err.message).to.equal('Simulated complaint delivery failure');
+    expect(await processComplaintMessage(queued, true, log)).to.equal(queued);
+    const notification = sesSend.secondCall.args[0].input;
+    expect(notification.Destination.ToAddresses).to.deep.equal([data.email]);
+    expect(notification.EmailTags).to.deep.include({ Name: 'purpose', Value: 'complaint_failure_notification' });
+  });
+
+  it('describes a debug DLQ notification as a delivery test', async () => {
+    const queued = message({ pairKey: randomUUID(), data: { ...data, lang: 'en' }, debug: 'bounce' });
+    await processComplaintMessage(queued, true, log);
+    const { Subject, Body } = sesSend.firstCall.args[0].input.Content.Simple;
+    expect(Subject.Data).to.equal('Open Bus complaint delivery test failed');
+    for (const part of [Body.Text, Body.Html]) {
+      expect(part.Data).to.include('simulated delivery test');
+      expect(part.Data).not.to.include('Ministry of Transport');
+      expect(part.Data).not.to.include('try submitting');
     }
   });
 

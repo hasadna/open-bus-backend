@@ -147,7 +147,10 @@ Both workers receive one message per poll, using 20-second long polling and 60-s
 
 Use a verified `SES_EMAIL` identity and configure `SES_COMPLAINTS_EMAIL`. `SES_CONFIGURATION_SET` is optional. Region and credentials use the AWS SDK's normal configuration; deployments can use an IAM role. In the SES sandbox, real recipients must also be verified.
 
-Requests with `debug: true` send both target emails and failure notifications to `success@simulator.amazonses.com`. A verified sender is still required. The delivery utility also exports `simulatorRecipients` for controlled SES tests. A simulated bounce occurs after SES acceptance and will not exercise SQS redrive; inject a failed SES API request to test that path.
+Use a valid complaint body and a verified SES sender for both debug modes. Both modes are available in production and send their respective notifications to the submitted `data.email`.
+
+- `"debug": true` sends the complaint to `success@simulator.amazonses.com`. After SES accepts it, the worker attempts a localized test confirmation to the submitted `data.email` and acknowledges the complaint even if the confirmation fails. If the complaint reaches the DLQ after send failures, the failure notification also goes to `data.email`.
+- `"debug": "bounce"` sends each attempt to `bounce@simulator.amazonses.com`. Since SES generates the bounce after accepting the request, the worker deliberately fails the attempt after SES accepts it. After five failed attempts, SQS moves the complaint to the DLQ, where the worker sends the failure notification to the submitted `data.email`.
 
 The application identity requires `ses:SendEmail` for the configured identity (and configuration set, if used), plus `sqs:GetQueueUrl`, `sqs:GetQueueAttributes`, `sqs:SendMessage`, `sqs:ReceiveMessage`, and `sqs:DeleteMessage` for the complaint queues. Provision both queues before starting the backend. The backend looks them up by name in its configured AWS account and region. Startup requires both queue URLs and a redrive policy on `complaints` that targets `complaints-dlq` with `maxReceiveCount` set to 5.
 
@@ -170,6 +173,6 @@ After applying, set the backend's `SES_CONFIGURATION_SET` to the Terraform outpu
 
 1. Before starting workers, review both existing queues. The previous implementation retained queued complaints after sending emails, so blindly consuming the backlog can resend already delivered complaints. Resolve the backlog explicitly; this change never purges queues automatically. Old messages without a debug flag are treated as production messages, so historical debug submissions require particular care.
 2. Grant the receive/delete IAM permissions above and deploy the server with its SES configuration. Update clients to treat `202 PROCESSING` as queue acceptance rather than completed delivery.
-3. Verify a debug submission and its queue deletion. In controlled staging, force SES API failures to verify five processing attempts, automatic DLQ redrive, and the user notification. Also fail the notification request and verify that its DLQ message is deleted.
+3. Submit with `"debug": true` to verify queue acknowledgement, then submit with `"debug": "bounce"` to verify five processing attempts, automatic DLQ redrive, and the notification to the submitted email address. Also fail the notification request and verify that its DLQ message is deleted.
 4. Remove any existing SNS webhook subscription and unused SNS event publishing configuration. `/webhook/ses` and `/webhook/resend` are unavailable, and `SES_SNS_TOPIC_ARN` is no longer used. Retire old Resend credentials if still present.
 5. Monitor application processing/deletion errors, queue age, and DLQ backlog. Because the DLQ worker consumes failed complaints, application logs are needed to monitor terminal notification failures.

@@ -102,10 +102,27 @@ describe('sendComplaint', () => {
   it('keeps different email addresses and debug modes separate', async () => {
     await submit();
     await submit(undefined, { data, debug: true });
+    expect((await submit(undefined, { data, debug: 'bounce' })).statusCode).to.equal(202);
+    await submit(undefined, { data, debug: 'bounce' });
     await submit(undefined, { data: { ...data, email: 'other@example.com' } });
-    expect(sendMessage.callCount).to.equal(3);
+    expect(sendMessage.callCount).to.equal(4);
     expect(JSON.parse(sendMessage.secondCall.args[0].input.MessageBody).debug).to.equal(true);
+    expect(JSON.parse(sendMessage.thirdCall.args[0].input.MessageBody).debug).to.equal('bounce');
     expect(sesSend.called).to.equal(false);
+  });
+
+  it('queues both debug modes in production', async () => {
+    const original = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+      for (const debug of [true, 'bounce']) {
+        expect((await submit(undefined, { data, debug })).statusCode).to.equal(202);
+      }
+      expect(sendMessage.args.map(([command]) => JSON.parse(command.input.MessageBody).debug)).to.deep.equal([true, 'bounce']);
+    } finally {
+      if (original === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = original;
+    }
   });
 
   it('shares the enqueue result between concurrent duplicates', async () => {

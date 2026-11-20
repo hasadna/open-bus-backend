@@ -27,16 +27,24 @@ const failureCopy = {
   },
 };
 
-export function deliveryFailureTemplate(messageId: string, language?: string) {
+const testFailureCopy = {
+  he: { subject: 'בדיקת שליחת הפנייה דרך Open Bus נכשלה', message: 'זוהי הודעת כשל מבדיקת שליחה מדומה.' },
+  en: { subject: 'Open Bus complaint delivery test failed', message: 'This failure notification is part of a simulated delivery test.' },
+  ru: { subject: 'Проверка отправки обращения Open Bus завершилась ошибкой', message: 'Это уведомление об ошибке в рамках тестовой отправки.' },
+  ar: { subject: 'فشل اختبار إرسال الشكوى عبر Open Bus', message: 'إشعار الفشل هذا جزء من اختبار إرسال محاكى.' },
+};
+
+export function deliveryFailureTemplate(messageId: string, language?: string, debug = false) {
   const lang = resolveLanguage(language);
-  const copy = failureCopy[lang];
+  const { reference, retry } = failureCopy[lang];
+  const { subject, message } = (debug ? testFailureCopy : failureCopy)[lang];
   return {
-    subject: copy.subject,
-    text: `${copy.message}\n${copy.retry}\n\n${copy.reference}: ${messageId}`,
+    subject,
+    text: `${message}${debug ? '' : `\n${retry}`}\n\n${reference}: ${messageId}`,
     html: layout(
       lang,
-      copy.subject,
-      `<p style="line-height:1.6">${copy.message}</p><p style="line-height:1.6">${copy.retry}</p><p>${copy.reference}: <span dir="ltr" style="unicode-bidi:isolate;display:inline-block">${escapeHtml(messageId)}</span></p>`,
+      subject,
+      `<p style="line-height:1.6">${message}</p>${debug ? '' : `<p style="line-height:1.6">${retry}</p>`}<p>${reference}: <span dir="ltr" style="unicode-bidi:isolate;display:inline-block">${escapeHtml(messageId)}</span></p>`,
     ),
   };
 }

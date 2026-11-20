@@ -44,8 +44,8 @@ export async function sendEmail(
   return result.MessageId;
 }
 
-export async function sendComplaintEmail(data: ComplaintData, debug = false) {
-  const recipient = debug ? simulatorRecipient : process.env.SES_COMPLAINTS_EMAIL;
+export async function sendComplaintEmail(data: ComplaintData, debug: boolean | 'bounce' = false) {
+  const recipient = debug ? simulatorRecipients[debug === 'bounce' ? 'bounce' : 'success'] : process.env.SES_COMPLAINTS_EMAIL;
   if (!recipient) throw new Error('Complaint email configuration is incomplete');
   return sendEmail(
     recipient,
