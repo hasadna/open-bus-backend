@@ -8,7 +8,7 @@ export const gracefulShutdown = async (fastify: FastifyInstance, signal: string)
     fastify.log.info('Server closed successfully');
     process.exit(0);
   } catch (error) {
-    fastify.log.error(error, 'Error during graceful shutdown:');
+    fastify.log.error(error, 'Error during graceful shutdown');
     process.exit(1);
   }
 };
@@ -20,7 +20,7 @@ export function setupGracefulShutdown(fastify: FastifyInstance) {
 
   // Handle uncaught exceptions
   process.on('uncaughtException', (error) => {
-    fastify.log.error(error, 'Uncaught Exception:');
+    fastify.log.error(error, 'Uncaught Exception');
     process.exit(1);
   });
 

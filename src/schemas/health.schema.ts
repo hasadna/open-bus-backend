@@ -7,7 +7,8 @@ export const healthCheckSchema = {
   description: 'Returns the health status of the API',
   response: {
     200: optionalObject({
-      status: Type.String({ examples: ['alive'] }),
+      status: Type.String({ examples: ['alive', 'degraded'] }),
+      details: Type.Optional(Type.Object({ complaintWorkers: Type.Literal('startup_failed') })),
       timestamp: Type.String({ format: 'date-time', examples: ['2025-07-01T13:09:05.570Z'] }),
       uptime: Type.Number({ examples: [23.1655282] }),
       version: Type.String({ examples: ['2.0.0'] }),

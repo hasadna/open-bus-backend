@@ -1,0 +1,116 @@
+import type { Message } from '@aws-sdk/client-sqs';
+import type { FastifyBaseLogger, FastifyInstance } from 'fastify';
+import { Consumer } from 'sqs-consumer';
+import { Type } from 'typebox';
+import { Value } from 'typebox/value';
+
+import { busSchema, complaintFormSchema, sendComplaintSchema, trainSchema } from '../../schemas/complaints.schema.js';
+import { dataCodeModel } from '../../schemas/index.js';
+import { sendComplaintEmail, sendEmail } from './delivery.js';
+import { getComplaintDLQUrl, getComplaintQueueUrl, sqs } from './queue.js';
+import { deliveryFailureTemplate } from './templates/deliveryFailure.js';
+
+const models = { DataCodeModel: dataCodeModel, BusSchema: busSchema, TrainSchema: trainSchema, ComplaintFormSchema: complaintFormSchema };
+const queuedComplaintSchema = Type.Object({
+  pairKey: sendComplaintSchema.headers.properties['pair-key'],
+  data: Type.Ref('ComplaintFormSchema'),
+  debug: sendComplaintSchema.body.properties.debug,
+});
+
+function parseComplaint(message: Message) {
+  const payload: unknown = JSON.parse(message.Body ?? '');
+  if (!Value.Check(models, queuedComplaintSchema, payload)) throw new Error('Invalid queued complaint');
+  return payload;
+}
+
+export async function processComplaintMessage(message: Message, deadLetter: boolean, log: FastifyBaseLogger) {
+  if (!message.ReceiptHandle || !message.MessageId) throw new Error('SQS message omitted receipt handle or message ID');
+  try {
+    const { data, debug = false } = parseComplaint(message);
+    const context = { messageId: message.MessageId, deadLetter, debug };
+    log.info(context, 'Sending complaint email through SES');
+    if (deadLetter) {
+      const sesMessageId = await sendEmail(data.email, deliveryFailureTemplate(message.MessageId, data.lang, Boolean(debug)), {
+        purpose: 'complaint_failure_notification',
+        ...(debug ? { debug: 'true' } : {}),
+      });
+      log.info({ ...context, sesMessageId }, 'SES accepted complaint failure notification');
+    } else {
+      const sesMessageId = await sendComplaintEmail(data, debug);
+      log.info({ ...context, sesMessageId }, 'SES accepted complaint email');
+      // SES accepts the request before generating a bounce. Leave the message unacknowledged for SQS redrive.
+      if (debug === 'bounce') {
+        log.info(context, 'Leaving bounce simulation message for SQS redrive');
+        return undefined;
+      }
+    }
+  } catch (error) {
+    log.error({ err: error, messageId: message.MessageId, deadLetter }, 'Failed to process complaint');
+    if (!deadLetter) throw error;
+    // Notification attempts are terminal, including invalid payloads and SES failures.
+  }
+  return message;
+}
+
+function createConsumer(queueUrl: string, deadLetter: boolean, log: FastifyBaseLogger) {
+  const consumer = Consumer.create({
+    queueUrl,
+    sqs,
+    batchSize: 1,
+    waitTimeSeconds: 20,
+    visibilityTimeout: 60,
+    pollingWaitTimeMs: 5_000,
+    authenticationErrorTimeout: 5_000,
+    pollingCompleteWaitTimeMs: 45_000,
+    strictReturn: true,
+    handleMessage: (message) => processComplaintMessage(message, deadLetter, log),
+  });
+  consumer.on('message_processed', (message) => {
+    log.info({ messageId: message.MessageId, deadLetter }, 'SQS acknowledged complaint message');
+  });
+  consumer.on('stopped', () => {
+    log.info({ deadLetter }, 'Complaint queue worker stopped');
+  });
+  consumer.on('started', () => {
+    log.info({ deadLetter }, 'Complaint queue worker started');
+  });
+  for (const event of ['error', 'processing_error', 'timeout_error'] as const) {
+    consumer.on(event, (...[error, message]) => {
+      log.error({ err: error, messageId: Array.isArray(message) ? undefined : message?.MessageId, deadLetter }, 'Complaint queue worker error');
+    });
+  }
+  consumer.on('waiting_for_polling_to_complete_timeout_exceeded', () => {
+    log.error({ deadLetter }, 'Complaint worker shutdown timed out');
+  });
+  return consumer;
+}
+
+// Explicit startup keeps route registration and tests free of background AWS calls.
+export async function startComplaintWorkers(fastify: FastifyInstance) {
+  const consumers: Consumer[] = [];
+  let closing = false;
+  fastify.addHook('onClose', async () => {
+    closing = true;
+    await Promise.all(
+      consumers.map(
+        (consumer) =>
+          new Promise<void>((resolve) => {
+            consumer.once('stopped', () => resolve());
+            // Aborting would also cancel acknowledgements for messages already being processed.
+            consumer.stop();
+          }),
+      ),
+    );
+  });
+
+  const queueUrl = await getComplaintQueueUrl();
+  const dlqUrl = await getComplaintDLQUrl();
+  if (closing) return consumers;
+
+  const queueConsumers = [createConsumer(queueUrl, false, fastify.log), createConsumer(dlqUrl, true, fastify.log)];
+  for (const consumer of queueConsumers) {
+    consumer.start();
+    consumers.push(consumer);
+  }
+  return consumers;
+}
