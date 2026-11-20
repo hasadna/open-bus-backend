@@ -9,12 +9,20 @@ export const swaggerConfig: SwaggerOptions = {
       title: 'Open Bus Backend API',
       version: process.env.npm_package_version || '0.0.0',
     },
-    externalDocs: { url: 'https://github.com/hasadna/open-bus-backend', description: 'Github' },
+    externalDocs: {
+      url: 'https://github.com/hasadna/open-bus-backend',
+      description: 'Github',
+    },
     tags: [
       { name: 'Complaints', description: 'Complaint submission to government' },
       { name: 'Health', description: 'Health check endpoints' },
       { name: 'Issues', description: 'GitHub issue management' },
     ],
+  },
+  refResolver: {
+    buildLocalReference(schema, _baseUri, _fragment, index) {
+      return typeof schema.$id === 'string' && schema.$id.length > 0 ? schema.$id : `def-${index}`;
+    },
   },
   transform: ({ schema, url }) => ({ schema, url }),
   transformObject: (document) => {

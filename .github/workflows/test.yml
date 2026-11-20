@@ -66,18 +66,19 @@ jobs:
         run: npx mocha --reporter json --reporter-option output=reports/test-results.json
 
       - name: Upload test report
+        if: ${{ !cancelled() && hashFiles('reports/test-results.json') != '' }}
         uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: 'reports/test-results.json'
 
       - uses: dorny/test-reporter@v3
-        if: always()
+        if: ${{ !cancelled() && hashFiles('reports/test-results.json') != '' }}
         with:
-          artifact: test-results
           name: Mocha Tests
-          path: 'test-results.json'
+          path: reports/test-results.json
           reporter: mocha-json
+          use-actions-summary: true
 
   comment-pr:
     name: Comment on PR
@@ -91,7 +92,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           header: test-results
           message: |
-            **Test Results:** [Open Results!](https://github.com/hasadna/open-bus-backend/actions/runs/${{ github.run_id }}#user-content-r0)
+            **Test Results:** [Open Results!](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
   coverage-test:
     name: Test Whit Coverage
