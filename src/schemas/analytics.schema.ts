@@ -1,3 +1,4 @@
+import type { ClickHouseColumns } from './clickhouse-columns.js';
 import { Type } from './index.js';
 import { strideValidationResponse } from './stride.schema.js';
 
@@ -14,7 +15,11 @@ export const analyticsModels = [
       total_routes: Type.Integer({ title: 'Total Routes' }),
       total_planned_rides: Type.Integer({ title: 'Total Planned Rides' }),
       total_actual_rides: Type.Integer({ title: 'Total Actual Rides' }),
-    },
+    } satisfies ClickHouseColumns<
+      'gtfs_rides_agg_by_hour' | 'gtfs_route',
+      {},
+      'day_of_week' | 'total_routes' | 'total_planned_rides' | 'total_actual_rides'
+    >,
     { title: 'GtfsRidesAggGroupByPydanticModel', $id: 'GtfsRidesAggGroupByPydanticModel' },
   ),
   Type.Object(
@@ -24,7 +29,7 @@ export const analyticsModels = [
       num_planned_rides: Type.Integer({ title: 'Num Planned Rides' }),
       num_actual_rides: Type.Integer({ title: 'Num Actual Rides' }),
       operator_ref: Type.Integer({ title: 'Operator Ref' }),
-    },
+    } satisfies ClickHouseColumns<'gtfs_rides_agg_by_hour' | 'gtfs_route'>,
     { title: 'GtfsRidesAggPydanticModel', $id: 'GtfsRidesAggPydanticModel' },
   ),
   Type.Object(
@@ -32,7 +37,7 @@ export const analyticsModels = [
       planned_start_time: Type.Optional(Type.String({ title: 'Planned Start Time', format: 'date-time' })),
       actual_start_time: Type.Optional(Type.String({ title: 'Actual Start Time', format: 'date-time' })),
       gtfs_ride_id: Type.Optional(Type.Integer({ title: 'Gtfs Ride Id' })),
-    },
+    } satisfies ClickHouseColumns<'siri_ride' | 'gtfs_ride', {}, 'planned_start_time' | 'actual_start_time'>,
     { title: 'RideExecutionPydanticModel', $id: 'RideExecutionPydanticModel' },
   ),
   Type.Object(
@@ -46,7 +51,7 @@ export const analyticsModels = [
       gtfs_line_ref: Type.Optional(Type.String({ title: 'Gtfs Line Ref' })),
       gtfs_line_start_time: Type.Optional(Type.String({ title: 'Gtfs Line Start Time', format: 'date-time' })),
       gtfs_ride_id: Type.Optional(Type.String({ title: 'Gtfs Ride Id' })),
-    },
+    } satisfies ClickHouseColumns<'gtfs_stop' | 'gtfs_ride_stop', {}, 'planned_arrival_time' | 'gtfs_line_ref' | 'gtfs_line_start_time'>,
     { title: 'RouteTimetablePydanticModel', $id: 'RouteTimetablePydanticModel' },
   ),
   Type.Object(
@@ -120,7 +125,7 @@ export const listRouteTimetableSchema = {
       ),
     }),
     response: {
-      200: Type.Array(Type.Ref('RouteTimetablePydanticModel'), {
+      200: Type.Union([Type.Array(Type.Ref('RouteTimetablePydanticModel')), Type.Integer()], {
         title: 'Response List  Route Timetable List Get',
         description: 'Successful Response',
       }),
@@ -172,7 +177,7 @@ export const listStopArrivalsSchema = {
       ),
     }),
     response: {
-      200: Type.Array(Type.Ref('StopArrivalPydanticModel'), {
+      200: Type.Union([Type.Array(Type.Ref('StopArrivalPydanticModel')), Type.Integer()], {
         title: 'Response List  Stop Arrivals List Get',
         description: 'Successful Response',
       }),
@@ -233,7 +238,7 @@ export const listRidesExecutionSchema = {
       }),
     }),
     response: {
-      200: Type.Array(Type.Ref('RideExecutionPydanticModel'), {
+      200: Type.Union([Type.Array(Type.Ref('RideExecutionPydanticModel')), Type.Integer()], {
         title: 'Response List  Rides Execution List Get',
         description: 'Successful Response',
       }),
@@ -325,7 +330,7 @@ export const listGtfsRidesAggSchema = {
       ),
     }),
     response: {
-      200: Type.Array(Type.Ref('GtfsRidesAggPydanticModel'), {
+      200: Type.Union([Type.Array(Type.Ref('GtfsRidesAggPydanticModel')), Type.Integer()], {
         title: 'Response List  Gtfs Rides Agg List Get',
         description: 'Successful Response',
       }),

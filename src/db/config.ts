@@ -11,6 +11,6 @@ export function getConnectionConfig() {
     url: required('CLICKHOUSE_URL'),
     username: required('CLICKHOUSE_USER'),
     password: required('CLICKHOUSE_PASSWORD', { allowEmpty: true }),
-    database: required('CLICKHOUSE_DB'),
+    database: process.env.CLICKHOUSE_DB === undefined ? required('CLICKHOUSE_DATABASE') : required('CLICKHOUSE_DB'),
   };
 }

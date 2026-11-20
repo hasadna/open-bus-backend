@@ -1,3 +1,4 @@
+import type { ClickHouseColumns } from './clickhouse-columns.js';
 import { Type } from './index.js';
 import { strideValidationResponse } from './stride.schema.js';
 
@@ -7,7 +8,7 @@ export const gtfsModels = [
       date: Type.String({ title: 'Date', format: 'date' }),
       operator_ref: Type.Integer({ title: 'Operator Ref' }),
       agency_name: Type.String({ title: 'Agency Name' }),
-    },
+    } satisfies ClickHouseColumns<'gtfs_route'>,
     { title: 'GtfsAgencyPydanticModel', $id: 'GtfsAgencyPydanticModel' },
   ),
   Type.Object(
@@ -17,7 +18,7 @@ export const gtfsModels = [
       journey_ref: Type.Optional(Type.String({ title: 'Journey Ref' })),
       start_time: Type.Optional(Type.String({ title: 'Start Time', format: 'date-time' })),
       end_time: Type.Optional(Type.String({ title: 'End Time', format: 'date-time' })),
-    },
+    } satisfies ClickHouseColumns<'gtfs_ride'>,
     { title: 'GtfsRidePydanticModel', $id: 'GtfsRidePydanticModel' },
   ),
   Type.Object(
@@ -31,7 +32,7 @@ export const gtfsModels = [
       pickup_type: Type.Optional(Type.Integer({ title: 'Pickup Type' })),
       drop_off_type: Type.Optional(Type.Integer({ title: 'Drop Off Type' })),
       shape_dist_traveled: Type.Optional(Type.Integer({ title: 'Shape Dist Traveled' })),
-    },
+    } satisfies ClickHouseColumns<'gtfs_ride_stop'>,
     { title: 'GtfsRideStopPydanticModel', $id: 'GtfsRideStopPydanticModel' },
   ),
   Type.Object(
@@ -65,7 +66,7 @@ export const gtfsModels = [
       gtfs_route__route_alternative: Type.Optional(Type.String({ title: 'Gtfs Route  Route Alternative' })),
       gtfs_route__agency_name: Type.Optional(Type.String({ title: 'Gtfs Route  Agency Name' })),
       gtfs_route__route_type: Type.Optional(Type.String({ title: 'Gtfs Route  Route Type' })),
-    },
+    } satisfies ClickHouseColumns<'gtfs_ride_stop', { gtfs_ride: 'gtfs_ride'; gtfs_stop: 'gtfs_stop'; gtfs_route: 'gtfs_route' }>,
     { title: 'GtfsRideStopWithRelatedPydanticModel', $id: 'GtfsRideStopWithRelatedPydanticModel' },
   ),
   Type.Object(
@@ -85,7 +86,7 @@ export const gtfsModels = [
       gtfs_route__route_alternative: Type.Optional(Type.String({ title: 'Gtfs Route  Route Alternative' })),
       gtfs_route__agency_name: Type.Optional(Type.String({ title: 'Gtfs Route  Agency Name' })),
       gtfs_route__route_type: Type.Optional(Type.String({ title: 'Gtfs Route  Route Type' })),
-    },
+    } satisfies ClickHouseColumns<'gtfs_ride', { gtfs_route: 'gtfs_route' }>,
     { title: 'GtfsRideWithRelatedPydanticModel', $id: 'GtfsRideWithRelatedPydanticModel' },
   ),
   Type.Object(
@@ -101,7 +102,7 @@ export const gtfsModels = [
       route_alternative: Type.Optional(Type.String({ title: 'Route Alternative' })),
       agency_name: Type.Optional(Type.String({ title: 'Agency Name' })),
       route_type: Type.Optional(Type.String({ title: 'Route Type' })),
-    },
+    } satisfies ClickHouseColumns<'gtfs_route'>,
     { title: 'GtfsRoutePydanticModel', $id: 'GtfsRoutePydanticModel' },
   ),
   Type.Object(
@@ -113,7 +114,7 @@ export const gtfsModels = [
       lon: Type.Optional(Type.Number({ title: 'Lon' })),
       name: Type.Optional(Type.String({ title: 'Name' })),
       city: Type.Optional(Type.String({ title: 'City' })),
-    },
+    } satisfies ClickHouseColumns<'gtfs_stop'>,
     { title: 'GtfsStopPydanticModel', $id: 'GtfsStopPydanticModel' },
   ),
 ];
@@ -210,7 +211,7 @@ export const listGtfsRoutesSchema = {
       ),
     }),
     response: {
-      200: Type.Array(Type.Ref('GtfsRoutePydanticModel'), {
+      200: Type.Union([Type.Array(Type.Ref('GtfsRoutePydanticModel')), Type.Integer()], {
         title: 'Response List  Gtfs Routes List Get',
         description: 'Successful Response',
       }),
@@ -285,7 +286,7 @@ export const listGtfsStopsSchema = {
       city: Type.Optional(Type.String({ title: 'City', description: '\n\nFilter by city. Only return items which exactly match given string.' })),
     }),
     response: {
-      200: Type.Array(Type.Ref('GtfsStopPydanticModel'), {
+      200: Type.Union([Type.Array(Type.Ref('GtfsStopPydanticModel')), Type.Integer()], {
         title: 'Response List  Gtfs Stops List Get',
         description: 'Successful Response',
       }),
@@ -443,7 +444,7 @@ export const listGtfsRidesSchema = {
       ),
     }),
     response: {
-      200: Type.Array(Type.Ref('GtfsRideWithRelatedPydanticModel'), {
+      200: Type.Union([Type.Array(Type.Ref('GtfsRideWithRelatedPydanticModel')), Type.Integer()], {
         title: 'Response List  Gtfs Rides List Get',
         description: 'Successful Response',
       }),
@@ -704,7 +705,7 @@ export const listGtfsRideStopsSchema = {
       ),
     }),
     response: {
-      200: Type.Array(Type.Ref('GtfsRideStopWithRelatedPydanticModel'), {
+      200: Type.Union([Type.Array(Type.Ref('GtfsRideStopWithRelatedPydanticModel')), Type.Integer()], {
         title: 'Response List  Gtfs Ride Stops List Get',
         description: 'Successful Response',
       }),

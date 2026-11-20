@@ -1,3 +1,4 @@
+import type { ClickHouseColumns } from './clickhouse-columns.js';
 import { Type } from './index.js';
 import { strideValidationResponse } from './stride.schema.js';
 
@@ -17,7 +18,7 @@ export const siriModels = [
       journey_gtfs_ride_id: Type.Optional(Type.Integer({ title: 'Journey Gtfs Ride Id' })),
       route_gtfs_ride_id: Type.Optional(Type.Integer({ title: 'Route Gtfs Ride Id' })),
       gtfs_ride_id: Type.Optional(Type.Integer({ title: 'Gtfs Ride Id' })),
-    },
+    } satisfies ClickHouseColumns<'siri_ride'>,
     { title: 'SiriRidePydanticModel', $id: 'SiriRidePydanticModel' },
   ),
   Type.Object(
@@ -28,7 +29,7 @@ export const siriModels = [
       order: Type.Integer({ title: 'Order' }),
       gtfs_stop_id: Type.Optional(Type.Integer({ title: 'Gtfs Stop Id' })),
       nearest_siri_vehicle_location_id: Type.Optional(Type.Integer({ title: 'Nearest Siri Vehicle Location Id' })),
-    },
+    } satisfies ClickHouseColumns<'siri_ride_stop'>,
     { title: 'SiriRideStopPydanticModel', $id: 'SiriRideStopPydanticModel' },
   ),
   Type.Object(
@@ -97,7 +98,18 @@ export const siriModels = [
       gtfs_route__route_alternative: Type.Optional(Type.String({ title: 'Gtfs Route  Route Alternative' })),
       gtfs_route__agency_name: Type.Optional(Type.String({ title: 'Gtfs Route  Agency Name' })),
       gtfs_route__route_type: Type.Optional(Type.String({ title: 'Gtfs Route  Route Type' })),
-    },
+    } satisfies ClickHouseColumns<
+      'siri_ride_stop',
+      {
+        siri_stop: 'siri_stop';
+        siri_ride: 'siri_ride';
+        gtfs_stop: 'gtfs_stop';
+        nearest_siri_vehicle_location: 'siri_vehicle_location';
+        gtfs_ride_stop: 'gtfs_ride_stop';
+        gtfs_ride: 'gtfs_ride';
+        gtfs_route: 'gtfs_route';
+      }
+    >,
     { title: 'SiriRideStopWithRelatedPydanticModel', $id: 'SiriRideStopWithRelatedPydanticModel' },
   ),
   Type.Object(
@@ -131,7 +143,7 @@ export const siriModels = [
       gtfs_route__route_alternative: Type.Optional(Type.String({ title: 'Gtfs Route  Route Alternative' })),
       gtfs_route__agency_name: Type.Optional(Type.String({ title: 'Gtfs Route  Agency Name' })),
       gtfs_route__route_type: Type.Optional(Type.String({ title: 'Gtfs Route  Route Type' })),
-    },
+    } satisfies ClickHouseColumns<'siri_ride', { siri_route: 'siri_route'; gtfs_ride: 'gtfs_ride'; gtfs_route: 'gtfs_route' }>,
     { title: 'SiriRideWithRelatedPydanticModel', $id: 'SiriRideWithRelatedPydanticModel' },
   ),
   Type.Object(
@@ -139,7 +151,7 @@ export const siriModels = [
       id: Type.Integer({ title: 'Id' }),
       line_ref: Type.Integer({ title: 'Line Ref' }),
       operator_ref: Type.Integer({ title: 'Operator Ref' }),
-    },
+    } satisfies ClickHouseColumns<'siri_route'>,
     { title: 'SiriRoutePydanticModel', $id: 'SiriRoutePydanticModel' },
   ),
   Type.Enum(['pending', 'loading', 'loaded', 'error', 'deleted'], {
@@ -163,14 +175,14 @@ export const siriModels = [
       num_added_siri_stops: Type.Optional(Type.Integer({ title: 'Num Added Siri Stops' })),
       last_heartbeat: Type.Optional(Type.String({ title: 'Last Heartbeat', format: 'date-time' })),
       created_by: Type.Optional(Type.String({ title: 'Created By' })),
-    },
+    } satisfies ClickHouseColumns<'siri_snapshot'>,
     { title: 'SiriSnapshotPydanticModel', $id: 'SiriSnapshotPydanticModel' },
   ),
   Type.Object(
     {
       id: Type.Integer({ title: 'Id' }),
       code: Type.Integer({ title: 'Code' }),
-    },
+    } satisfies ClickHouseColumns<'siri_stop'>,
     { title: 'SiriStopPydanticModel', $id: 'SiriStopPydanticModel' },
   ),
   Type.Object(
@@ -185,7 +197,7 @@ export const siriModels = [
       velocity: Type.Integer({ title: 'Velocity' }),
       distance_from_journey_start: Type.Integer({ title: 'Distance From Journey Start' }),
       distance_from_siri_ride_stop_meters: Type.Optional(Type.Integer({ title: 'Distance From Siri Ride Stop Meters' })),
-    },
+    } satisfies ClickHouseColumns<'siri_vehicle_location'>,
     { title: 'SiriVehicleLocationPydanticModel', $id: 'SiriVehicleLocationPydanticModel' },
   ),
   Type.Object(
@@ -212,7 +224,7 @@ export const siriModels = [
       siri_ride__last_vehicle_location_id: Type.Optional(Type.Integer({ title: 'Siri Ride  Last Vehicle Location Id' })),
       siri_ride__duration_minutes: Type.Optional(Type.Integer({ title: 'Siri Ride  Duration Minutes' })),
       siri_ride__gtfs_ride_id: Type.Optional(Type.Integer({ title: 'Siri Ride  Gtfs Ride Id' })),
-    },
+    } satisfies ClickHouseColumns<'siri_vehicle_location', { siri_snapshot: 'siri_snapshot'; siri_route: 'siri_route'; siri_ride: 'siri_ride' }>,
     { title: 'SiriVehicleLocationWithRelatedPydanticModel', $id: 'SiriVehicleLocationWithRelatedPydanticModel' },
   ),
 ];
@@ -259,7 +271,7 @@ export const listSiriRoutesSchema = {
       ),
     }),
     response: {
-      200: Type.Array(Type.Ref('SiriRoutePydanticModel'), {
+      200: Type.Union([Type.Array(Type.Ref('SiriRoutePydanticModel')), Type.Integer()], {
         title: 'Response List  Siri Routes List Get',
         description: 'Successful Response',
       }),
@@ -453,7 +465,7 @@ export const listSiriRidesSchema = {
       ),
     }),
     response: {
-      200: Type.Array(Type.Ref('SiriRideWithRelatedPydanticModel'), {
+      200: Type.Union([Type.Array(Type.Ref('SiriRideWithRelatedPydanticModel')), Type.Integer()], {
         title: 'Response List  Siri Rides List Get',
         description: 'Successful Response',
       }),
@@ -518,7 +530,7 @@ export const listSiriStopsSchema = {
       ),
     }),
     response: {
-      200: Type.Array(Type.Ref('SiriStopPydanticModel'), {
+      200: Type.Union([Type.Array(Type.Ref('SiriStopPydanticModel')), Type.Integer()], {
         title: 'Response List  Siri Stops List Get',
         description: 'Successful Response',
       }),
@@ -692,7 +704,7 @@ export const listSiriRideStopsSchema = {
       ),
     }),
     response: {
-      200: Type.Array(Type.Ref('SiriRideStopWithRelatedPydanticModel'), {
+      200: Type.Union([Type.Array(Type.Ref('SiriRideStopWithRelatedPydanticModel')), Type.Integer()], {
         title: 'Response List  Siri Ride Stops List Get',
         description: 'Successful Response',
       }),
@@ -861,7 +873,7 @@ export const listSiriVehicleLocationsSchema = {
       ),
     }),
     response: {
-      200: Type.Array(Type.Ref('SiriVehicleLocationWithRelatedPydanticModel'), {
+      200: Type.Union([Type.Array(Type.Ref('SiriVehicleLocationWithRelatedPydanticModel')), Type.Integer()], {
         title: 'Response List  Siri Vehicle Locations List Get',
         description: 'Successful Response',
       }),
@@ -931,7 +943,7 @@ export const listSiriSnapshotsSchema = {
       ),
     }),
     response: {
-      200: Type.Array(Type.Ref('SiriSnapshotPydanticModel'), {
+      200: Type.Union([Type.Array(Type.Ref('SiriSnapshotPydanticModel')), Type.Integer()], {
         title: 'Response List  Siri Snapshots List Get',
         description: 'Successful Response',
       }),
