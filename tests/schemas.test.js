@@ -24,7 +24,8 @@ describe('TypeBox route schemas', () => {
         expect(complaint.properties[transport].$ref).to.equal(`#/components/schemas/${modelName}`);
         expect(schemas).to.have.property(modelName);
       }
-      expect(schemas).to.have.property('GithubIssueModel');
+      expect(document.components.schemas).to.have.property('ComplaintFormSchema');
+      expect(document.components.schemas).to.have.property('GithubIssueModel');
       expect(document.paths['/'].get.operationId).to.equal('healthGet');
       expect(document.paths['/issues/create'].post.operationId).to.equal('issuesCreatePost');
       expect(document.paths['/complaints/send'].post.operationId).to.equal('complaintsSendPost');
