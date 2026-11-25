@@ -1,5 +1,6 @@
 import type { Message } from '@aws-sdk/client-sqs';
 import type { FastifyBaseLogger, FastifyInstance } from 'fastify';
+import { LRUCache } from 'lru-cache';
 import { Consumer } from 'sqs-consumer';
 import { Type } from 'typebox';
 import { Value } from 'typebox/value';
@@ -23,8 +24,19 @@ function parseComplaint(message: Message) {
   return payload;
 }
 
-export async function processComplaintMessage(message: Message, deadLetter: boolean, log: FastifyBaseLogger) {
+type AcceptedComplaints = LRUCache<string, 'accepted' | 'bounce'>;
+
+export async function processComplaintMessage(
+  message: Message,
+  deadLetter: boolean,
+  log: FastifyBaseLogger,
+  acceptedComplaints?: AcceptedComplaints,
+) {
   if (!message.ReceiptHandle || !message.MessageId) throw new Error('SQS message omitted receipt handle or message ID');
+  const previous = acceptedComplaints?.get(message.MessageId);
+  if (previous === 'accepted') return message;
+  if (previous === 'bounce' && !deadLetter) return undefined;
+
   try {
     const { data, debug = false } = parseComplaint(message);
     const context = { messageId: message.MessageId, deadLetter, debug };
@@ -37,6 +49,8 @@ export async function processComplaintMessage(message: Message, deadLetter: bool
       log.info({ ...context, sesMessageId }, 'SES accepted complaint failure notification');
     } else {
       const sesMessageId = await sendComplaintEmail(data, debug);
+      // Record SES acceptance before sqs-consumer attempts deletion.
+      acceptedComplaints?.set(message.MessageId, debug === 'bounce' ? 'bounce' : 'accepted');
       log.info({ ...context, sesMessageId }, 'SES accepted complaint email');
       // SES accepts the request before generating a bounce. Leave the message unacknowledged for SQS redrive.
       if (debug === 'bounce') {
@@ -52,7 +66,7 @@ export async function processComplaintMessage(message: Message, deadLetter: bool
   return message;
 }
 
-function createConsumer(queueUrl: string, deadLetter: boolean, log: FastifyBaseLogger) {
+function createConsumer(queueUrl: string, deadLetter: boolean, log: FastifyBaseLogger, acceptedComplaints: AcceptedComplaints) {
   const consumer = Consumer.create({
     queueUrl,
     sqs,
@@ -63,7 +77,7 @@ function createConsumer(queueUrl: string, deadLetter: boolean, log: FastifyBaseL
     authenticationErrorTimeout: 5_000,
     pollingCompleteWaitTimeMs: 45_000,
     strictReturn: true,
-    handleMessage: (message) => processComplaintMessage(message, deadLetter, log),
+    handleMessage: (message) => processComplaintMessage(message, deadLetter, log, acceptedComplaints),
   });
   consumer.on('message_processed', (message) => {
     log.info({ messageId: message.MessageId, deadLetter }, 'SQS acknowledged complaint message');
@@ -107,7 +121,11 @@ export async function startComplaintWorkers(fastify: FastifyInstance) {
   const dlqUrl = await getComplaintDLQUrl();
   if (closing) return consumers;
 
-  const queueConsumers = [createConsumer(queueUrl, false, fastify.log), createConsumer(dlqUrl, true, fastify.log)];
+  const acceptedComplaints: AcceptedComplaints = new LRUCache({ max: 10_000 });
+  const queueConsumers = [
+    createConsumer(queueUrl, false, fastify.log, acceptedComplaints),
+    createConsumer(dlqUrl, true, fastify.log, acceptedComplaints),
+  ];
   for (const consumer of queueConsumers) {
     consumer.start();
     consumers.push(consumer);

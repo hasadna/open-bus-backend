@@ -1,7 +1,8 @@
-import { SendEmailCommand } from '@aws-sdk/client-sesv2';
+import { SendEmailCommand, TooManyRequestsException } from '@aws-sdk/client-sesv2';
 import { DeleteMessageCommand, GetQueueAttributesCommand, GetQueueUrlCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
 import { expect } from 'chai';
 import f from 'fastify';
+import { LRUCache } from 'lru-cache';
 import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import sinon from 'sinon';
@@ -37,7 +38,7 @@ describe('complaint queue workers', () => {
       const Attributes =
         command.input.QueueUrl === 'dlq'
           ? { QueueArn: dlqArn }
-          : { RedrivePolicy: JSON.stringify({ deadLetterTargetArn: dlqArn, maxReceiveCount: 1 }) };
+          : { RedrivePolicy: JSON.stringify({ deadLetterTargetArn: dlqArn, maxReceiveCount: 5 }) };
       return Promise.resolve({ Attributes });
     });
     sesSend = sinon.stub(ses, 'send').resolves({ MessageId: 'email-123' });
@@ -69,6 +70,34 @@ describe('complaint queue workers', () => {
     process.env.SES_CONFIGURATION_SET = 'complaints';
     await processComplaintMessage(message(), false, log);
     expect(sesSend.firstCall.args[0].input.ConfigurationSetName).to.equal('complaints');
+  });
+
+  it('retries explicit SES throttling within the original deadline', async () => {
+    sesSend.onFirstCall().rejects(new TooManyRequestsException({ $metadata: { httpStatusCode: 429 } }));
+    const queued = message();
+    expect(await processComplaintMessage(queued, false, log)).to.equal(queued);
+    expect(sesSend.calledTwice).to.equal(true);
+    expect(sesSend.secondCall.args[1].abortSignal).to.equal(sesSend.firstCall.args[1].abortSignal);
+  });
+
+  it('leaves an uncertain SES send for SQS without retrying it in the same receive', async () => {
+    expect(await ses.config.maxAttempts()).to.equal(1);
+    sesSend.onFirstCall().rejects(Object.assign(new Error('Connection reset'), { code: 'ECONNRESET' }));
+    await expectFailure(processComplaintMessage(message(), false, log));
+    expect(sesSend.calledOnce).to.equal(true);
+  });
+
+  it('retries a failed send and skips SES on redelivery after acceptance', async () => {
+    const queued = message();
+    const accepted = new LRUCache({ max: 10 });
+    sesSend.onFirstCall().rejects(new Error('SES unavailable'));
+    await expectFailure(processComplaintMessage(queued, false, log, accepted));
+    expect(await processComplaintMessage(queued, false, log, accepted)).to.equal(queued);
+
+    const redelivered = { ...queued, ReceiptHandle: 'new-receipt' };
+    expect(await processComplaintMessage(redelivered, false, log, accepted)).to.equal(redelivered);
+    expect(await processComplaintMessage(redelivered, true, log, accepted)).to.equal(redelivered);
+    expect(sesSend.callCount).to.equal(2);
   });
 
   for (const lang of ['he', 'en', 'ru', 'ar']) {
@@ -109,10 +138,13 @@ describe('complaint queue workers', () => {
 
   it('leaves a bounce debug complaint for redrive and sends its DLQ notification to the submitter', async () => {
     const queued = message({ pairKey: randomUUID(), data, debug: 'bounce' });
-    expect(await processComplaintMessage(queued, false, log)).to.equal(undefined);
+    const accepted = new LRUCache({ max: 10 });
+    expect(await processComplaintMessage(queued, false, log, accepted)).to.equal(undefined);
+    expect(await processComplaintMessage(queued, false, log, accepted)).to.equal(undefined);
+    expect(sesSend.calledOnce).to.equal(true);
     expect(sesSend.firstCall.args[0].input.Destination.ToAddresses).to.deep.equal([simulatorRecipients.bounce]);
     expect(log.error.called).to.equal(false);
-    expect(await processComplaintMessage(queued, true, log)).to.equal(queued);
+    expect(await processComplaintMessage(queued, true, log, accepted)).to.equal(queued);
     const notification = sesSend.secondCall.args[0].input;
     expect(notification.Destination.ToAddresses).to.deep.equal([data.email]);
     expect(notification.EmailTags).to.deep.include({ Name: 'purpose', Value: 'complaint_failure_notification' });

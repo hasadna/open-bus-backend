@@ -2,27 +2,23 @@ import { escapeHtml, layout, resolveLanguage } from './shared.js';
 
 const failureCopy = {
   he: {
-    subject: 'שליחת הפנייה דרך Open Bus נכשלה',
-    message: 'לא הצלחנו למסור את הפנייה שלך למשרד התחבורה.',
-    retry: 'נא לנסות להגיש את הפנייה שוב.',
+    subject: 'מסירת הפנייה דרך Open Bus לא אומתה',
+    message: 'לא הצלחנו לאמת שהפנייה שלך נמסרה למשרד התחבורה.',
     reference: 'מזהה הפנייה',
   },
   en: {
-    subject: 'Open Bus complaint delivery failed',
-    message: 'We could not deliver your complaint to the Ministry of Transport.',
-    retry: 'Please try submitting your complaint again.',
+    subject: 'Open Bus complaint delivery could not be confirmed',
+    message: 'We could not confirm that your complaint was delivered to the Ministry of Transport.',
     reference: 'Complaint reference',
   },
   ru: {
-    subject: 'Не удалось доставить обращение Open Bus',
-    message: 'Не удалось доставить ваше обращение в Министерство транспорта.',
-    retry: 'Пожалуйста, попробуйте отправить обращение ещё раз.',
+    subject: 'Не удалось подтвердить доставку обращения Open Bus',
+    message: 'Не удалось подтвердить, что ваше обращение было доставлено в Министерство транспорта.',
     reference: 'Идентификатор обращения',
   },
   ar: {
-    subject: 'تعذّر تسليم الشكوى عبر Open Bus',
-    message: 'لم نتمكن من تسليم شكواك إلى وزارة المواصلات.',
-    retry: 'يرجى محاولة تقديم الشكوى مرة أخرى.',
+    subject: 'تعذّر تأكيد تسليم الشكوى عبر Open Bus',
+    message: 'لم نتمكن من تأكيد تسليم شكواك إلى وزارة المواصلات.',
     reference: 'معرّف الشكوى',
   },
 };
@@ -36,15 +32,15 @@ const testFailureCopy = {
 
 export function deliveryFailureTemplate(messageId: string, language?: string, debug = false) {
   const lang = resolveLanguage(language);
-  const { reference, retry } = failureCopy[lang];
+  const { reference } = failureCopy[lang];
   const { subject, message } = (debug ? testFailureCopy : failureCopy)[lang];
   return {
     subject,
-    text: `${message}${debug ? '' : `\n${retry}`}\n\n${reference}: ${messageId}`,
+    text: `${message}\n\n${reference}: ${messageId}`,
     html: layout(
       lang,
       subject,
-      `<p style="line-height:1.6">${message}</p>${debug ? '' : `<p style="line-height:1.6">${retry}</p>`}<p>${reference}: <span dir="ltr" style="unicode-bidi:isolate;display:inline-block">${escapeHtml(messageId)}</span></p>`,
+      `<p style="line-height:1.6">${message}</p><p>${reference}: <span dir="ltr" style="unicode-bidi:isolate;display:inline-block">${escapeHtml(messageId)}</span></p>`,
     ),
   };
 }

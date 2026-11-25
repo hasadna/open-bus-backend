@@ -30,7 +30,7 @@ describe('sendComplaint', () => {
     attributes.callsFake((command) => {
       return Promise.resolve(command.input.QueueUrl === 'dlq' ? { Attributes: { QueueArn: dlqArn } } : sourceAttributes);
     });
-    sourceAttributes = { Attributes: { RedrivePolicy: JSON.stringify({ deadLetterTargetArn: dlqArn, maxReceiveCount: '1' }) } };
+    sourceAttributes = { Attributes: { RedrivePolicy: JSON.stringify({ deadLetterTargetArn: dlqArn, maxReceiveCount: '5' }) } };
     sendMessage = send.withArgs(sinon.match.instanceOf(SendMessageCommand)).resolves({ MessageId: 'message-123' });
     sesSend = sinon.stub(ses, 'send').rejects(new Error('HTTP must not call SES'));
     app = f();
@@ -61,8 +61,8 @@ describe('sendComplaint', () => {
 
   for (const [description, policy] of [
     ['missing', undefined],
-    ['pointing at another queue', { deadLetterTargetArn: 'other-arn', maxReceiveCount: 1 }],
-    ['using the wrong receive limit', { deadLetterTargetArn: 'arn:aws:sqs:us-east-1:123456789012:complaints-dlq', maxReceiveCount: 4 }],
+    ['pointing at another queue', { deadLetterTargetArn: 'other-arn', maxReceiveCount: 5 }],
+    ['using the old receive limit', { deadLetterTargetArn: 'arn:aws:sqs:us-east-1:123456789012:complaints-dlq', maxReceiveCount: 1 }],
   ]) {
     it(`fails worker startup with a redrive policy that is ${description}`, async () => {
       sourceAttributes = { Attributes: { RedrivePolicy: JSON.stringify(policy) } };
@@ -71,7 +71,7 @@ describe('sendComplaint', () => {
         await startComplaintWorkers(workerApp);
         expect.fail('Expected worker startup to fail');
       } catch (error) {
-        expect(error.message).to.equal('SQS complaints queue must redrive to complaints-dlq with maxReceiveCount 1');
+        expect(error.message).to.equal('SQS complaints queue must redrive to complaints-dlq with maxReceiveCount 5');
       } finally {
         await workerApp.close();
       }
