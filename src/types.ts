@@ -11,6 +11,22 @@ import type {
   RawServerDefault,
   RouteGenericInterface,
 } from 'fastify';
+import type { Static } from 'typebox';
+
+import type { busSchema, complaintFormSchema, sendComplaintSchema, trainSchema } from './schemas/complaints.schema.js';
+import type { dataCodeModel } from './schemas/index.js';
+
+type ComplaintModels = {
+  DataCodeModel: typeof dataCodeModel;
+  BusSchema: typeof busSchema;
+  TrainSchema: typeof trainSchema;
+  ComplaintFormSchema: typeof complaintFormSchema;
+};
+
+export type DataCode = Static<typeof dataCodeModel>;
+export type ComplaintData = Static<typeof complaintFormSchema, ComplaintModels>;
+export type ComplaintBody = Static<typeof sendComplaintSchema.body, ComplaintModels>;
+export type ComplaintHeaders = Static<typeof sendComplaintSchema.headers>;
 
 export type AppServer = FastifyInstance<
   RawServerDefault,

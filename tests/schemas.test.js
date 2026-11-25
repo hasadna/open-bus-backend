@@ -15,6 +15,15 @@ describe('TypeBox route schemas', () => {
       await app.ready();
 
       const document = app.swagger();
+      const { schemas } = document.components;
+      expect(schemas).to.have.property('ComplaintFormSchema');
+      const complaint = schemas.ComplaintFormSchema;
+      for (const transport of ['bus', 'train']) {
+        expect(complaint.required).not.to.include(transport);
+        const modelName = `${transport[0].toUpperCase()}${transport.slice(1)}Schema`;
+        expect(complaint.properties[transport].$ref).to.equal(`#/components/schemas/${modelName}`);
+        expect(schemas).to.have.property(modelName);
+      }
       expect(document.components.schemas).to.have.property('ComplaintFormSchema');
       expect(document.components.schemas).to.have.property('GithubIssueModel');
       expect(document.paths['/'].get.operationId).to.equal('healthGet');
@@ -69,9 +78,31 @@ describe('TypeBox route schemas', () => {
       const response = await app.inject({
         method: 'POST',
         url: '/complaints/send',
-        payload: { data: { personalDetails: { mobile: 'invalid' } } },
+        headers: { 'pair-key': '12345678-1234-4123-8123-123456789abc' },
+        payload: {
+          data: {
+            firstName: 'אביבה',
+            lastName: 'ישראלי',
+            id: '123456782',
+            passport: '',
+            email: 'rider@example.com',
+            mobile: 'invalid',
+            eventHour: '08:00',
+            eventDate: '2026-10-09T08:00:00.000Z',
+            details: 'Complaint',
+            transport: {},
+            subject: {},
+            bus: {
+              lineNumberText: '1',
+              operator: { dataText: 'Operator', dataCode: '3' },
+              direction: { dataText: 'Direction', dataCode: '1' },
+              raisingStation: { dataText: 'Station', dataCode: '123' },
+            },
+          },
+        },
       });
       expect(response.statusCode).to.equal(400);
+      expect(response.json().message).to.include('mobile');
     } finally {
       await app.close();
     }

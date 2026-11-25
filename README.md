@@ -1,7 +1,7 @@
 # 🚌 Open Bus Backend
 
 A backend service powering the Open-Bus platform.
-Provides APIs for health checks and GitHub issue creation. Complaint submission is planned for a future PR.
+Provides APIs for health checks, GitHub issue creation, and complaint submission.
 
 ## 📢 Get Involved
 
@@ -40,6 +40,16 @@ LOG_LEVEL=info
 GITHUB_TOKEN=your_github_token
 GITHUB_OWNER=your_github_username
 GITHUB_REPO=your_repository_name
+
+# Complaint email delivery
+AWS_REGION=us-east-1
+# For local development; deployments can use an IAM role instead.
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+SES_EMAIL=open_bus@your_verified_domain
+SES_COMPLAINTS_EMAIL=complaints@domain
+# Optional
+# SES_CONFIGURATION_SET=complaints
 ```
 
 ## 🚀 Running the Server
@@ -86,11 +96,12 @@ docker build -t open-bus-backend .
 
 2. **Run the container**
 
+Populate `.env` with your AWS and GitHub configuration, then pass it to the container at runtime:
+
 ```bash
 docker run -it -p 3001:3001 \
-  -e GITHUB_TOKEN=your_github_token \
-  -e GITHUB_OWNER=your_github_owner \
-  -e GITHUB_REPO=your_github_repo \
+  --env-file .env \
+  -e NODE_ENV=production \
   -e LOG_LEVEL=info \
   open-bus-backend
 ```
@@ -109,6 +120,73 @@ docker run -it -p 3001:3001 \
 
 ### 📣 Complaints
 
-- `POST /complaints/send` → Returns `501 Not Implemented` until complaint submission is added.
+Complaint data requires `firstName`, `lastName`, `email`, `mobile`, `eventHour`, `eventDate`, `details`, `title`, `transport`, and `subject`. `passport` is limited to 10 characters. Exactly one of `passport` or `id` must be non-empty. The unused identity may be omitted, null, or empty. Email is always required. If `bus` is provided, `bus.lineNumberText`, `bus.operator`, `bus.direction`, and `bus.raisingStation` are required. The line number must be non-empty, and each of the other three fields must contain a non-empty `dataText` and `dataCode`. `transport` and `subject` use `{ dataText, dataCode }` objects. `fromHour` and `toHour` are optional. Exactly one of `bus` or `train` is required. `details` is limited to 400 characters. Times use `HH:mm`; `eventDate` uses an ISO date-time. If `train` is provided, `trainType`, `startStation`, `destinationStation`, and `eventStation` are required; both stations must contain a non-empty `dataText` and `dataCode`. Train details accept `trainType` (`"1"` Israel Railways, `"2"` Jerusalem light rail, `"3"` Dankal), `startStation`, `destinationStation`, `eventStation` (`"start"` or `"destination"`), and `trainNumber`. Station fields use `{ dataText, dataCode }` objects. The former `requestSubject` and `taxi` fields are no longer part of the schema.
+
+Complaint bodies accept optional `data.lang`: `he`, `en`, `ru`, or `ar` (Hebrew when omitted). Unsupported values return `400`. Complaint emails always use Hebrew labels and include the user's preferred language; submitted titles and descriptions are preserved as written. Both complaint and delivery-failure emails include HTML and plain-text versions. Failure notifications use the preferred language stored in the queued complaint, with Hebrew as the default. Hebrew and Arabic notifications use right-to-left layouts.
+
+- `POST /complaints/send` ? Requires a `pair-key` UUID header and a validated complaint body. Enqueues the complaint in SQS and returns `202 { success: true, state: "PROCESSING", messageId }` once SQS accepts it. Returns `503` if enqueueing fails. The HTTP handler never calls SES. This replaces the synchronous `200 SENT` / `502 FAILED` delivery responses; there is no delivery-status endpoint.
+
+Duplicate submissions share the enqueue result and return the same acceptance for up to one hour or 1,000 cached entries per server process. Identity uses the normalized UUID, email, and debug flag. Enqueue failures clear the cached attempt so callers can retry. This cache does not survive restarts or span server instances.
 
 Server will be available at: [http://localhost:3001](http://localhost:3001)
+
+### Complaint delivery workers
+
+The server runs two independent long-polling workers using [`sqs-consumer`](https://bbc.github.io/sqs-consumer/), which handles polling, acknowledgements, message deletion, and shutdown:
+
+1. `POST /complaints/send → complaints → server worker → SES target`.
+2. After five receives without a successful deletion, SQS redrives the message: `complaints-dlq → server worker → SES user`.
+
+The main worker sends from the verified `SES_EMAIL` identity to `SES_COMPLAINTS_EMAIL`, with the submitter as Reply-To. It deletes the SQS message only after SES returns a message ID. If SQS redelivers a message whose SES acceptance is still cached in the process, the worker retries deletion. Later bounces are not processed; there is no SNS subscription or webhook.
+
+The DLQ worker acknowledges messages with a cached SES acceptance. For other valid messages, it sends a localized notice to the submitter that delivery could not be confirmed, with the SQS message ID as the reference. It deletes the DLQ message even if the SES call exhausts its retries. Invalid DLQ payloads are logged and deleted.
+
+Both workers receive one message per poll, using 20-second long polling and 60-second visibility, with five seconds between polling cycles. Each email send has a 15-second total deadline and permits up to three SES attempts when SES explicitly rejects a request for throttling. SDK retries are disabled. SQS requests, retries, and deletion are managed by the SDK and `sqs-consumer`; authentication errors also pause polling for five seconds. Worker errors are logged. Successful handlers explicitly return the original message to acknowledge it; target-send failures throw, while DLQ notification failures are caught and acknowledged. Shutdown stops new polling and waits up to 45 seconds for the final poll, active processing, and deletion, logging if this limit is exceeded. It does not abort SQS requests because that would also cancel acknowledgements. Registering routes alone does not start workers.
+
+### AWS configuration and permissions
+
+Use a verified `SES_EMAIL` identity and configure `SES_COMPLAINTS_EMAIL`. `SES_CONFIGURATION_SET` is optional. Region and credentials use the AWS SDK's normal configuration; deployments can use an IAM role. In the SES sandbox, real recipients must also be verified.
+
+Use a valid complaint body and a verified SES sender for both debug modes. Both modes are available in production.
+
+- `"debug": true` sends the complaint email directly to the submitted `data.email` and acknowledges the queue message after SES accepts it. If send failures move the complaint to the DLQ, the worker attempts to send a test failure notification to that same address.
+- `"debug": "bounce"` sends the complaint to `bounce@simulator.amazonses.com`. After SES accepts the request, the worker leaves the message unacknowledged and skips repeat sends while the acceptance is cached. After five receives, SQS moves the message to the DLQ, and the worker sends the simulated failure notification to the submitted `data.email`.
+
+The application identity requires `ses:SendEmail` for the configured identity (and configuration set, if used), plus `sqs:GetQueueUrl`, `sqs:GetQueueAttributes`, `sqs:SendMessage`, `sqs:ReceiveMessage`, and `sqs:DeleteMessage` for the complaint queues. Before deploying the backend, provision both queues and set the redrive policy on `complaints` to target `complaints-dlq` with `maxReceiveCount` set to 5. The backend looks up the queues by name in its configured AWS account and region and verifies the redrive policy at startup.
+
+SQS provides at-least-once delivery. The acceptance cache holds up to 10,000 message IDs per process. Restarts, cache eviction, or redelivery to another instance can result in a duplicate target email or an unconfirmed-delivery notice for an accepted complaint. SQS redelivery after an uncertain SES outcome can also result in a duplicate email if SES accepted the original request before the response was lost. See [SQS visibility behavior](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html) and [SES sending behavior](https://docs.aws.amazon.com/ses/latest/dg/send-email-concepts-process.html).
+
+### Deploying the queue-driven flow
+
+For dev, [terraform/dev/main.tf](terraform/dev/main.tf) provisions the SQS queues and an IAM policy for the backend. Use a dedicated dev AWS account because the application uses the fixed queue names `complaints` and `complaints-dlq`.
+
+Copy [terraform.tfvars.example](terraform/dev/terraform.tfvars.example) to `terraform/dev/terraform.tfvars` and fill in `aws_account_id` and `ses_identity`. Terraform also accepts `TF_VAR_*` variables exported in your shell. Configure AWS credentials through your shell environment or an AWS CLI profile.
+
+```sh
+npm run tf:init
+npm run tf:up
+npm run tf:down
+```
+
+Run `tf:init` before first use and after changing provider or backend settings. Use `tf:up` to provision or update the dev resources. Use `tf:down` to delete the dev queues, backend IAM user and access key, IAM policy, and SES configuration set stack while keeping the Mail Manager archive in Terraform state for the next `tf:up`. Terraform prompts for confirmation before making changes.
+
+Use your dev account ID and an existing verified SES email address or domain. Terraform defaults to `us-east-1`. Set `aws_region` and `ses_configuration_set` as needed to match the backend. If either queue already exists, import it by queue URL into `aws_sqs_queue.complaints` or `aws_sqs_queue.complaints_dlq` before planning.
+
+Terraform creates the `open-bus-backend-dev` IAM user, attaches the backend policy, and generates an access key. After applying, use the following outputs for `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`, respectively.
+
+```sh
+terraform -chdir=terraform/dev output -raw backend_access_key_id
+terraform -chdir=terraform/dev output -raw backend_secret_access_key
+```
+
+These commands print credentials. The secret is also stored in Terraform state, so restrict access to the state and keep credentials out of version control.
+
+Leave `ses_configuration_set` unset to create a Mail Manager archive with six months of retention and link it to the `open-bus-backend-dev-archive` SES configuration set. If you added `ses_archive_arn` to your Terraform variables earlier, remove it. Terraform now returns the new archive ARN as an output.
+
+After applying, set the backend's `SES_CONFIGURATION_SET` to the Terraform output `ses_configuration_set`. SES archives complaints and delivery-failure notifications sent with that configuration set, including debug messages. [SES email archiving](https://docs.aws.amazon.com/ses/latest/dg/eb-archiving.html)
+
+1. Before starting workers, review both existing queues. The previous implementation retained queued complaints after sending emails, so blindly consuming the backlog can resend already delivered complaints. Resolve the backlog explicitly; this change never purges queues automatically. Old messages without a debug flag are treated as production messages, so historical debug submissions require particular care.
+2. Grant the receive/delete IAM permissions above and deploy the server with its SES configuration. Update clients to treat `202 PROCESSING` as queue acceptance rather than completed delivery.
+3. Submit with `"debug": true` to verify queue acknowledgement, then submit with `"debug": "bounce"` to verify one processing attempt, automatic DLQ redrive, and the notification to the submitted email address. Also fail the notification request and verify that its DLQ message is deleted.
+4. Remove any existing SNS webhook subscription and unused SNS event publishing configuration. `/webhook/ses` and `/webhook/resend` are unavailable, and `SES_SNS_TOPIC_ARN` is no longer used. Retire old Resend credentials if still present.
+5. Monitor application processing/deletion errors, queue age, and DLQ backlog. Because the DLQ worker consumes failed complaints, application logs are needed to monitor terminal notification failures.

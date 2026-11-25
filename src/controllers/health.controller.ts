@@ -1,10 +1,15 @@
 import type { healthCheckSchema } from '../schemas/health.schema.js';
 import type { SchemaReply, SchemaRequest } from '../types.js';
 
-export function healthCheck(request: SchemaRequest<typeof healthCheckSchema>, reply: SchemaReply<typeof healthCheckSchema>) {
+export function healthCheck(
+  request: SchemaRequest<typeof healthCheckSchema>,
+  reply: SchemaReply<typeof healthCheckSchema>,
+  complaintWorkerStartupFailed: boolean,
+) {
   try {
     const healthData = {
-      status: 'alive',
+      status: complaintWorkerStartupFailed ? 'degraded' : 'alive',
+      ...(complaintWorkerStartupFailed ? { details: { complaintWorkers: 'startup_failed' as const } } : {}),
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       version: process.env.npm_package_version || '0.0.0',
