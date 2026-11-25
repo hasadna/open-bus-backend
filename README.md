@@ -42,8 +42,6 @@ GITHUB_OWNER=your_github_username
 GITHUB_REPO=your_repository_name
 ```
 
-When deploying behind a reverse proxy, set `TRUSTED_PROXIES` to a comma-separated list of trusted proxy IP addresses or CIDR ranges so the server can resolve client IPs from forwarded headers. By default, the server uses the direct connection's IP address.
-
 ## 🚀 Running the Server
 
 ### Development
