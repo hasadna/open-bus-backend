@@ -97,13 +97,15 @@ docker run -it -p 3001:3001 \
 
 ## 🔗 API Endpoints
 
+The default rate limit is 100 requests per minute across routes. `POST /issues/create` and `POST /complaints/send` each have their own limit of five requests per minute. Each limit is tracked per client IPv4 address or IPv6 /64 subnet, per server instance. Excess requests return HTTP 429 with a `Retry-After` header.
+
 ### 🩺 Health Check
 
 - `GET /` → Returns server status
 
 ### 🐞 GitHub Issues
 
-- `POST /issues` → Create a new GitHub issue
+- `POST /issues/create` → Create a new GitHub issue
   - **Required:** `title`, `contactName`, `description`, `environment`, `expectedBehavior`, `actualBehavior`, `reproducibility`
   - **Optional:** `contactEmail`, `publishContactEmail` (boolean, default `false`; the email is posted in the public issue only when `true`), `attachments[]` (array of URLs), `debugContext` (URL/context of the page the report was filed from)
 
