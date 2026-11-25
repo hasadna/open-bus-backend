@@ -12,6 +12,7 @@ export const healthCheckSchema = {
       uptime: Type.Number({ examples: [23.1655282] }),
       version: Type.String({ examples: ['2.0.0'] }),
     }),
+    429: Type.Ref('ErrorResponseModel'),
     500: optionalObject({ error: Type.String(), status: Type.String() }),
   },
 };

@@ -130,6 +130,7 @@ export const sendComplaintSchema = {
   body: optionalObject({ data: Type.Ref('ComplaintFormSchema') }),
   response: {
     400: Type.Ref('ErrorResponseModel'),
+    429: Type.Ref('ErrorResponseModel'),
     501: Type.Ref('ErrorResponseModel'),
   },
 };

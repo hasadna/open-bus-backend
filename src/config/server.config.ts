@@ -1,8 +1,14 @@
 import cors from '@fastify/cors';
+import rateLimit, { type RateLimitOptions } from '@fastify/rate-limit';
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import f from 'fastify';
 
 import { swaggerConfig, swaggerUIConfig } from './swagger.config.js';
+
+export const rateLimitConfig = {
+  global: { max: 100, timeWindow: '1 minute' },
+  submission: { max: 5, timeWindow: '1 minute' },
+} as const satisfies { [key: string]: RateLimitOptions };
 
 export async function createServer() {
   const isDev = process.env.NODE_ENV !== 'production';
@@ -24,13 +30,12 @@ export async function createServer() {
     trustProxy: true,
   }).withTypeProvider<TypeBoxTypeProvider>();
 
-  // Register Swagger for API documentation
+  await fastify.register(rateLimit, { global: true, ...rateLimitConfig.global });
+
   await fastify.register(import('@fastify/swagger'), swaggerConfig);
 
-  // Register Swagger UI
   await fastify.register(import('@fastify/swagger-ui'), swaggerUIConfig);
 
-  // Register Cors Origin requests from all origins
   await fastify.register(cors, { origin: '*' });
 
   return fastify;

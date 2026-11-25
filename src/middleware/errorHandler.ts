@@ -1,6 +1,13 @@
 import type { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
 
 export function globalErrorHandler(error: FastifyError, request: FastifyRequest, reply: FastifyReply) {
+  if (error.statusCode === 429) {
+    return reply.status(429).send({
+      error: 'Too many requests',
+      message: error.message,
+    });
+  }
+
   request.log.error(error, 'Unhandled error:');
 
   // Handle validation errors
